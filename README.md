@@ -1,230 +1,166 @@
-# 维弈阁（Weiyige Pavilion）
+# 维弈阁
 
-> 一个人，一个 AI 团队，10x 生产效率。
+> 一个人，一个 AI 团队。
 
-维弈阁是一个**多角色 AI Agent 团队**，基于 [gstack](https://github.com/garrytan/gstack) 的设计思想构建。每个 Agent 拥有独立的人格、思维框架和专业知识，协同完成从战略规划到产品交付的全流程。
+你一个人干活，但身后站着一群人。
 
-灵感来源：[gstack](https://github.com/garrytan/gstack) — Garry Tan 的开源软件工厂，将 Claude Code 变成虚拟工程团队。
+CEO 帮你拿方向，PM 帮你拆任务，架构师帮你审方案，QA 帮你找 bug，安全帮你堵漏洞，财务帮你算账，内容帮你写东西，设计帮你把关体验，合伙人专门挑刺，顾问帮你做研究。
 
----
+10 个角色，各管一摊。你只需要说需求，剩下的事它们自己协调。
 
-## 核心优势
-
-### 🎯 专业化分工，术业有专攻
-
-每个 Agent 只做自己最擅长的事：
-
-| Agent | 角色 | 核心职责 |
-|-------|------|---------|
-| CEO_锋 | 战略决策者 | 范围审查、计划审查、方向把控 |
-| PM_枢 | 项目协调者 | 任务拆解、进度管理、交付节奏 |
-| QA_鉴 | 测试专家 | 用例设计、缺陷发现、质量把关 |
-| 安全_盾 | 安全审计 | OWASP/STRIDE 威胁模型、渗透测试 |
-| 财务_算 | 财务分析 | ROI 评估、成本核算、预算把控 |
-| 顾问_隐 | 战略顾问 | 深度研究、战略建议 |
-| 合伙人_砺 | 魔鬼代言人 | YC 风格质疑、挑战前提、守住底线 |
-| 架构_矩 | 架构师 | 系统设计、技术评审、技术债务 |
-| 内容_辞 | 内容运营 | 文案创作、品牌内容、去 AI 味儿 |
-| 设计_绘 | 设计评审 | UX 评审、设计规范、可访问性 |
-
-### 🧠 每个 Agent 都有灵魂
-
-每个 Agent 目录包含：
-
-- **`IDENTITY.md`** — 身份定义：名字、角色、性格、沟通风格
-- **`SOUL.md`** — 思维框架：核心工作流、专业方法论、决策模式
-- **`rules/`** — 评审规则（部分 Agent）
-- **`skills/`** — 技能定义（部分 Agent）
-
-### 🔗 基于 gstack 的设计思想
-
-gstack 的核心哲学是**让 AI Agent 像真实团队一样协作**，维弈阁继承并扩展了这一理念：
-
-```
-gstack 理念                      | 维弈阁实现
----------------------------------|---------------------------
-SKILL.md 标准（Markdown 角色定义）| 每个 Agent 的 IDENTITY.md/SOUL.md
-/plan-ceo-review（CEO 审查）    | CEO_锋 的计划审查流程
-/plan-eng-review（架构审查）     | 架构_矩 的技术评审
-/plan-design-review（设计评审）   | 设计_绘 的 UX 评审
-/office-hours（顾问时间）        | 顾问_隐 + 合伙人_砺 的质疑流程
-/qa（质量保障）                  | QA_鉴 的测试评审
-/guard（安全审计）               | 安全_盾 的威胁建模
-```
-
-维弈阁与 gstack 的区别在于：**gstack 是个人生产力工具箱，维弈阁是多角色团队协作系统**。每个角色不只是工具调用，而是拥有完整人格的 Agent。
+灵感来自 [gstack](https://github.com/garrytan/gstack) — Garry Tan 把自己当 CEO，让 Claude Code 当虚拟工程团队。维弈阁把这个思路做成了一个开箱即用的东西。
 
 ---
 
-## 架构
+## 10 个角色
+
+| 角色 | 干什么 |
+|------|--------|
+| 锋 · CEO | 方向对不对？该不该做？他拍板 |
+| 枢 · PM | 任务怎么拆？什么时候交？他盯节奏 |
+| 矩 · 架构 | 系统怎么设计？技术债多少？他审 |
+| 绘 · 设计 | 体验行不行？设计规范了吗？她看 |
+| 鉴 · QA | 哪里有 bug？用例覆盖了吗？他查 |
+| 盾 · 安全 | 有没有漏洞？威胁模型建了吗？他堵 |
+| 算 · 财务 | 划不划算？ROI 多少？她算 |
+| 辞 · 内容 | 文案怎么写？AI 味去了吗？她润色 |
+| 隐 · 顾问 | 需要深度研究？他钻进去 |
+| 砺 · 合伙人 | YC 风格质疑，专门唱反调 |
+
+### 每个角色不只是名字
 
 ```
-weiyige-pavilion/
-├── CEO_锋/           # 战略层：范围决策、计划审查
-│   ├── IDENTITY.md
-│   └── SOUL.md
-├── PM_枢/            # 执行层：任务拆解、交付协调
-│   ├── IDENTITY.md
-│   ├── SOUL.md
-│   └── rules/
-├── 架构_矩/         # 技术层：系统设计、代码评审
-│   ├── IDENTITY.md
-│   ├── SOUL.md
-│   └── rules/eng-review/
-├── 设计_绘/         # 设计层：UX 评审、设计规范
-│   ├── IDENTITY.md
-│   ├── SOUL.md
-│   └── rules/design-review/
-├── QA_鉴/           # 质量层：测试策略、缺陷分析
-│   ├── IDENTITY.md
-│   ├── SOUL.md
-│   └── rules/qa/
-├── 安全_盾/         # 安全层：威胁模型、安全审计
-│   ├── IDENTITY.md
-│   └── SOUL.md
-├── 财务_算/         # 财务层：ROI 分析、成本评估
-│   ├── IDENTITY.md
-│   └── SOUL.md
-├── 内容_辞/         # 内容层：文案创作、技能库
-│   ├── IDENTITY.md
-│   ├── SOUL.md
-│   └── skills/
-│       ├── de-ai-ify.md   # 去 AI 味儿
-│       └── humanizer.md   # 人类化写作
-├── 顾问_隐/         # 战略层：深度研究、方向建议
-│   ├── IDENTITY.md
-│   └── SOUL.md
-├── 合伙人_砺/       # 挑战层：魔鬼代言人、质疑一切
-│   ├── IDENTITY.md
-│   └── SOUL.md
-└── README.md
+CEO_锋/
+├── IDENTITY.md    ← 性格、说话风格、沟通习惯
+├── SOUL.md        ← 思维框架、决策逻辑、工作流
+├── memory/        ← 记住的偏好、踩过的坑、积攒的知识
+└── skills/        ← 专属技能（不是每个角色都有）
 ```
 
-### 协作流程
-
-```
-用户输入
-   │
-   ▼
-┌──────────┐    战略方向     ┌──────────┐
-│ CEO_锋   │ ─────────────▶ │ 顾问_隐  │
-│ 战略决策  │                │ 深度研究  │
-└────┬─────┘                └────┬─────┘
-     │                           │
-     ▼                           ▼
-┌──────────┐    质疑挑战     ┌──────────┐
-│ 合伙人_砺 │ ◀───────────── │ (输入)   │
-│ 魔鬼代言  │                └──────────┘
-└────┬─────┘
-     │ 方案确定
-     ▼
-┌──────────┐    技术评审     ┌──────────┐
-│ 架构_矩  │ ─────────────▶ │  PM_枢   │
-│ 系统设计  │                │ 任务拆解  │
-└────┬─────┘                └────┬─────┘
-     │                           │
-     ▼                           ▼
-┌──────────┐                ┌──────────┐
-│ 设计_绘  │                │  QA_鉴   │
-│ UX 评审  │                │ 测试策略  │
-└────┬─────┘                └────┬─────┘
-     │                           │
-     ▼                           ▼
-┌──────────┐                ┌──────────┐
-│ 安全_盾  │                │ 财务_算  │
-│ 威胁建模  │                │ ROI 评估  │
-└──────────┘                └──────────┘
-```
+不是简单的 prompt，是一套完整的人设 + 方法论 + 记忆系统。
 
 ---
 
-## 与 gstack 的关系
+## 装上就能用
 
-[gstack](https://github.com/garrytan/gstack) 是维弈阁的思想源头。Garry Tan 将自己的工程经验编码为一套 AI Agent 协作框架——CEO 审查计划、架构师评审设计、QA 打开真实浏览器测试。
-
-**维弈阁的定位**：将这套思想产品化，构建一个**开箱即用的多 Agent 团队**。你可以直接使用这套角色定义，也可以 fork 后根据自己的工作流定制。
-
-核心继承：
-- **SKILL.md 标准**：用 Markdown 定义 Agent 身份和技能
-- **角色专业化**：每个 Agent 有且只有一个核心职责
-- **协作评审**：计划不经审查不执行，代码不经评审不发布
-- **可观测性**：每个决策和评审结果都输出为结构化文档
-
----
-
-## 快速开始
-
-### 一键安装（推荐）
-
-在你的项目目录下执行一条命令，即可安装维弈阁：
+一条命令，装到你的项目里：
 
 ```bash
-# 完整安装（10 个 Agent + 配置文件）
 curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash
-
-# 安装到指定项目
-curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --target ~/my-project
-
-# 为 Cursor 安装
-curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --tool cursor
-
-# 最轻量安装（仅配置文件，不含 Agent 深度定义）
-curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --mode claude
 ```
 
-### 支持的 AI 工具
+装完打开项目，AI 会自动读取配置，激活整个团队。
 
-维弈阁自动适配你的 AI 编码工具，生成对应的配置文件：
+### 不同工具
 
-| 工具 | 配置文件 | 指定参数 |
-|------|---------|---------|
-| CodeBuddy / Claude Code | `CLAUDE.md` | `--tool codebuddy` |
-| Cursor | `.cursorrules` | `--tool cursor` |
-| GitHub Copilot | `.github/copilot-instructions.md` | `--tool copilot` |
-| Windsurf | `.windsurfrules` | `--tool windsurf` |
-| Cline | `.clinerules` | `--tool cline` |
+```bash
+# Cursor
+curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --tool cursor
 
-不指定 `--tool` 时，脚本会自动检测项目中已有的配置文件。
+# GitHub Copilot
+curl -fsSL ... | bash -s -- --tool copilot
+
+# Windsurf / Cline 同理
+```
+
+不指定 `--tool`，脚本自己检测你用的是哪个。
+
+| 工具 | 配置文件 |
+|------|---------|
+| CodeBuddy / Claude Code | `CLAUDE.md` |
+| Cursor | `.cursorrules` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Windsurf | `.windsurfrules` |
+| Cline | `.clinerules` |
 
 ### 已有配置文件？
 
-如果你的项目已有 `CLAUDE.md` / `.cursorrules` 等配置文件，安装脚本**不会覆盖**，而是：
+不会覆盖。脚本会：
 
-1. 生成独立的 `CLAUDE-weiyige.md`（维弈阁配置）
-2. 提示你在原配置文件末尾加一行引用
+1. 备份原文件（`.weiyige-backup`）
+2. 生成独立的 `CLAUDE-weiyige.md`
+3. 提示你在原文件里加一行引用
 
-### 试试第一条指令
+### 试试
 
 ```
 @辞 帮我写一篇公众号文章
-@锋 审查一下这个产品方向
-@矩 帮我做工程审查
+@锋 这个方向靠谱吗
+@矩 帮我审一下架构
 ```
 
-不确定找谁？直接描述需求，路由器自动分发：
+懒得 @？直接说需求，路由器自动分发：
 
 ```
-帮我优化这篇文章    → 自动路由到 辞
-这个架构有问题吗    → 自动路由到 矩
-有什么风险          → 自动路由到 砺
+帮我优化这篇文章    → 辞
+这个架构有问题吗    → 矩
+有什么风险          → 砺
 ```
 
-### 手动安装
+### 其他安装方式
 
 ```bash
+# 装到指定项目
+curl -fsSL ... | bash -s -- --target ~/my-project
+
+# 最轻量（只要配置文件，不要角色定义）
+curl -fsSL ... | bash -s -- --mode claude
+
+# 手动
 git clone https://github.com/voidlab7/weiyige-pavilion.git
-cd weiyige-pavilion
-./install.sh --target /path/to/your-project
+cd weiyige-pavilion && ./install.sh --target /path/to/your-project
+```
+
+---
+
+## 和 gstack 的关系
+
+[gstack](https://github.com/garrytan/gstack) 是种子。Garry Tan 把工程经验编码成 AI Agent 协作框架 — CEO 审计划，架构师审设计，QA 打开浏览器真测。
+
+维弈阁做了什么？把它产品化了。角色定义、协作协议、路由系统、技能库……直接拿来用，或者 fork 后改。
+
+继承的东西：
+- Markdown 定义角色（不是代码，是人设文档）
+- 角色只管一件事（CEO 不管写代码，QA 不管方向）
+- 评审不过不能往下走（计划不审不执行，代码不审不发）
+- 每个决策都有文档留痕
+
+不一样的地方：gstack 是工具箱，维弈阁是团队系统。每个角色有记忆，能成长，不是无状态的 prompt。
+
+---
+
+## 目录结构
+
+```
+weiyige-pavilion/
+├── CEO_锋/              # 方向决策
+├── PM_枢/               # 任务拆解 + 交付
+│   └── skills/prd-template.md
+├── 架构_矩/             # 技术评审
+│   └── rules/eng-review/
+├── 设计_绘/             # UX 评审
+│   └── rules/design-review/
+├── QA_鉴/               # 测试
+│   └── rules/qa/
+├── 安全_盾/             # 安全审计
+├── 财务_算/             # ROI + 成本
+├── 内容_辞/             # 文案 + 去 AI 味
+│   └── skills/          # de-ai-ify / humanizer / copywriting
+├── 顾问_隐/             # 深度研究
+├── 合伙人_砺/           # 魔鬼代言人
+├── CLAUDE.md            # 路由配置（冷启动入口）
+├── install.sh           # 一键安装
+└── .weiyige/            # 安装后的工作目录
 ```
 
 ---
 
 ## 相关链接
 
-- **gstack**: https://github.com/garrytan/gstack
-- **OpenClaw**: https://github.com/openclaw/openclaw
-- **维弈阁 GitHub**: https://github.com/voidlab7/weiyige-pavilion
+- [gstack](https://github.com/garrytan/gstack) — 思想源头
+- [OpenClaw](https://github.com/openclaw/openclaw) — Agent 框架
+- [维弈阁 GitHub](https://github.com/voidlab7/weiyige-pavilion)
 
 ---
 
-*维弈阁 — 用 AI Agent 重建一个人的团队。*
+*维弈阁 — 一个人的团队。*
