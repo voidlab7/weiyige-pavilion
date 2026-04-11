@@ -201,6 +201,21 @@ backup_config() {
   fi
 }
 
+# ---------- 判断文件是否有实质内容（非空、非纯注释/空白）----------
+has_real_content() {
+  local file="$1"
+  # 文件不存在 → 无内容
+  [ ! -f "$file" ] && return 1
+  # 空文件 → 无内容
+  [ ! -s "$file" ] && return 1
+  # 去掉空行和纯注释行(#开头)，统计剩余行数
+  local lines
+  lines=$(grep -v '^[[:space:]]*$' "$file" | grep -v '^[[:space:]]*#' | wc -l | tr -d ' ')
+  # 有效内容 ≤ 2 行视为占位文件，不算"已有配置"
+  [ "$lines" -le 2 ] && return 1
+  return 0
+}
+
 # ---------- 安装配置文件 ----------
 install_config_file() {
   local config_path="$TARGET_DIR/$CONFIG_FILE"
@@ -217,9 +232,9 @@ install_config_file() {
     return 1
   fi
 
-  # 检查用户是否已有配置文件
-  if [ -f "$config_path" ] && [ -s "$config_path" ]; then
-    # 用户已有配置 → 备份原文件，生成 CLAUDE-weiyige.md 独立文件
+  # 检查用户是否已有**实质性**配置文件
+  if has_real_content "$config_path"; then
+    # 用户有实质内容 → 备份原文件，生成 CLAUDE-weiyige.md 独立文件
     backup_config "$config_path"
     cp "$tmp_file" "$weiyige_config"
     rm -f "$tmp_file"
@@ -229,7 +244,7 @@ install_config_file() {
     return 0
   fi
 
-  # 用户没有配置文件 → 备份（无），直接创建
+  # 没有配置文件 / 或仅有占位内容 → 直接创建（无需备份）
   mkdir -p "$(dirname "$config_path")"
 
   case "$INSTALL_TOOL" in
