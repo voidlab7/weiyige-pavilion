@@ -201,21 +201,6 @@ backup_config() {
   fi
 }
 
-# ---------- 判断文件是否有实质内容（非空、非纯注释/空白）----------
-has_real_content() {
-  local file="$1"
-  # 文件不存在 → 无内容
-  [ ! -f "$file" ] && return 1
-  # 空文件 → 无内容
-  [ ! -s "$file" ] && return 1
-  # 去掉空行和纯注释行(#开头)，统计剩余行数
-  local lines
-  lines=$(grep -v '^[[:space:]]*$' "$file" | grep -v '^[[:space:]]*#' | wc -l | tr -d ' ')
-  # 有效内容 ≤ 2 行视为占位文件，不算"已有配置"
-  [ "$lines" -le 2 ] && return 1
-  return 0
-}
-
 # ---------- 安装配置文件 ----------
 install_config_file() {
   local config_path="$TARGET_DIR/$CONFIG_FILE"
@@ -232,32 +217,12 @@ install_config_file() {
     return 1
   fi
 
-  # 检查用户是否已有**实质性**配置文件
-  if has_real_content "$config_path"; then
-    # 用户有实质内容 → 备份原文件，生成 CLAUDE-weiyige.md 独立文件
-    backup_config "$config_path"
-    cp "$tmp_file" "$weiyige_config"
-    rm -f "$tmp_file"
-
-    echo -e "  ${YELLOW}⚠️  检测到已有 ${CONFIG_FILE}，不会覆盖${NC}"
-    echo -e "  ${GREEN}✅ 已生成 CLAUDE-weiyige.md${NC}"
-    return 0
-  fi
-
-  # 没有配置文件 / 或仅有占位内容 → 直接创建（无需备份）
-  mkdir -p "$(dirname "$config_path")"
-
-  case "$INSTALL_TOOL" in
-    codebuddy|claude)
-      cp "$tmp_file" "$config_path"
-      ;;
-    cursor|windsurf|cline|copilot)
-      cp "$tmp_file" "$config_path"
-      ;;
-  esac
-
+  # 统一策略：始终备份（如有）+ 生成 CLAUDE-weiyige.md + 不覆盖原文件
+  backup_config "$config_path"
+  cp "$tmp_file" "$weiyige_config"
   rm -f "$tmp_file"
-  echo -e "  ${GREEN}✅ ${CONFIG_FILE} 已创建（路由表内联，开箱即用）${NC}"
+
+  echo -e "  ${GREEN}✅ 已生成 CLAUDE-weiyige.md${NC}"
   return 0
 }
 
@@ -392,7 +357,7 @@ print_success() {
   echo -e "  配置文件：${BOLD}$TARGET_DIR/$CONFIG_FILE${NC}"
   echo ""
 
-  # 备份文件提示（统一展示）
+  # 备份文件提示（仅当确实备份过）
   if [ -n "$BACKUP_FILES" ]; then
     echo -e "  ${BLUE}━━━ 备份文件 ━━━${NC}"
     echo ""
@@ -406,10 +371,10 @@ print_success() {
     echo ""
   fi
 
-  # 已有配置文件时的合并提示
-  if [ -f "$TARGET_DIR/CLAUDE-weiyige.md" ]; then
-    echo -e "  ${YELLOW}━━━ 需要手动合并 ━━━${NC}"
-    echo ""
+  # 合并提示（始终显示，因为始终生成 CLAUDE-weiyige.md）
+  echo -e "  ${YELLOW}━━━ 需要手动合并 ━━━${NC}"
+  echo ""
+  if [ -f "$config_path" ] && [ -s "$config_path" ]; then
     echo -e "  你已有 ${CONFIG_FILE}，维弈阁配置写在 ${BOLD}CLAUDE-weiyige.md${NC}"
     echo ""
     echo -e "  在 ${BOLD}${CONFIG_FILE}${NC} 末尾添加一行："
@@ -417,9 +382,14 @@ print_success() {
     echo -e "  ${GREEN}# 维弈阁 AI 团队 — 详细配置见 CLAUDE-weiyige.md${NC}"
     echo ""
     echo -e "  或者直接把 ${BOLD}CLAUDE-weiyige.md${NC} 的内容复制到 ${BOLD}${CONFIG_FILE}${NC} 中。"
-    echo -e "  原文件已备份为 ${CONFIG_FILE}.weiyige-backup，可随时恢复。"
-    echo ""
+  else
+    echo -e "  维弈阁配置已生成到 ${BOLD}CLAUDE-weiyige.md${NC}"
+    echo -e "  把它重命名为或合并到 ${BOLD}${CONFIG_FILE}${NC} 即可激活团队。"
   fi
+  if [ -n "$BACKUP_FILES" ]; then
+    echo -e "  原文件已备份，可随时恢复。"
+  fi
+  echo ""
 
   echo -e "  ${CYAN}━━━ 下一步 ━━━${NC}"
   echo ""
