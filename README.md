@@ -154,20 +154,46 @@ weiyige-pavilion/
 
 ## 快速开始
 
+### 一键安装（推荐）
+
+在你的项目目录下执行一条命令，即可安装维弈阁：
+
 ```bash
-# Clone 仓库
-git clone https://github.com/voidlab7/weiyige-pavilion.git
-cd weiyige-pavilion
+# 完整安装（10 个 Agent + CLAUDE.md）
+curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash
 
-# 查看所有 Agent
-ls -la */
+# 安装到指定项目
+curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --target ~/my-project
 
-# 查看特定 Agent 的身份
-cat CEO_锋/IDENTITY.md
-cat CEO_锋/SOUL.md
+# 最轻量安装（仅 CLAUDE.md，不含 Agent 深度定义）
+curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --mode claude
 ```
 
-每个 `IDENTITY.md` + `SOUL.md` 组合就是一个完整的 Agent 定义，可直接导入任何支持 SKILL.md 标准的 AI Agent 系统（如 Claude Code、OpenClaw）。
+安装完成后，在 CodeBuddy / Claude Code 中打开你的项目，AI 会自动读取 `CLAUDE.md`，激活维弈阁团队。
+
+### 试试第一条指令
+
+```
+@辞 帮我写一篇公众号文章
+@锋 审查一下这个产品方向
+@矩 帮我做工程审查
+```
+
+不确定找谁？直接描述需求，路由器自动分发：
+
+```
+帮我优化这篇文章    → 自动路由到 辞
+这个架构有问题吗    → 自动路由到 矩
+有什么风险          → 自动路由到 砺
+```
+
+### 手动安装
+
+```bash
+git clone https://github.com/voidlab7/weiyige-pavilion.git
+cd weiyige-pavilion
+./install.sh --target /path/to/your-project
+```
 
 ---
 
