@@ -178,22 +178,23 @@ install_full_mode() {
   mkdir -p "$WEIYIGE_DIR"
   echo -e "  ${GREEN}✅ $WEIYIGE_DIR${NC}"
 
-  # Agent 列表及每个 Agent 包含的文件
-  declare -A AGENT_FILES
-  AGENT_FILES[CEO_锋]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md"
-  AGENT_FILES[PM_枢]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md rules/design-review/RULE.mdc skills/prd-template.md"
-  AGENT_FILES[架构_矩]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md rules/eng-review/RULE.mdc"
-  AGENT_FILES[设计_绘]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md rules/design-review/RULE.mdc"
-  AGENT_FILES[QA_鉴]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md rules/qa/RULE.mdc"
-  AGENT_FILES[安全_盾]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md"
-  AGENT_FILES[财务_算]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md"
-  AGENT_FILES[内容_辞]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md skills/de-ai-ify.md skills/humanizer.md skills/copywriting.md"
-  AGENT_FILES[顾问_隐]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md"
-  AGENT_FILES[合伙人_砺]="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md"
+  # Agent 列表（Bash 3.x 兼容 — 用普通数组，不用关联数组）
+  AGENTS=(
+    "CEO_锋"
+    "PM_枢"
+    "架构_矩"
+    "设计_绘"
+    "QA_鉴"
+    "安全_盾"
+    "财务_算"
+    "内容_辞"
+    "顾问_隐"
+    "合伙人_砺"
+  )
 
   echo ""
   echo -e "${YELLOW}▶ 安装 Agent 定义文件 ...${NC}"
-  for agent in "${!AGENT_FILES[@]}"; do
+  for agent in "${AGENTS[@]}"; do
     AGENT_DIR="$WEIYIGE_DIR/$agent"
     mkdir -p "$AGENT_DIR"
 
@@ -202,10 +203,19 @@ install_full_mode() {
       cp -r "$PAVILION_DIR/$agent/"* "$AGENT_DIR/" 2>/dev/null || true
       echo -e "  ${GREEN}✅ $agent${NC}"
     else
-      # 远程逐文件下载
+      # 远程：下载固定核心文件 + 按需下载技能/规则
+      CORE_FILES="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md"
+      EXTRA_FILES=""
+      case "$agent" in
+        PM_枢)     EXTRA_FILES="rules/design-review/RULE.mdc skills/prd-template.md" ;;
+        架构_矩)   EXTRA_FILES="rules/eng-review/RULE.mdc" ;;
+        设计_绘)   EXTRA_FILES="rules/design-review/RULE.mdc" ;;
+        QA_鉴)     EXTRA_FILES="rules/qa/RULE.mdc" ;;
+        内容_辞)   EXTRA_FILES="skills/de-ai-ify.md skills/humanizer.md skills/copywriting.md" ;;
+      esac
+
       success=true
-      read -ra FILES <<< "${AGENT_FILES[$agent]}"
-      for f in "${FILES[@]}"; do
+      for f in $CORE_FILES $EXTRA_FILES; do
         mkdir -p "$AGENT_DIR/$(dirname "$f")"
         if ! fetch_file "$agent/$f" "$AGENT_DIR/$f"; then
           success=false
