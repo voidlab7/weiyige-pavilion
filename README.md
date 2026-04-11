@@ -159,17 +159,39 @@ weiyige-pavilion/
 在你的项目目录下执行一条命令，即可安装维弈阁：
 
 ```bash
-# 完整安装（10 个 Agent + CLAUDE.md）
+# 完整安装（10 个 Agent + 配置文件）
 curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash
 
 # 安装到指定项目
 curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --target ~/my-project
 
-# 最轻量安装（仅 CLAUDE.md，不含 Agent 深度定义）
+# 为 Cursor 安装
+curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --tool cursor
+
+# 最轻量安装（仅配置文件，不含 Agent 深度定义）
 curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --mode claude
 ```
 
-安装完成后，在 CodeBuddy / Claude Code 中打开你的项目，AI 会自动读取 `CLAUDE.md`，激活维弈阁团队。
+### 支持的 AI 工具
+
+维弈阁自动适配你的 AI 编码工具，生成对应的配置文件：
+
+| 工具 | 配置文件 | 指定参数 |
+|------|---------|---------|
+| CodeBuddy / Claude Code | `CLAUDE.md` | `--tool codebuddy` |
+| Cursor | `.cursorrules` | `--tool cursor` |
+| GitHub Copilot | `.github/copilot-instructions.md` | `--tool copilot` |
+| Windsurf | `.windsurfrules` | `--tool windsurf` |
+| Cline | `.clinerules` | `--tool cline` |
+
+不指定 `--tool` 时，脚本会自动检测项目中已有的配置文件。
+
+### 已有配置文件？
+
+如果你的项目已有 `CLAUDE.md` / `.cursorrules` 等配置文件，安装脚本**不会覆盖**，而是：
+
+1. 生成独立的 `CLAUDE-weiyige.md`（维弈阁配置）
+2. 提示你在原配置文件末尾加一行引用
 
 ### 试试第一条指令
 

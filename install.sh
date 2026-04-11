@@ -11,7 +11,7 @@
 #   # 本地安装（已 clone 仓库）
 #   ./install.sh
 #   ./install.sh --target /path/to/proj
-#   ./install.sh --mode claude
+#   ./install.sh --tool cursor
 #   ./install.sh --mode full
 #   ./install.sh --help
 # =============================================================================
@@ -36,6 +36,15 @@ PAVILION_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
 # ---------- 默认参数 ----------
 TARGET_DIR="$(pwd)"
 INSTALL_MODE="full"
+INSTALL_TOOL=""  # 空=自动检测
+
+# ---------- 工具 → 配置文件映射 ----------
+# 各 AI 编码工具读取的项目级配置文件
+TOOL_CLAUDE="CLAUDE.md"                           # CodeBuddy / Claude Code
+TOOL_CURSOR=".cursorrules"                         # Cursor
+TOOL_COPILOT=".github/copilot-instructions.md"     # GitHub Copilot
+TOOL_WINDSURF=".windsurfrules"                     # Windsurf
+TOOL_CLINE=".clinerules"                           # Cline
 
 # ---------- 帮助信息 ----------
 show_help() {
@@ -52,14 +61,21 @@ show_help() {
   echo "选项："
   echo "  --target <目录>    安装到指定项目目录（默认：当前目录）"
   echo "  --mode <模式>      安装模式（默认：full）"
-  echo "                       claude  — 仅安装 CLAUDE.md，最轻量"
+  echo "                       claude  — 仅安装配置文件，最轻量"
   echo "                       full    — 完整安装所有 Agent 定义文件"
+  echo "  --tool <工具>      指定 AI 编码工具（默认：自动检测）"
+  echo "                       codebuddy / claude  → CLAUDE.md"
+  echo "                       cursor              → .cursorrules"
+  echo "                       copilot             → .github/copilot-instructions.md"
+  echo "                       windsurf            → .windsurfrules"
+  echo "                       cline               → .clinerules"
   echo "  --help             显示此帮助"
   echo ""
   echo "示例："
-  echo "  ./install.sh                              # 安装到当前目录"
+  echo "  ./install.sh                              # 安装到当前目录（自动检测工具）"
   echo "  ./install.sh --target ~/my-project        # 安装到指定项目"
-  echo "  ./install.sh --mode claude                # 仅安装 CLAUDE.md"
+  echo "  ./install.sh --tool cursor                # 为 Cursor 安装"
+  echo "  ./install.sh --mode claude                # 最轻量安装"
   echo ""
 }
 
@@ -72,6 +88,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --mode)
       INSTALL_MODE="$2"
+      shift 2
+      ;;
+    --tool)
+      INSTALL_TOOL="$2"
       shift 2
       ;;
     --help|-h)
@@ -93,6 +113,51 @@ if [ ! -d "$TARGET_DIR" ]; then
 fi
 
 TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+
+# ---------- 自动检测 AI 工具 ----------
+detect_tool() {
+  # 优先级：已有配置文件 > 项目特征
+  if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
+    echo "codebuddy"
+    return
+  fi
+  if [ -f "$TARGET_DIR/.cursorrules" ] || [ -d "$TARGET_DIR/.cursor" ]; then
+    echo "cursor"
+    return
+  fi
+  if [ -f "$TARGET_DIR/.windsurfrules" ] || [ -d "$TARGET_DIR/.windsurf" ]; then
+    echo "windsurf"
+    return
+  fi
+  if [ -f "$TARGET_DIR/.clinerules" ]; then
+    echo "cline"
+    return
+  fi
+  if [ -f "$TARGET_DIR/.github/copilot-instructions.md" ]; then
+    echo "copilot"
+    return
+  fi
+  # 默认：CodeBuddy / Claude Code（最通用的 CLAUDE.md 格式）
+  echo "codebuddy"
+}
+
+if [ -z "$INSTALL_TOOL" ]; then
+  INSTALL_TOOL=$(detect_tool)
+fi
+
+# ---------- 工具 → 配置文件名 ----------
+get_config_file() {
+  case "$1" in
+    codebuddy|claude)  echo "CLAUDE.md" ;;
+    cursor)            echo ".cursorrules" ;;
+    copilot)           echo ".github/copilot-instructions.md" ;;
+    windsurf)          echo ".windsurfrules" ;;
+    cline)             echo ".clinerules" ;;
+    *)                 echo "CLAUDE.md" ;;
+  esac
+}
+
+CONFIG_FILE=$(get_config_file "$INSTALL_TOOL")
 
 # ---------- 下载文件（远程 or 本地）----------
 fetch_file() {
@@ -118,18 +183,64 @@ fetch_file() {
   fi
 }
 
-# ---------- 下载目录（递归）----------
-fetch_dir() {
-  local src_dir="$1"
-  local dest_dir="$2"
-  shift 2
-  local files=("$@")
+# ---------- 安装配置文件（不覆盖已有文件）----------
+install_config_file() {
+  local config_path="$TARGET_DIR/$CONFIG_FILE"
+  local weiyige_config="$TARGET_DIR/CLAUDE-weiyige.md"
 
-  mkdir -p "$dest_dir"
+  # 先把维弈阁配置内容下载到临时位置
+  local tmp_file
+  tmp_file=$(mktemp)
+  fetch_file "CLAUDE.md" "$tmp_file"
 
-  for f in "${files[@]}"; do
-    fetch_file "$src_dir/$f" "$dest_dir/$f" || true
-  done
+  if [ ! -s "$tmp_file" ]; then
+    echo -e "${RED}❌ 配置文件下载失败${NC}"
+    rm -f "$tmp_file"
+    return 1
+  fi
+
+  # 检查用户是否已有配置文件
+  if [ -f "$config_path" ] && [ -s "$config_path" ]; then
+    # 用户已有配置 → 不覆盖，生成 CLAUDE-weiyige.md 独立文件 + 提示合并
+    cp "$tmp_file" "$weiyige_config"
+    rm -f "$tmp_file"
+
+    echo -e "  ${YELLOW}⚠️  检测到已有 ${CONFIG_FILE}，不会覆盖${NC}"
+    echo -e "  ${GREEN}✅ 已生成 ${CLAUDE-weiyige.md}${NC}"
+    echo ""
+    echo -e "  ${CYAN}━━━ 需要手动合并 ━━━${NC}"
+    echo ""
+    echo -e "  在 ${BOLD}${CONFIG_FILE}${NC} 末尾添加一行："
+    echo ""
+    echo -e "  ${GREEN}$(cat <<EOF
+
+# 维弈阁 AI 团队
+详细配置见 CLAUDE-weiyige.md
+EOF
+)${NC}"
+    echo ""
+    echo -e "  或者直接把 ${BOLD}CLAUDE-weiyige.md${NC} 的内容复制到 ${BOLD}${CONFIG_FILE}${NC} 中。"
+    return 0
+  fi
+
+  # 用户没有配置文件 → 直接创建（但内容适配不同工具格式）
+  mkdir -p "$(dirname "$config_path")"
+
+  # CodeBuddy / Claude Code 直接用 CLAUDE.md 格式
+  # 其他工具需要包裹在对应格式中
+  case "$INSTALL_TOOL" in
+    codebuddy|claude)
+      cp "$tmp_file" "$config_path"
+      ;;
+    cursor|windsurf|cline|copilot)
+      # 这些工具的配置文件是纯文本，直接放内容即可
+      cp "$tmp_file" "$config_path"
+      ;;
+  esac
+
+  rm -f "$tmp_file"
+  echo -e "  ${GREEN}✅ ${CONFIG_FILE} 已创建（路由表内联，开箱即用）${NC}"
+  return 0
 }
 
 # ---------- 打印 Banner ----------
@@ -141,28 +252,15 @@ echo -e "${CYAN}${BOLD}╚══════════════════
 echo ""
 echo -e "  ${BLUE}安装目标：${NC} $TARGET_DIR"
 echo -e "  ${BLUE}安装模式：${NC} $INSTALL_MODE"
+echo -e "  ${BLUE}AI 工具： ${NC} $INSTALL_TOOL → ${CONFIG_FILE}"
 echo -e "  ${BLUE}文件来源：${NC} $([ -f "$PAVILION_DIR/CLAUDE.md" ] && echo "本地" || echo "远程 GitHub")"
 echo ""
 
-# ---------- 模式：claude（仅 CLAUDE.md）----------
+# ---------- 模式：claude（仅配置文件）----------
 install_claude_mode() {
-  echo -e "${YELLOW}▶ 下载 CLAUDE.md ...${NC}"
+  echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
+  install_config_file
 
-  if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
-    echo -e "  ${YELLOW}⚠️  目标目录已存在 CLAUDE.md，备份为 CLAUDE.md.bak${NC}"
-    cp "$TARGET_DIR/CLAUDE.md" "$TARGET_DIR/CLAUDE.md.bak"
-  fi
-
-  fetch_file "CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
-
-  if [ ! -f "$TARGET_DIR/CLAUDE.md" ] || [ ! -s "$TARGET_DIR/CLAUDE.md" ]; then
-    echo -e "${RED}❌ CLAUDE.md 下载失败${NC}"
-    exit 1
-  fi
-
-  # claude 模式下，CLAUDE.md 指向 .weiyige 的路径需要调整
-  # 但路由表已内联，所以即使没有 .weiyige 目录也能工作（降级为无 Agent 深度的轻量模式）
-  echo -e "  ${GREEN}✅ CLAUDE.md 已安装（路由表内联，开箱即用）${NC}"
   echo ""
   echo -e "${YELLOW}⚠️  claude 模式不含 Agent 深度定义文件。${NC}"
   echo -e "  如需完整功能（Agent 人格、技能、记忆），请用 ${BOLD}--mode full${NC} 安装。"
@@ -243,22 +341,10 @@ install_full_mode() {
     fi
   done
 
-  # 安装 CLAUDE.md（路由表已内联的版本）
+  # 安装配置文件（智能处理：不覆盖已有文件）
   echo ""
-  echo -e "${YELLOW}▶ 安装 CLAUDE.md ...${NC}"
-  if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
-    echo -e "  ${YELLOW}⚠️  目标目录已存在 CLAUDE.md，备份为 CLAUDE.md.bak${NC}"
-    cp "$TARGET_DIR/CLAUDE.md" "$TARGET_DIR/CLAUDE.md.bak"
-  fi
-
-  fetch_file "CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
-
-  if [ ! -f "$TARGET_DIR/CLAUDE.md" ] || [ ! -s "$TARGET_DIR/CLAUDE.md" ]; then
-    echo -e "${RED}❌ CLAUDE.md 下载失败${NC}"
-    exit 1
-  fi
-
-  echo -e "  ${GREEN}✅ CLAUDE.md 已安装（路由表内联，开箱即用）${NC}"
+  echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
+  install_config_file
 
   # 添加 .gitignore 条目
   echo ""
@@ -285,12 +371,12 @@ print_success() {
   echo -e "${GREEN}${BOLD}✅ 安装完成！${NC}"
   echo ""
   echo -e "  安装位置：${BOLD}$TARGET_DIR/.weiyige/${NC}"
-  echo -e "  入口文件：${BOLD}$TARGET_DIR/CLAUDE.md${NC}"
+  echo -e "  配置文件：${BOLD}$TARGET_DIR/$CONFIG_FILE${NC}"
   echo ""
   echo -e "  ${CYAN}━━━ 下一步 ━━━${NC}"
   echo ""
-  echo -e "  1. 在 CodeBuddy / Claude Code 中打开 ${BOLD}$TARGET_DIR${NC}"
-  echo -e "     AI 会自动读取 CLAUDE.md，激活维弈阁团队"
+  echo -e "  1. 用你的 AI 工具打开 ${BOLD}$TARGET_DIR${NC}"
+  echo -e "     工具会自动读取 ${CONFIG_FILE}，激活维弈阁团队"
   echo ""
   echo -e "  2. 试试第一条指令："
   echo -e "     ${CYAN}@辞 帮我写一篇公众号文章${NC}"
@@ -301,6 +387,14 @@ print_success() {
   echo -e "     ${CYAN}帮我优化这篇文章${NC}  → 自动路由到 辞"
   echo -e "     ${CYAN}这个架构有问题吗${NC}  → 自动路由到 矩"
   echo ""
+
+  # 已有配置文件时的额外提示
+  if [ -f "$TARGET_DIR/CLAUDE-weiyige.md" ]; then
+    echo -e "  ${YELLOW}━━━ 注意 ━━━${NC}"
+    echo -e "  你已有 ${CONFIG_FILE}，维弈阁配置写在 ${BOLD}CLAUDE-weiyige.md${NC}"
+    echo -e "  请按上面提示合并到 ${CONFIG_FILE} 中，否则 AI 不会自动加载维弈阁。"
+    echo ""
+  fi
 }
 
 # ---------- 执行安装 ----------
