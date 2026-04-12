@@ -1,0 +1,723 @@
+<!-- 公众号文章 — 纯内联样式 -->
+<div style="max-width:680px; margin:0 auto; font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif; color:#2c2c2c; line-height:1.9; font-size:15px; padding:0 16px;">
+
+  <!-- 标题区 -->
+  <div style="padding:36px 0 20px;">
+    <h1 style="font-size:24px; font-weight:700; color:#1a1a1a; margin:0 0 10px; line-height:1.5;">基于 Harness Engineering 思想，我再一次重构了我的 AI 团队</h1>
+    <p style="color:#888; font-size:14px; margin:0;">上一次是给 CodeBuddy 装规则以为是团队。这一次，我重新定义了一个团队。</p>
+  </div>
+
+  <!-- 开篇引言 -->
+  <blockquote style="border-left:3px solid #4a7c6f; padding:14px 18px; margin:16px 0 28px; background:#f4f8f6; color:#2c2c2c; font-size:14px; line-height:1.9; border-radius:0 6px 6px 0;">
+    从 gstack-for-codebuddy 的 14 个散落角色，到维弈阁的 11 个协作角色 + 智能路由器。这不是修修补补，而是从头定义：AI 团队应该是一个整体，不是一堆等你去 @ 的工具。
+  </blockquote>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 前情提要 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">前情提要</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">三个星期前，我写过一篇《<a href="https://mp.weixin.qq.com/s/bKe5ke0__6Er6Bxx5k3LKw" style="color:#4a7c6f; text-decoration:none;">从 gstack 迁移 CodeBuddy：如何配置一支 Agent 团队</a>》。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">那篇文章讲的是什么？Y Combinator CEO Garry Tan 开源了 gstack，一套工程哲学——把 Claude Code 变成虚拟工程团队，CEO 审计划，架构师审设计，QA 打开真实浏览器测试。我花了三个星期，把这套东西从 Claude Code 移植到 CodeBuddy。17 个 Git 提交，+32K 代码净增，29 个规则文件，21+ 知识文档。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">当时的感受是：<strong>挺好用的。</strong> <code style="background:#f4f8f6; padding:2px 6px; border-radius:3px; font-family:'SF Mono','Fira Code',monospace; font-size:13px; color:#4a7c6f;">ship</code> 一键发布效率拉满，<code style="background:#f4f8f6; padding:2px 6px; border-radius:3px; font-family:'SF Mono','Fira Code',monospace; font-size:13px; color:#4a7c6f;">careful + guard</code> 防止凌晨手误，<code style="background:#f4f8f6; padding:2px 6px; border-radius:3px; font-family:'SF Mono','Fira Code',monospace; font-size:13px; color:#4a7c6f;">plan-design + plan-eng</code> 在流程前期拦截大部分问题。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">但用了一段时间之后，问题慢慢浮出来。</p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 散落的角色，不可控的体验 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">散落的角色，不可控的体验</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">gstack-for-codebuddy（<a href="https://github.com/voidlab7/gstack-for-codebuddy" style="color:#4a7c6f; text-decoration:none;">github.com/voidlab7/gstack-for-codebuddy</a>）有 14 个角色，每个角色是一个独立的规则文件。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">问题在哪？</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;"><strong>日常开发中，你经常忘记它们的存在。</strong></p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">你得记住哪个规则叫什么名字，手动 @某个规则才会生效。今天忘了 @guard，就没有安全检查；明天忘了 @plan-eng，就跳过了工程审查。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">这不是团队，这是一堆散落在角落的工具。想用的时候得自己想起来去拿，想不起来就形同虚设。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">而且 14 个角色之间没有协作。CEO 审完了计划，PM 不知道；架构师说"方案有问题"，PM 说"必须按期交付"，没有人知道听谁的。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;"><strong>我自己成了"人肉路由器"</strong>——手动复制上下文，手动告诉下一个角色"上一个说了什么"。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">从第一性原理出发：一个人能记住并有效调度 14 个角色吗？不能。10 个角色 × 15 条认知模式 = 150 条规则，没有人能记住。角色越多，认知负荷越高，越容易出错。</p>
+
+  <div style="text-align:center; padding:20px 24px; margin:24px 0; border:1px solid #e8e8e8; border-radius:6px;">
+    <p style="font-size:15px; font-weight:600; color:#1a1a1a; margin:0; line-height:1.8;">AI 团队，应该是一个整体。不是散落的规则文件等你去 @，而是你说需求，它自己知道该谁来做。</p>
+  </div>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">所以我决定重构。不是在 gstack-for-codebuddy 上修修补补，而是从头造一个新东西。</p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 维弈阁的诞生 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">维弈阁的诞生</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">这个新东西叫<strong>维弈阁</strong>（Weiyige Pavilion）。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">名字是我家人起的。"维"是维度的维，多角色就是多维度；"弈"是博弈的弈，角色之间有合作也有质疑，魔鬼代言人专门唱反调；"阁"是场所，一个所有角色共处的空间。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">起完名字之后我想了想，觉得挺准，真的佩服她的直觉！</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">最近 AI Agent 圈子里流行一个公式：<strong>Agent = Model + Harness</strong>。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">Model 是大模型本身——它只是一个文本进、文本出的函数。Harness 是模型之外的一切：记忆系统、协作协议、路由规则、反馈闭环、上下文管理。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">打个比方：模型是 CPU，Harness 是操作系统。CPU 再强，操作系统拉胯，整体体验就是灾难。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">Can.ac 做过一个实验：同一个模型，只换了文件编辑接口的调用方式（也就是只改了 Harness），编码基准分数从 6.7% 跳到了 68.3%。<span style="color:#4a7c6f; font-weight:600;">十倍差距，模型一样，Harness 不一样。</span></p>
+
+  <div style="text-align:center; padding:20px 24px; margin:24px 0; border:1px solid #e8e8e8; border-radius:6px;">
+    <p style="font-size:15px; font-weight:600; color:#1a1a1a; margin:0; line-height:1.8;">维弈阁就是一套 Harness。</p>
+  </div>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">gstack 给了角色定义和工程哲学，但 Harness 层有明显的缺口。具体说：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">缺口</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">现状</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">跨角色上下文传递</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">靠"读上一步的文件"串联，约定式而非系统级</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">记忆系统</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">每个 skill 自己管自己的状态，没有统一记忆层</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">智能路由</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">14 个 skill，用哪个靠你自己记</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">反馈闭环</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">审查是单向的——出报告，结束</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">gstack 作者自己也知道这些问题。他的 TODOS.md 里有一条 P2 待办：<code style="background:#f4f8f6; padding:2px 6px; border-radius:3px; font-family:'SF Mono','Fira Code',monospace; font-size:13px; color:#4a7c6f;">Design docs → Supabase team store sync</code>——说明跨会话记忆同步还在计划中，没实现。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">说这些不是要踩 gstack。gstack 在它的定位里做得很好——单人 solo founder 的工程流水线，够用、够快、够直接。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">但别人的工具始终是别人的。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">我的做法是：从最小集合出发，选合适自己的部分，慢慢验证，逐步搭建。gstack 的角色哲学、工程纪律、builder ethos——这些我全部吸收了。但协作协议、记忆系统、路由机制，这些得自己摸索、自己踩坑、自己沉淀。</p>
+
+  <div style="text-align:center; padding:20px 24px; margin:24px 0; border:1px solid #e8e8e8; border-radius:6px;">
+    <p style="font-size:15px; font-weight:600; color:#1a1a1a; margin:0; line-height:1.8;">别人告诉你的经验，你听过就忘了。自己踩出来的坑，才长在骨头里。</p>
+  </div>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">维弈阁做的事情，就是从 gstack 里拿走种子，在自己的土壤里种出来。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">"维"——多维度的角色。"弈"——角色之间的博弈和协作。"阁"——承载这一切的 Harness。</p>
+
+  <!-- 第一刀：砍角色 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">第一刀：砍角色</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">gstack-for-codebuddy 有 14 个角色。我先问了自己：哪些角色是在"写代码"，哪些是在"做决策"？</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">gstack 最重要的洞察是什么？<strong>代码是生成物，不是岗位。</strong></p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">你不需要一个"前端工程师"的 Agent。你需要的是一个能做架构决策的 Agent，代码只是它的输出之一。前端关键词、后端关键词，都应该路由到架构师那里去。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">所以：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">砍掉的角色</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">为什么</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">前端</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">组件化思维、技术选型，架构师接管</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">后端</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">数据流设计、接口规范，架构师接管</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">法务</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">个人项目现阶段不需要，合伙人的质疑能力覆盖了部分风控</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;"><span style="color:#4a7c6f; font-weight:600;">14 → 11。砍掉的不是能力，是多余的层级。</span></p>
+
+  <!-- 从规则文件到完整人设 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">从规则文件到完整人设</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">gstack 的角色定义是一个规则文件。维弈阁的角色定义是三样东西：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">维度</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">定义</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;"><strong>IDENTITY</strong></td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">性格、说话风格、沟通方式</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;"><strong>SOUL</strong></td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">思维框架、决策逻辑、方法论</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;"><strong>memory</strong></td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">记住偏好、踩过的坑、积攒的知识</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">每个角色有自己的名字，不是"PM Agent"、"QA Agent"这种冷冰冰的标签。锋、枢、矩、绘、鉴、盾、算、辞、隐、砺——每个名字对应一种气质。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">名字不只是装饰。叫"锋"的时候，你期待果断；叫"砺"的时候，你期待尖锐。名字塑造了交互预期。</p>
+
+  <!-- 11 个角色，各自带技能 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">11 个角色，各自带技能</h3>
+
+  <table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">角色</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">干什么</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">专属技能</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">锋 · CEO</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">方向对不对？该不该做？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">18 种认知模式（Bezos 单向门/双向门等）</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">枢 · PM</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">怎么拆？什么时候交？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">PRD 模板、设计评审规则</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">矩 · 架构</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">系统怎么设计？技术债多少？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">工程审查规则、15 条架构思维</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">绘 · 设计</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">体验行不行？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">AI 烂俗 10 大反模式、设计评审规则</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">鉴 · QA</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">哪里有 bug？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">QA 规则、WTF-likelihood 自控机制</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">盾 · 安全</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">有没有漏洞？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">OWASP/STRIDE 威胁模型</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">算 · 财务</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">划不划算？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">相对定价模型（非硬编码）</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">辞 · 内容</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">文案怎么写？AI 味去了吗？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">De-AI-ify、Humanizer、Copywriting</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">隐 · 顾问</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">需要深度研究？</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">芒格式多元思维</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">砥 · 合伙人</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">专门唱反调</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#555; font-size:13px;">YC 风格质疑</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 组织架构 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">组织架构：三层 + 路由器</h3>
+
+  <div style="text-align:center; margin:22px 0;">
+    <img src="" alt="维弈阁组织架构" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+    <p style="font-size:12px; color:#888; margin-top:8px;">三层架构 + 路由器</p>
+  </div>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;"><strong>不是 11 个独立个体。是 3 个层 + 1 个路由器。</strong></p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 第一性原理 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">第一性原理：团队到底需要什么</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">维弈阁搭完之后，我没急着用。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">我先给它做了一次体检。工具是老朋友——第一性原理 + 芒格的多元思维模型。</p>
+
+  <!-- 根本问题 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">根本问题：一个人 + AI 团队，能不能 10x？</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">拆解一下前提：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">前提</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">判断</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">AI 能理解角色化的专业指令</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#27ae60;">没问题</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">专业化分工能提升效率</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#27ae60;">没问题</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">Agent 之间能有效协作</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#c0392b;">最薄弱的环节</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">一个人能有效调度 11 个 Agent</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#c0392b;">认知负荷问题</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">两个黄灯。尤其是第二个——11 个角色 × 每个角色十几条认知模式 = 上百条规则。没有人能全记住。</p>
+
+  <blockquote style="border-left:3px solid #4a7c6f; padding:12px 18px; margin:18px 0; background:#f4f8f6; color:#555; font-size:14px; line-height:1.9; border-radius:0 6px 6px 0;">
+    从第一性原理推导：一个项目从想法到交付，本质上只需要三件事——<strong>决策</strong>（做不做）、<strong>执行</strong>（怎么做）、<strong>质量</strong>（做对了吗）。
+  </blockquote>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">三件事，对应三个层：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <tr>
+      <td style="width:33%; padding:16px; border:1px solid #e8e8e8; vertical-align:top; background:#faf9f7; text-align:center;">
+        <div style="font-weight:700; margin-bottom:4px; color:#1a1a1a;">战略层</div>
+        <div style="color:#555; font-size:13px; line-height:1.7;">锋 + 砺 + 隐<br>决策、质疑、研究</div>
+      </td>
+      <td style="width:33%; padding:16px; border:1px solid #e8e8e8; vertical-align:top; background:#faf9f7; text-align:center;">
+        <div style="font-weight:700; margin-bottom:4px; color:#1a1a1a;">执行层</div>
+        <div style="color:#555; font-size:13px; line-height:1.7;">枢 + 辞<br>项目管理、内容输出</div>
+      </td>
+      <td style="width:33%; padding:16px; border:1px solid #e8e8e8; vertical-align:top; background:#faf9f7; text-align:center;">
+        <div style="font-weight:700; margin-bottom:4px; color:#1a1a1a;">质量层</div>
+        <div style="color:#555; font-size:13px; line-height:1.7;">矩 + 绘 + 鉴 + 盾<br>架构、设计、测试、安全</div>
+      </td>
+    </tr>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">算游离在三层之外，专门算账。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">这不是 11 个独立个体，是 <span style="color:#4a7c6f; font-weight:600;">3 个层 + 1 个路由器</span>。路由器才是核心。没有路由器，11 个人就是 11 个孤岛。</p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 芒格的五个模型 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">芒格的五个模型，查出了什么病</h2>
+
+  <!-- 能力圈 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">能力圈："待在你懂的领域里"</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">我翻了一下 CEO 的配置文件。里面写满了设计原则——"层级即服务"、"减法默认"……</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">这些是设计师的活。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">PM 的配置里有技术可行性评估，这是架构师的领域。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;"><strong>每个角色都在越界。</strong> 一个人什么都管，等于什么都不管。</p>
+
+  <!-- 逆向思考 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">逆向思考："如果这次失败了，最可能的原因？"</h3>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">1</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;">角色还是太多——11 个对个人项目可能还是超了</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">2</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;">路由不够智能——用户还是得手动选人</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">3</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;">协议层只是文档，没有真正跑通</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">4</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;">记忆目录又空了——从来没跑过实战</div>
+      </td>
+    </tr>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">第 4 条让我愣了一下。所有记忆目录，全是空的。说明这套系统搭完之后还没有真正跑过一个完整项目。</p>
+
+  <div style="text-align:center; padding:20px 24px; margin:24px 0; border:1px solid #e8e8e8; border-radius:6px;">
+    <p style="font-size:15px; font-weight:600; color:#1a1a1a; margin:0; line-height:1.8;">沉没成本的味道。</p>
+  </div>
+
+  <!-- 复利思维 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">复利思维："什么东西会越用越值钱？"</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">记忆。每个 Agent 有三个记忆文件：偏好、教训、知识。每次用都在积累。用 10 次之后，它知道你喜欢什么风格、踩过什么坑、哪些方案靠谱。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">但如果记忆目录永远是空的，复利就永远是零。</p>
+
+  <!-- 激励机制 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">激励机制："给我看激励机制，我就能预测结果"</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">砺有一票否决权，锋有最终决策权。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">但这只是文字约定，没有流程保障。就像公司章程写得再好，没有董事会流程，也是一纸空文。</p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 查出的病，一天治完 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">查出的病，一天治完</h2>
+
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">1. 清理职责越界</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">CEO 配置里的设计原则，还给设计师。PM 配置里的技术评估，还给架构师。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;"><strong>每个人守好自己的能力圈。</strong></p>
+
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">2. 建立协作协议层</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">定义了 Agent 之间的"语言"：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">协议</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">做什么</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;"><strong>交接块</strong></td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">干完活必须附带标准化交接信息——谁干的、干了什么、关键决策、下游建议</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;"><strong>RACI 矩阵</strong></td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">谁负责、谁审批、谁咨询、谁知会，一张表说清</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;"><strong>冲突解决链</strong></td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">用户 > CEO > 魔鬼代言人否决权 > 各领域负责人</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;"><strong>反馈闭环</strong></td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c; vertical-align:top;">审查不是走过场。不通过就改，改完再审，最多 3 轮。超了升级到用户决策</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">3. 实现记忆系统</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">三层架构：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <tr>
+      <td style="width:33%; padding:16px; border:1px solid #e8e8e8; vertical-align:top; background:#faf9f7; text-align:center;">
+        <div style="font-weight:700; margin-bottom:4px; color:#1a1a1a;">短期</div>
+        <div style="color:#555; font-size:13px; line-height:1.7;">当前对话（自动）</div>
+      </td>
+      <td style="width:33%; padding:16px; border:1px solid #e8e8e8; vertical-align:top; background:#faf9f7; text-align:center;">
+        <div style="font-weight:700; margin-bottom:4px; color:#1a1a1a;">中期</div>
+        <div style="color:#555; font-size:13px; line-height:1.7;">项目级（每个阶段结束沉淀）</div>
+      </td>
+      <td style="width:33%; padding:16px; border:1px solid #e8e8e8; vertical-align:top; background:#faf9f7; text-align:center;">
+        <div style="font-weight:700; margin-bottom:4px; color:#1a1a1a;">长期</div>
+        <div style="color:#555; font-size:13px; line-height:1.7;">团队级（跨项目的教训和偏好）</div>
+      </td>
+    </tr>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">这是复利的起点。</p>
+
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">4. 智能路由</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">这是最重要的一刀。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">用户不用记 11 个角色名字。路由器根据你说的话自动分发：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">你说的话</th>
+        <th style="text-align:left; padding:10px 14px; background:#faf9f7; color:#1a1a1a; font-weight:600; border-bottom:2px solid #e8e8e8;">路由到</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">"这个方向靠谱吗"</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">锋</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">"帮我拆需求"</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">枢</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">"写篇公众号"</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">辞</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">"有什么风险"</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8; color:#2c2c2c;">砺</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">想精确调用也行，<code style="background:#f4f8f6; padding:2px 6px; border-radius:3px; font-family:'SF Mono','Fira Code',monospace; font-size:13px; color:#4a7c6f;">@锋</code>、<code style="background:#f4f8f6; padding:2px 6px; border-radius:3px; font-family:'SF Mono','Fira Code',monospace; font-size:13px; color:#4a7c6f;">@辞</code>，直接指名。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">路由表直接内联在配置文件里。AI 打开项目的那一刻就拿到了路由表，零冷启动。不用再去读额外的文件。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">之前在 gstack-for-codebuddy 里，角色生不生效取决于你记不记得去 @。现在不需要了。你说需求，路由器自己判断。</p>
+
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">5. 三档模式</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">不是每件事都要走全流程。小事 Quick 模式，5 分钟搞定；日常 Standard 模式；重大决策 Deep 模式，拉满方法论。</p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 实战验证 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">实战验证：SBTI 宠物人格网页</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">芒格说：<strong>先在小范围内证明模式有效，再扩展。</strong></p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">我做了个对比实验。两个空白的 CodeBuddy 工程，同一个模型 GLM-5，同一句提示词：</p>
+
+  <blockquote style="border-left:3px solid #4a7c6f; padding:12px 18px; margin:18px 0; background:#f4f8f6; color:#555; font-size:14px; line-height:1.9; border-radius:0 6px 6px 0;">
+    做一个本地网页，设计一个宠物的 SBTI，结合 sbti.unun.dev 的产品思路。
+  </blockquote>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">唯一区别：<strong>一个装了维弈阁，一个没装。</strong></p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">结果差距很大。</p>
+
+  <!-- 装了维弈阁 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">装了维弈阁</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">CEO 先审批方向，PM 拆需求，设计师出 UI 方案，架构师写代码，QA 打开浏览器测。整个流程自动跑下来：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:22px 0;">
+    <tr>
+      <td style="width:50%; padding:0 6px 0 0; vertical-align:top;">
+        <img src="" alt="维弈阁流程" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+        <p style="font-size:12px; color:#888; margin-top:6px; text-align:center;">角色协作流程</p>
+      </td>
+      <td style="width:50%; padding:0 0 0 6px; vertical-align:top;">
+        <img src="" alt="选型页" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+        <p style="font-size:12px; color:#888; margin-top:6px; text-align:center;">16 种宠物人格选型</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:50%; padding:0 6px 0 0; vertical-align:top;">
+        <img src="" alt="首页" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+        <p style="font-size:12px; color:#888; margin-top:6px; text-align:center;">测试入口页</p>
+      </td>
+      <td style="width:50%; padding:0 0 0 6px; vertical-align:top;">
+        <img src="" alt="结果页" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+        <p style="font-size:12px; color:#888; margin-top:6px; text-align:center;">ESTJ 结果 + 人格解读</p>
+      </td>
+    </tr>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">从需求到可运行页面，一次通过。</p>
+
+  <!-- 没装维弈阁 -->
+  <h3 style="font-size:16px; font-weight:600; color:#1a1a1a; margin:24px 0 10px; line-height:1.5;">没装维弈阁</h3>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">同一个提示词，没有任何 Agent 流程。AI 直接开始写代码——首页和选型页确实出来了，但点进结果页直接白屏：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:22px 0;">
+    <tr>
+      <td style="padding:0 0; vertical-align:top;">
+        <img src="" alt="结果页白屏" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+        <p style="font-size:12px; color:#888; margin-top:6px; text-align:center;">选型没问题，结果页白屏</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 0; vertical-align:top;">
+        <img src="" alt="勉强跑通" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+        <p style="font-size:12px; color:#888; margin-top:6px; text-align:center;">折腾几轮后重新生成，能跑了，但粗糙很多</p>
+      </td>
+    </tr>
+  </table>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">不是模型不行。是没有人告诉它该做什么不该做、先做什么后做什么、做完怎么检查。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">维弈阁做的就是这件事。</p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 踩坑 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">顺便踩了一个坑</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;"><strong>CodeBuddy 首次打开项目时会读取 CLAUDE.md，但不代表激活了里面的角色系统。</strong> 我观察日志发现，它只是"读到了"，并没有真正按路由表分发、没有调用 Agent 的 SOUL。需要再问一句，为什么没有激活角色，整个系统才按照流程跑起来，后续基本都没问题了。第二次启动也没问题了。</p>
+
+  <div style="text-align:center; padding:20px 24px; margin:24px 0; border:1px solid #e8e8e8; border-radius:6px;">
+    <p style="font-size:15px; font-weight:600; color:#1a1a1a; margin:0; line-height:1.8;">配置文件只是说明书，不是自动运行的引擎。你得先点火，发动机才会转起来。</p>
+  </div>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">如果不是确定性的代码，大模型，或者产品的编排，也会让整个工作流在某些情况变得不确定。<span style="color:#4a7c6f; font-weight:600;">面向 AI 编程，开发的是缰绳，是外壳，马是什么马有时候还真不一定，哈哈。</span></p>
+
+  <div style="text-align:center; margin:22px 0;">
+    <img src="" alt="面向AI编程" style="max-width:100%; height:auto; border-radius:6px; border:1px solid #e8e8e8;">
+  </div>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 一键安装 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">一键安装</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">上次的系统只有自己能用——得 clone 仓库，手动复制文件，改配置。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">这次做了一键安装：</p>
+
+  <div style="margin:18px 0;">
+    <div style="background:#2d2d2d; padding:6px 14px; border-radius:6px 6px 0 0; display:inline-block;">
+      <span style="font-size:12px; color:#888; font-family:'SF Mono',monospace;">bash</span>
+    </div>
+    <div style="background:#1e1e1e; border-radius:0 6px 6px 6px; padding:16px 18px; overflow-x:auto;">
+      <pre style="margin:0; font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:13px; color:#d4d4d4; line-height:1.7; white-space:pre-wrap; word-wrap:break-word;">curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash</pre>
+    </div>
+  </div>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">支持 5 种工具：CodeBuddy、Claude Code、Cursor、GitHub Copilot、Windsurf、Cline。但是实话说：GitHub Copilot、Windsurf、Cline 我没有验证过，需要的可以自己适配一下。其他的我都验证过了。已有配置文件？不会覆盖，自动备份，生成独立文件，提示你合并。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">想试试的话：</p>
+
+  <div style="margin:18px 0;">
+    <div style="background:#2d2d2d; padding:6px 14px; border-radius:6px 6px 0 0; display:inline-block;">
+      <span style="font-size:12px; color:#888; font-family:'SF Mono',monospace;">示例</span>
+    </div>
+    <div style="background:#1e1e1e; border-radius:0 6px 6px 6px; padding:16px 18px; overflow-x:auto;">
+      <pre style="margin:0; font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:13px; color:#d4d4d4; line-height:1.7; white-space:pre-wrap; word-wrap:break-word;">@辞 帮我写一篇公众号文章
+@锋 这个方向靠谱吗
+帮我优化这篇文章    → 自动路由到 辞</pre>
+    </div>
+  </div>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 走到现在的感受 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">走到现在的感受</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">从 gstack-for-codebuddy 到维弈阁，最大的认知变化是：</p>
+
+  <div style="text-align:center; padding:20px 24px; margin:24px 0; border:1px solid #e8e8e8; border-radius:6px;">
+    <p style="font-size:15px; font-weight:600; color:#1a1a1a; margin:0; line-height:1.8;">散落的规则文件不是团队。</p>
+  </div>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">gstack 教会了我工程哲学——先搜索再建造、反谄媚、一键发布。这些东西我全部保留了，融进了每个角色的 SOUL 里。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">但规则文件的问题在于：它是被动的，等你去 @。团队应该是主动的，你说需求它就动。</p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">维弈阁想解决的就是这个：<span style="color:#4a7c6f; font-weight:600;">从"我记得用哪个工具"变成"它自己知道该谁来做"。</span></p>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">理论再完美，不如一次实战。</p>
+
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:32px 0;">
+
+  <!-- 踩坑心得 -->
+  <h2 style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0 0 14px; line-height:1.5; padding-bottom:8px; border-bottom:1px solid #e8e8e8;">如果你也在玩多 Agent</h2>
+
+  <p style="font-size:15px; color:#2c2c2c; line-height:2; margin-bottom:16px;">几条踩坑心得：</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">1</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;"><strong>别急着堆角色</strong>，先想清楚最小团队是几个</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">2</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;"><strong>代码是生成物不是岗位</strong>，不需要"前端Agent"和"后端Agent"</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">3</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;"><strong>路由器比角色重要</strong>，没有路由器，多角色=多混乱</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">4</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;"><strong>给 Agent 记忆</strong>，不然每次都是从零开始</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:36px; padding:8px 12px 8px 0; vertical-align:top; text-align:center;">
+        <div style="width:28px; height:28px; background:#4a7c6f; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:13px; font-weight:700;">5</div>
+      </td>
+      <td style="padding:8px 0; vertical-align:top;">
+        <div style="font-size:14px; color:#2c2c2c; line-height:1.8;"><strong>跑一个真实项目验证</strong>，空谈是最大的敌人</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- 结语 -->
+  <hr style="border:none; border-top:1px solid #e8e8e8; margin:36px 0;">
+  <div style="padding:16px 0 24px;">
+    <p style="font-size:14px; color:#555; line-height:2; margin-bottom:20px;">gstack 给了种子。维弈阁是长出来的树。</p>
+    <p style="font-size:14px; color:#555; line-height:2; margin-bottom:20px;">还在长。</p>
+  </div>
+
+  <!-- 尾部信息 -->
+  <div style="margin-top:32px; padding-top:20px; border-top:1px solid #e8e8e8; font-size:13px; color:#888; line-height:2;">
+    <p style="margin:0;">维弈阁成长日记第二篇。一个人 + AI 团队的实验，继续。</p>
+    <p style="margin:0;">上一篇：<a href="https://mp.weixin.qq.com/s/bKe5ke0__6Er6Bxx5k3LKw" style="color:#4a7c6f; text-decoration:none;">从 gstack 迁移 CodeBuddy：如何配置一支 Agent 团队</a></p>
+    <p style="margin:0;">项目地址：<a href="https://github.com/voidlab7/weiyige-pavilion" style="color:#4a7c6f; text-decoration:none;">github.com/voidlab7/weiyige-pavilion</a></p>
+    <p style="margin:0;">gstack-for-codebuddy：<a href="https://github.com/voidlab7/gstack-for-codebuddy" style="color:#4a7c6f; text-decoration:none;">github.com/voidlab7/gstack-for-codebuddy</a></p>
+  </div>
+
+</div>

@@ -1,0 +1,120 @@
+<mxfile host="app.diagrams.net" modified="2026-04-11T23:28:00.000Z" agent="weiyige" version="21.0.0" type="device">
+  <diagram id="weiyige-org" name="维弈阁组织架构">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- 用户 -->
+        <mxCell id="user" value="你（用户）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="30" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- 智能路由 -->
+        <mxCell id="router" value="🧭 智能路由" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="130" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="router-hint1" value="&quot;这个方向靠谱吗&quot; → 锋" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="620" y="150" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="router-hint2" value="&quot;帮我拆需求&quot; → 枢" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="620" y="170" width="140" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="router-hint3" value="&quot;写篇公众号&quot; → 辞" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="620" y="190" width="140" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- 用户 → 路由 -->
+        <mxCell id="edge-user-router" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="user" target="router">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-user-router-label" value="说需求" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" vertex="1" connectable="0" parent="edge-user-router">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 战略层 容器 -->
+        <mxCell id="strategy-group" value="战略层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="100" y="310" width="220" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="ceo" value="锋 · CEO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="130" y="350" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="partner" value="砺 · 合伙人（魔鬼代言人）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="130" y="395" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="advisor" value="隐 · 顾问" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="130" y="440" width="160" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- 执行层 容器 -->
+        <mxCell id="exec-group" value="执行层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="410" y="310" width="220" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="pm" value="枢 · PM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="440" y="350" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="content" value="辞 · 内容" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="440" y="395" width="160" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- 质量层 容器 -->
+        <mxCell id="quality-group" value="质量层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="720" y="310" width="220" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="arch" value="矩 · 架构" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="750" y="350" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="design" value="绘 · 设计" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="750" y="395" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="qa" value="鉴 · QA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="750" y="440" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="security" value="盾 · 安全" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="750" y="485" width="160" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- 路由 → 三层 -->
+        <mxCell id="edge-router-strategy" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="router" target="strategy-group">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-router-exec" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="router" target="exec-group">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-router-quality" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="router" target="quality-group">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 财务（游离） -->
+        <mxCell id="finance" value="算 · 财务" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="560" width="220" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- 财务 ↔ 战略层 -->
+        <mxCell id="edge-finance-strategy" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="finance" target="strategy-group">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 财务 ↔ 质量层 -->
+        <mxCell id="edge-finance-quality" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="finance" target="quality-group">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 冲突解决链 -->
+        <mxCell id="conflict" value="冲突解决链：用户 &gt; 锋 &gt; 砺（否决权）&gt; 各领域负责人" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="300" y="640" width="350" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- 执事 -->
+        <mxCell id="mo" value="墨 · 执事" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="830" y="560" width="110" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="mo-label" value="系统维护、格式管理" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=9;fontColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="810" y="600" width="130" height="15" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

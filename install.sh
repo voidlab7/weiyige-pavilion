@@ -217,12 +217,42 @@ install_config_file() {
     return 1
   fi
 
-  # 统一策略：始终备份（如有）+ 生成 CLAUDE-weiyige.md + 不覆盖原文件
-  backup_config "$config_path"
-  cp "$tmp_file" "$weiyige_config"
-  rm -f "$tmp_file"
+  # 检查用户是否已有配置文件
+  if [ -f "$config_path" ] && [ -s "$config_path" ]; then
+    # 用户已有配置 → 备份原文件，生成 CLAUDE-weiyige.md 独立文件
+    backup_config "$config_path"
+    cp "$tmp_file" "$weiyige_config"
+    rm -f "$tmp_file"
 
-  echo -e "  ${GREEN}✅ 已生成 CLAUDE-weiyige.md${NC}"
+    # 自动在原配置文件末尾追加引用（确保 AI 工具能读到维弈阁配置）
+    local ref_line='[维弈阁 AI 团队配置 → CLAUDE-weiyige.md](./CLAUDE-weiyige.md)'
+    if ! grep -q "CLAUDE-weiyige" "$config_path" 2>/dev/null; then
+      echo "" >> "$config_path"
+      echo "$ref_line" >> "$config_path"
+      echo -e "  ${GREEN}✅ 已在 ${CONFIG_FILE} 末尾追加维弈阁引用${NC}"
+    else
+      echo -e "  ${BLUE}ℹ️  ${CONFIG_FILE} 已包含维弈阁引用，跳过${NC}"
+    fi
+
+    echo -e "  ${YELLOW}⚠️  检测到已有 ${CONFIG_FILE}，不会覆盖${NC}"
+    echo -e "  ${GREEN}✅ 已生成 CLAUDE-weiyige.md（维弈阁完整配置）${NC}"
+    return 0
+  fi
+
+  # 用户没有配置文件 → 备份（无），直接创建
+  mkdir -p "$(dirname "$config_path")"
+
+  case "$INSTALL_TOOL" in
+    codebuddy|claude)
+      cp "$tmp_file" "$config_path"
+      ;;
+    cursor|windsurf|cline|copilot)
+      cp "$tmp_file" "$config_path"
+      ;;
+  esac
+
+  rm -f "$tmp_file"
+  echo -e "  ${GREEN}✅ ${CONFIG_FILE} 已创建（路由表内联，开箱即用）${NC}"
   return 0
 }
 
@@ -329,6 +359,35 @@ install_full_mode() {
   echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
   install_config_file
 
+  # 安装 CodeBuddy 多 Agent 适配文件
+  echo ""
+  echo -e "${YELLOW}▶ 安装 CodeBuddy 多 Agent 适配文件 ...${NC}"
+  AGENTS_DIR="$TARGET_DIR/.codebuddy/agent"
+  mkdir -p "$AGENTS_DIR"
+
+  AGENT_FILES_FOUND=false
+  for f in "$PAVILION_DIR/agents_for_codebuddy/"*.md; do
+    if [ -f "$f" ]; then
+      cp "$f" "$AGENTS_DIR/"
+      AGENT_FILES_FOUND=true
+    fi
+  done
+
+  if $AGENT_FILES_FOUND; then
+    AGENT_COUNT=$(ls -1 "$AGENTS_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
+    echo -e "  ${GREEN}✅ 已安装 ${AGENT_COUNT} 个 Agent 到 .codebuddy/agent/${NC}"
+  else
+    # 远程安装：逐个下载
+    AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人")
+    for name in "${AGENT_NAMES[@]}"; do
+      if fetch_file "agents_for_codebuddy/${name}.md" "$AGENTS_DIR/${name}.md"; then
+        echo -e "  ${GREEN}✅ ${name}${NC}"
+      else
+        echo -e "  ${YELLOW}⚠️  ${name} — 下载失败${NC}"
+      fi
+    done
+  fi
+
   # 添加 .gitignore 条目
   echo ""
   echo -e "${YELLOW}▶ 检查 .gitignore ...${NC}"
@@ -357,7 +416,7 @@ print_success() {
   echo -e "  配置文件：${BOLD}$TARGET_DIR/$CONFIG_FILE${NC}"
   echo ""
 
-  # 备份文件提示（仅当确实备份过）
+  # 备份文件提示（统一展示）
   if [ -n "$BACKUP_FILES" ]; then
     echo -e "  ${BLUE}━━━ 备份文件 ━━━${NC}"
     echo ""
@@ -371,37 +430,35 @@ print_success() {
     echo ""
   fi
 
-  # 合并提示（始终显示，因为始终生成 CLAUDE-weiyige.md）
-  echo -e "  ${YELLOW}━━━ 需要手动合并 ━━━${NC}"
-  echo ""
-  if [ -f "$config_path" ] && [ -s "$config_path" ]; then
+  # 已有配置文件时的提示
+  if [ -f "$TARGET_DIR/CLAUDE-weiyige.md" ]; then
+    echo -e "  ${YELLOW}━━━ 配置合并说明 ━━━${NC}"
+    echo ""
     echo -e "  你已有 ${CONFIG_FILE}，维弈阁配置写在 ${BOLD}CLAUDE-weiyige.md${NC}"
+    echo -e "  已自动在 ${CONFIG_FILE} 末尾追加引用，AI 工具会读取两个文件。"
     echo ""
-    echo -e "  在 ${BOLD}${CONFIG_FILE}${NC} 末尾添加一行："
+    echo -e "  如果想合并为一个文件："
+    echo -e "  把 ${BOLD}CLAUDE-weiyige.md${NC} 的内容复制到 ${BOLD}${CONFIG_FILE}${NC} 中即可。"
+    echo -e "  原文件已备份为 ${CONFIG_FILE}.weiyige-backup，可随时恢复。"
     echo ""
-    echo -e "  ${GREEN}# 维弈阁 AI 团队 — 详细配置见 CLAUDE-weiyige.md${NC}"
-    echo ""
-    echo -e "  或者直接把 ${BOLD}CLAUDE-weiyige.md${NC} 的内容复制到 ${BOLD}${CONFIG_FILE}${NC} 中。"
-  else
-    echo -e "  维弈阁配置已生成到 ${BOLD}CLAUDE-weiyige.md${NC}"
-    echo -e "  把它重命名为或合并到 ${BOLD}${CONFIG_FILE}${NC} 即可激活团队。"
   fi
-  if [ -n "$BACKUP_FILES" ]; then
-    echo -e "  原文件已备份，可随时恢复。"
-  fi
-  echo ""
 
   echo -e "  ${CYAN}━━━ 下一步 ━━━${NC}"
   echo ""
   echo -e "  1. 用你的 AI 工具打开 ${BOLD}$TARGET_DIR${NC}"
   echo -e "     工具会自动读取 ${CONFIG_FILE}，激活维弈阁团队"
   echo ""
-  echo -e "  2. 试试第一条指令："
+  echo -e "  2. ${BOLD}多 Agent 模式${NC}（推荐）："
+  echo -e "     已将 Agent 文件安装到 ${BOLD}.codebuddy/agent/${NC}"
+  echo -e "     CodeBuddy 会根据意图自动调度对应 Agent"
+  echo -e "     如需手动添加：cp agents_for_codebuddy/*.md .codebuddy/agent/"
+  echo ""
+  echo -e "  3. 试试第一条指令："
   echo -e "     ${CYAN}@辞 帮我写一篇公众号文章${NC}"
   echo -e "     ${CYAN}@锋 审查一下这个产品方向${NC}"
   echo -e "     ${CYAN}@矩 帮我做工程审查${NC}"
   echo ""
-  echo -e "  3. 不确定找谁？直接描述需求："
+  echo -e "  4. 不确定找谁？直接描述需求："
   echo -e "     ${CYAN}帮我优化这篇文章${NC}  → 自动路由到 辞"
   echo -e "     ${CYAN}这个架构有问题吗${NC}  → 自动路由到 矩"
   echo ""

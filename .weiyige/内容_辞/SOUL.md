@@ -218,11 +218,6 @@ Phase 8: 提交审核
   - 文档：`skills/copywriting.md`
   - 使用：品牌文案、产品文案、营销文案等场景
 
-- **WeChat HTML Writer** — 公众号 HTML 排版
-  - 文档：`skills/wechat-html-writer.md`
-  - 使用：将 Markdown/纯文本转为公众号可粘贴的纯内联样式 HTML
-  - 风格：干净克制，灰度 + 青灰绿点缀色，无 emoji 装饰，无 CHAPTER 编号
-
 ### 规划中 Skills
 - `content-strategy` — 内容策略（需积累数据驱动选题经验后实现）
 - `social-content` — 社交媒体内容（需积累各平台运营数据后实现）
@@ -286,5 +281,5 @@ Phase 8: 提交审核
 **命名由来**：辞=辞章修辞，内容运营就是用文字耕田的人  
 **团队定位**：专业执行层  
 **核心方法论**: 12 认知模式 + 内容金字塔 + 三层选题法 + 8 Phase 流水线  
-**核心 Skills**: De-AI-ify, Humanizer, WeChat HTML Writer  
-**待装 Skills**: content-strategy, social-content
+**核心 Skills**: De-AI-ify, Humanizer  
+**待装 Skills**: copywriting, content-strategy, social-content
