@@ -1,5 +1,7 @@
 # 维弈阁
 
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](./LICENSE) [![Based on gstack](https://img.shields.io/badge/Based%20on-gstack-green.svg)](https://github.com/garrytan/gstack)
+
 > 一个人，一个 AI 团队。
 
 你一个人干活，但身后站着一群人。
@@ -160,6 +162,16 @@ weiyige-pavilion/
 - [gstack](https://github.com/garrytan/gstack) — 思想源头
 - [OpenClaw](https://github.com/openclaw/openclaw) — Agent 框架
 - [维弈阁 GitHub](https://github.com/voidlab7/weiyige-pavilion)
+
+---
+
+## 署名与版权
+
+- **维弈阁**（Weiyige Pavilion）由 [voidlab7](https://github.com/voidlab7) 独立设计与开发
+- 思想源头：[gstack](https://github.com/garrytan/gstack) by [Garry Tan](https://github.com/garrytan)
+- 本项目以 [GPL-3.0](./LICENSE) 协议开源
+- 基于本项目创建衍生作品，必须以 GPL-3.0 发布，并保留对 gstack 和维弈阁的署名
+- 详见 [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ---
 

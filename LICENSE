@@ -1,0 +1,47 @@
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2025-2026 voidlab7
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+## 补充条款（Additional Terms）
+
+### 署名要求（Attribution Requirement）
+
+本项目基于 [gstack](https://github.com/garrytan/gstack)（by Garry Tan）衍生开发。
+使用、修改或分发本项目的任何部分时，必须：
+
+1. 保留对 gstack 及 Garry Tan 的署名
+2. 保留对维弈阁（Weiyige Pavilion）及原作者 voidlab7 的署名
+3. 在衍生项目的显著位置（如 README、文档首页）注明来源
+
+### 衍生作品声明（Derivative Work Notice）
+
+本项目的核心原创内容包括但不限于：
+
+- 11 个角色的完整人设设计（IDENTITY + SOUL + 记忆系统）
+- 协作协议层（交接块、RACI 矩阵、冲突解决链、反馈闭环）
+- 智能路由系统（ROUTER.md 及路由表）
+- 三层架构设计（战略层 / 执行层 / 质量层）
+- 一键安装脚本（install.sh）
+- 所有角色的 memory 目录结构设计
+- 角色专属技能（skills/）的内容
+
+基于本项目创建的衍生作品，必须以相同协议（GPL-3.0）发布，并按要求署名。
+
+完整 GPL-3.0 协议文本请参阅：
+https://www.gnu.org/licenses/gpl-3.0.txt
