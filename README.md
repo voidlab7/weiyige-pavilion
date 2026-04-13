@@ -138,19 +138,44 @@ cd weiyige-pavilion && ./install.sh --target /path/to/your-project
 
 ---
 
-## 和 gstack 的关系
+## 思想脉络
 
-[gstack](https://github.com/garrytan/gstack) 是种子。Garry Tan 把工程经验编码成 AI Agent 协作框架 — CEO 审计划，架构师审设计，QA 打开浏览器真测。
+维弈阁不是凭空造的。它站在几个关键思想的交汇点上：
 
-维弈阁做了什么？把它产品化了。角色定义、协作协议、路由系统、技能库……直接拿来用，或者 fork 后改。
+### gstack — 种子
 
-继承的东西：
+[gstack](https://github.com/garrytan/gstack) 是 Garry Tan 把工程经验编码成 AI Agent 协作框架 — CEO 审计划，架构师审设计，QA 打开浏览器真测。
+
+维弈阁继承了这些：
 - Markdown 定义角色（不是代码，是人设文档）
 - 角色只管一件事（CEO 不管写代码，QA 不管方向）
 - 评审不过不能往下走（计划不审不执行，代码不审不发）
 - 每个决策都有文档留痕
 
 不一样的地方：gstack 是工具箱，维弈阁是团队系统。每个角色有记忆，能成长，不是无状态的 prompt。
+
+### Harness Engineering — 当前范式
+
+2026 年，AI 行业的焦点从"造更强的发动机"转向"造更好的车"。汤道生在[《人工智能正式进入 Harness 时代》](https://mp.weixin.qq.com/s/nJS1qMGiR7gWl1A7tchy1Q)中提出：
+
+> 大模型 = 发动机（原始动力），Harness = 线束（把动力传导到车轮的完整工作环境）。
+
+关键数据：
+- 同一模型 + 不同 Harness，编程成功率从 42% → 78%
+- 同一模型 + 不同 Harness，Terminal Bench 2.0 从 52.8% → 66.5%
+- 约束即引导 — 清晰的边界约束反而提高 Agent 生产力
+
+维弈阁的 Skills 标准化（58 张 Skill 卡片）就是 Harness Engineering 的直接实践。每张卡片把"能干什么、怎么调用、约束在哪"写清楚，让同一个模型在维弈阁的线束里跑出更高的成功率。
+
+### 工程进化脉络
+
+```
+2022-2025  Prompt Engineering     写指令 / 给地图
+2025       Context Engineering    动态构建上下文 / 给导航
+2026       Harness Engineering    搭建完整工作环境 / 造一辆车
+```
+
+维弈阁在做的就是第三步 — 不是写更好的 prompt，是搭建一个完整的工作环境：角色定义 + 协作协议 + 路由系统 + 标准化 Skills + 记忆系统 + 质量闭环。
 
 ---
 
@@ -183,9 +208,18 @@ weiyige-pavilion/
 
 ## 相关链接
 
-- [gstack](https://github.com/garrytan/gstack) — 思想源头
+**思想源头**
+- [gstack](https://github.com/garrytan/gstack) — Garry Tan 的 AI 虚拟工程团队框架
+- [人工智能正式进入 Harness 时代](https://mp.weixin.qq.com/s/nJS1qMGiR7gWl1A7tchy1Q) — 汤道生，Harness Engineering 范式
+
+**Agent 生态**
+- [Claude Code](https://docs.anthropic.com/en/docs/agents) — Anthropic 的 Agent 文档
+- [Cursor Rules](https://docs.cursor.com/context/rules-for-ai) — Cursor 的 AI 规则系统
 - [OpenClaw](https://github.com/openclaw/openclaw) — Agent 框架
-- [维弈阁 GitHub](https://github.com/voidlab7/weiyige-pavilion)
+
+**维弈阁**
+- [GitHub](https://github.com/voidlab7/weiyige-pavilion) — 源码和文档
+- [成长日记](./成长日记/) — 维弈阁从 0 到 1 的设计过程和踩坑记录
 
 ---
 
