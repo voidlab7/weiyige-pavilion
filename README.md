@@ -71,7 +71,13 @@ CEO_锋/
 一条命令，装到你的项目里：
 
 ```bash
+# macOS / Linux
 curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash
+```
+
+```powershell
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.ps1 | iex
 ```
 
 装完打开项目，AI 会自动读取配置，激活整个团队。
@@ -79,13 +85,14 @@ curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/inst
 ### 不同工具
 
 ```bash
-# Cursor
+# Cursor (macOS/Linux)
 curl -fsSL https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.sh | bash -s -- --tool cursor
 
 # GitHub Copilot
 curl -fsSL ... | bash -s -- --tool copilot
 
-# Windsurf / Cline 同理
+# Windows Cursor
+irm https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.ps1 | iex -Tool cursor
 ```
 
 不指定 `--tool`，脚本自己检测你用的是哪个。
@@ -125,15 +132,19 @@ curl -fsSL ... | bash -s -- --tool copilot
 ### 其他安装方式
 
 ```bash
-# 装到指定项目
+# 装到指定项目 (macOS/Linux)
 curl -fsSL ... | bash -s -- --target ~/my-project
 
 # 最轻量（只要配置文件，不要角色定义）
 curl -fsSL ... | bash -s -- --mode claude
 
+# Windows 装到指定项目
+irm ... | iex -Target "D:\my-project"
+
 # 手动
 git clone https://github.com/voidlab7/weiyige-pavilion.git
-cd weiyige-pavilion && ./install.sh --target /path/to/your-project
+cd weiyige-pavilion && ./install.sh --target /path/to/your-project    # macOS/Linux
+cd weiyige-pavilion && .\install.ps1 -Target "D:\your-project"        # Windows
 ```
 
 ---
