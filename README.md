@@ -178,6 +178,20 @@ cd weiyige-pavilion && .\install.ps1 -Target "D:\your-project"        # Windows
 
 维弈阁的 Skills 标准化（58 张 Skill 卡片）就是 Harness Engineering 的直接实践。每张卡片把"能干什么、怎么调用、约束在哪"写清楚，让同一个模型在维弈阁的线束里跑出更高的成功率。
 
+#### 七条线束
+
+| 线束 | 含义 | 维弈阁中的体现 |
+|------|------|---------------|
+| **角色线束** Role Harness | 每个 AI Agent 有明确的角色边界和能力圈 | CEO_锋/PM_枢/架构_矩/QA_鉴 各司其职，不越界 |
+| **流程线束** Process Harness | AI 的工作必须沿着预定义的流程推进 | 构思→需求→设计→开发→测试→发布 的阶段流转 |
+| **交接线束** Handoff Harness | Agent 之间的信息传递必须结构化 | 交接块（Handoff Block）+ STATUS.md |
+| **审查线束** Review Harness | 每个阶段的产出必须经过审查才能进入下一阶段 | 锋审查→矩工程审查→鉴测试→盾安全审计 |
+| **记忆线束** Memory Harness | AI 的经验必须持久化，形成复利 | 三层记忆系统（短期/中期/长期） |
+| **自控线束** Self-Regulation Harness | AI 必须有自我风险评估和停止机制 | WTF-likelihood、编辑累积风险、编码风险评估 |
+| **可观测线束** Observability Harness | AI 的每个决策和行为必须可追溯 | 决策审计追踪、STATUS.md 决策日志 |
+
+> **核心洞察**：Harness 思想的本质是——AI 越强大，约束越重要。就像赛马的缰绳不是限制马的速度，而是让马跑在正确的赛道上。
+
 ### 工程进化脉络
 
 ```
