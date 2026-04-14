@@ -116,7 +116,6 @@ Write-Host ""
 # ---------- 安装配置文件 ----------
 function Install-ConfigFile {
     $configPath = Join-Path $Target $CONFIG_FILE
-    $weiyigeConfig = Join-Path $Target "CLAUDE-weiyige.md"
 
     # 下载维弈阁配置
     $tmpFile = Join-Path $env:TEMP "weiyige-claude-$(Get-Random).md"
@@ -129,37 +128,37 @@ function Install-ConfigFile {
 
     # 已有配置文件
     if (Test-Path $configPath) {
+        # 检查是否已包含维弈阁配置（避免重复追加）
+        $content = Get-Content $configPath -Raw -ErrorAction SilentlyContinue
+        if ($content -match "维弈阁 AI 团队") {
+            Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
+            Write-Host "  ℹ️  $CONFIG_FILE 已包含维弈阁配置，跳过" -ForegroundColor Blue
+            return $true
+        }
+
         # 备份
         $backupPath = "$configPath.weiyige-backup"
         if (Test-Path $backupPath) { $backupPath = "$configPath.weiyige-backup.$(Get-Date -Format 'yyyyMMddHHmmss')" }
         Copy-Item $configPath $backupPath -Force
         Write-Host "  📦 已备份：$CONFIG_FILE → $(Split-Path $backupPath -Leaf)" -ForegroundColor Blue
 
-        # 生成 CLAUDE-weiyige.md
-        Copy-Item $tmpFile $weiyigeConfig -Force
+        # 追加维弈阁配置到原文件末尾
+        Add-Content $configPath ""
+        Add-Content $configPath "---"
+        $weiyigeContent = Get-Content $tmpFile -Raw
+        Add-Content $configPath $weiyigeContent
+        Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
 
-        # 自动追加引用
-        $refLine = "[维弈阁 AI 团队配置 → CLAUDE-weiyige.md](./CLAUDE-weiyige.md)"
-        $content = Get-Content $configPath -Raw -ErrorAction SilentlyContinue
-        if ($content -notmatch "CLAUDE-weiyige") {
-            Add-Content $configPath ""
-            Add-Content $configPath $refLine
-            Write-Host "  ✅ 已在 $CONFIG_FILE 末尾追加维弈阁引用" -ForegroundColor Green
-        } else {
-            Write-Host "  ℹ️  $CONFIG_FILE 已包含维弈阁引用，跳过" -ForegroundColor Blue
-        }
-
-        Write-Host "  ⚠️  检测到已有 $CONFIG_FILE，不会覆盖" -ForegroundColor Yellow
-        Write-Host "  ✅ 已生成 CLAUDE-weiyige.md（维弈阁完整配置）" -ForegroundColor Green
+        Write-Host "  ✅ 维弈阁配置已追加到 $CONFIG_FILE 末尾" -ForegroundColor Green
     } else {
         # 直接创建
         $destDir = Split-Path $configPath -Parent
         if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
         Copy-Item $tmpFile $configPath -Force
+        Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
         Write-Host "  ✅ $CONFIG_FILE 已创建（路由表内联，开箱即用）" -ForegroundColor Green
     }
 
-    Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
     return $true
 }
 
@@ -289,14 +288,6 @@ function Print-Success {
     Write-Host "  安装位置：$Target\.weiyige\" -ForegroundColor White
     Write-Host "  配置文件：$Target\$CONFIG_FILE" -ForegroundColor White
     Write-Host ""
-
-    if (Test-Path (Join-Path $Target "CLAUDE-weiyige.md")) {
-        Write-Host "  ━━━ 配置合并说明 ━━━" -ForegroundColor Yellow
-        Write-Host ""
-        Write-Host "  你已有 $CONFIG_FILE，维弈阁配置写在 CLAUDE-weiyige.md"
-        Write-Host "  已自动在 $CONFIG_FILE 末尾追加引用，AI 工具会读取两个文件。"
-        Write-Host ""
-    }
 
     Write-Host "  ━━━ 下一步 ━━━" -ForegroundColor Cyan
     Write-Host ""

@@ -204,7 +204,6 @@ backup_config() {
 # ---------- 安装配置文件 ----------
 install_config_file() {
   local config_path="$TARGET_DIR/$CONFIG_FILE"
-  local weiyige_config="$TARGET_DIR/CLAUDE-weiyige.md"
 
   # 先把维弈阁配置内容下载到临时位置
   local tmp_file
@@ -219,38 +218,29 @@ install_config_file() {
 
   # 检查用户是否已有配置文件
   if [ -f "$config_path" ] && [ -s "$config_path" ]; then
-    # 用户已有配置 → 备份原文件，生成 CLAUDE-weiyige.md 独立文件
-    backup_config "$config_path"
-    cp "$tmp_file" "$weiyige_config"
-    rm -f "$tmp_file"
-
-    # 自动在原配置文件末尾追加引用（确保 AI 工具能读到维弈阁配置）
-    local ref_line='[维弈阁 AI 团队配置 → CLAUDE-weiyige.md](./CLAUDE-weiyige.md)'
-    if ! grep -q "CLAUDE-weiyige" "$config_path" 2>/dev/null; then
-      echo "" >> "$config_path"
-      echo "$ref_line" >> "$config_path"
-      echo -e "  ${GREEN}✅ 已在 ${CONFIG_FILE} 末尾追加维弈阁引用${NC}"
-    else
-      echo -e "  ${BLUE}ℹ️  ${CONFIG_FILE} 已包含维弈阁引用，跳过${NC}"
+    # 检查是否已包含维弈阁配置（避免重复追加）
+    if grep -q "维弈阁 AI 团队" "$config_path" 2>/dev/null; then
+      rm -f "$tmp_file"
+      echo -e "  ${BLUE}ℹ️  ${CONFIG_FILE} 已包含维弈阁配置，跳过${NC}"
+      return 0
     fi
 
-    echo -e "  ${YELLOW}⚠️  检测到已有 ${CONFIG_FILE}，不会覆盖${NC}"
-    echo -e "  ${GREEN}✅ 已生成 CLAUDE-weiyige.md（维弈阁完整配置）${NC}"
+    # 备份原文件
+    backup_config "$config_path"
+
+    # 追加维弈阁配置到原文件末尾
+    echo "" >> "$config_path"
+    echo "---" >> "$config_path"
+    cat "$tmp_file" >> "$config_path"
+    rm -f "$tmp_file"
+
+    echo -e "  ${GREEN}✅ 维弈阁配置已追加到 ${CONFIG_FILE} 末尾${NC}"
     return 0
   fi
 
-  # 用户没有配置文件 → 备份（无），直接创建
+  # 用户没有配置文件 → 直接创建
   mkdir -p "$(dirname "$config_path")"
-
-  case "$INSTALL_TOOL" in
-    codebuddy|claude)
-      cp "$tmp_file" "$config_path"
-      ;;
-    cursor|windsurf|cline|copilot)
-      cp "$tmp_file" "$config_path"
-      ;;
-  esac
-
+  cp "$tmp_file" "$config_path"
   rm -f "$tmp_file"
   echo -e "  ${GREEN}✅ ${CONFIG_FILE} 已创建（路由表内联，开箱即用）${NC}"
   return 0
@@ -427,19 +417,6 @@ print_success() {
       echo -e "  📦 $entry"
     done
     IFS="$OLD_IFS"
-    echo ""
-  fi
-
-  # 已有配置文件时的提示
-  if [ -f "$TARGET_DIR/CLAUDE-weiyige.md" ]; then
-    echo -e "  ${YELLOW}━━━ 配置合并说明 ━━━${NC}"
-    echo ""
-    echo -e "  你已有 ${CONFIG_FILE}，维弈阁配置写在 ${BOLD}CLAUDE-weiyige.md${NC}"
-    echo -e "  已自动在 ${CONFIG_FILE} 末尾追加引用，AI 工具会读取两个文件。"
-    echo ""
-    echo -e "  如果想合并为一个文件："
-    echo -e "  把 ${BOLD}CLAUDE-weiyige.md${NC} 的内容复制到 ${BOLD}${CONFIG_FILE}${NC} 中即可。"
-    echo -e "  原文件已备份为 ${CONFIG_FILE}.weiyige-backup，可随时恢复。"
     echo ""
   fi
 

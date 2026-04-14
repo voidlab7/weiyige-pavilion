@@ -110,8 +110,8 @@ irm https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main/install.ps1
 不会覆盖。脚本会：
 
 1. 备份原文件（`.weiyige-backup`）
-2. 生成独立的 `CLAUDE-weiyige.md`
-3. 提示你在原文件里加一行引用
+2. 将维弈阁配置追加到原 `CLAUDE.md` 末尾
+3. 恢复时用备份文件即可
 
 ### 试试
 
