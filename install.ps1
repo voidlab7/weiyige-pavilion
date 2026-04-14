@@ -16,7 +16,7 @@
 
 param(
     [string]$Target = (Get-Location).Path,
-    [ValidateSet("full", "claude")]
+    [ValidateSet("full", "claude", "update")]
     [string]$Mode = "full",
     [ValidateSet("codebuddy", "claude", "cursor", "copilot", "windsurf", "cline", "")]
     [string]$Tool = "",
@@ -39,7 +39,7 @@ if ($Help) {
     Write-Host ""
     Write-Host "参数："
     Write-Host "  -Target <目录>    安装目标目录（默认：当前目录）"
-    Write-Host "  -Mode <模式>      full（完整）| claude（仅配置文件）"
+    Write-Host "  -Mode <模式>      full（完整）| claude（仅配置文件）| update（更新已安装）"
     Write-Host "  -Tool <工具>      codebuddy | cursor | copilot | windsurf | cline"
     Write-Host ""
     exit 0
@@ -305,6 +305,197 @@ function Print-Success {
     Write-Host ""
 }
 
+# ---------- Update 模式（更新已安装的维弈阁）----------
+function Install-UpdateMode {
+    # 自动扫描已安装的 .weiyige 目录
+    $weiyigeDir = Join-Path $Target ".weiyige"
+    if (-not (Test-Path $weiyigeDir)) {
+        # 向上查找（最多 3 层）
+        $parent = $Target
+        for ($i = 1; $i -le 3; $i++) {
+            $parent = Split-Path -Parent $parent
+            if (Test-Path (Join-Path $parent ".weiyige")) {
+                $weiyigeDir = Join-Path $parent ".weiyige"
+                $Target = $parent
+                break
+            }
+        }
+    }
+
+    if (-not (Test-Path $weiyigeDir)) {
+        Write-Host "❌ 未找到已安装的维弈阁目录（.weiyige\）" -ForegroundColor Red
+        Write-Host "  请先安装：.\install.ps1 -Mode full" -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host "✅ 找到已安装目录：$weiyigeDir" -ForegroundColor Green
+    Write-Host ""
+
+    # 更新 Agent 定义文件（覆盖 SOUL/IDENTITY/skills/rules，保留 memory/）
+    Write-Host "▶ 更新 Agent 定义文件（保留 memory\）..." -ForegroundColor Yellow
+    foreach ($agent in $AGENTS) {
+        $agentDir = Join-Path $weiyigeDir $agent
+        if (-not (Test-Path $agentDir)) {
+            New-Item -ItemType Directory -Path $agentDir -Force | Out-Null
+        }
+
+        $updated = $false
+        $localAgentDir = Join-Path $SCRIPT_DIR $agent
+
+        # 覆盖 SOUL.md + IDENTITY.md
+        foreach ($f in @("IDENTITY.md", "SOUL.md")) {
+            $destFile = Join-Path $agentDir $f
+            if (Test-Path (Join-Path $localAgentDir $f)) {
+                Copy-Item (Join-Path $localAgentDir $f) $destFile -Force
+                $updated = $true
+            } else {
+                if (Fetch-File "$agent/$f" $destFile) { $updated = $true }
+            }
+        }
+
+        # 覆盖 skills/ 和 rules/（本地）
+        if (Test-Path (Join-Path $localAgentDir "skills")) {
+            Copy-Item (Join-Path $localAgentDir "skills") $agentDir -Recurse -Force
+            $updated = $true
+        }
+        if (Test-Path (Join-Path $localAgentDir "rules")) {
+            Copy-Item (Join-Path $localAgentDir "rules") $agentDir -Recurse -Force
+            $updated = $true
+        }
+
+        # 远程下载 skills 和 rules
+        if (-not (Test-Path $localAgentDir)) {
+            $extraFiles = @()
+            switch ($agent) {
+                "PM_枢"   { $extraFiles = @("rules/design-review/RULE.mdc", "skills/prd-template.md") }
+                "架构_矩" { $extraFiles = @("rules/eng-review/RULE.mdc") }
+                "设计_绘" { $extraFiles = @("rules/design-review/RULE.mdc") }
+                "QA_鉴"   { $extraFiles = @("rules/qa/RULE.mdc") }
+                "内容_辞" { $extraFiles = @("skills/de-ai-ify.md", "skills/humanizer.md", "skills/copywriting.md") }
+            }
+            foreach ($f in $extraFiles) {
+                $destFile = Join-Path $agentDir $f
+                $destDir = Split-Path -Parent $destFile
+                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+                if (Fetch-File "$agent/$f" $destFile) { $updated = $true }
+            }
+        }
+
+        # 确保 memory/ 目录存在（不覆盖内容）
+        $memoryDir = Join-Path $agentDir "memory"
+        if (-not (Test-Path $memoryDir)) { New-Item -ItemType Directory -Path $memoryDir -Force | Out-Null }
+
+        if ($updated) {
+            Write-Host "  ✅ $agent" -ForegroundColor Green
+        } else {
+            Write-Host "  ℹ️  $agent — 无更新" -ForegroundColor Blue
+        }
+    }
+
+    # 更新协议文件
+    Write-Host ""
+    Write-Host "▶ 更新协议文件 ..." -ForegroundColor Yellow
+    $protocolFiles = @("PROTOCOL.md", "ROUTER.md", "MEMORY.md", "QUICKSTART.md")
+    foreach ($f in $protocolFiles) {
+        $destFile = Join-Path $weiyigeDir $f
+        $localFile = Join-Path $SCRIPT_DIR $f
+        if (Test-Path $localFile) {
+            Copy-Item $localFile $destFile -Force
+            Write-Host "  ✅ $f" -ForegroundColor Green
+        } else {
+            if (Fetch-File $f $destFile) {
+                Write-Host "  ✅ $f" -ForegroundColor Green
+            } else {
+                Write-Host "  ⚠️  $f — 下载失败" -ForegroundColor Yellow
+            }
+        }
+    }
+
+    # 更新 CodeBuddy Agent 文件
+    Write-Host ""
+    Write-Host "▶ 更新 CodeBuddy Agent 文件 ..." -ForegroundColor Yellow
+    $agentsDir = Join-Path $Target ".codebuddy\agent"
+    if (Test-Path $agentsDir) {
+        $localAgentsDir = Join-Path $SCRIPT_DIR "agents_for_codebuddy"
+        if (Test-Path $localAgentsDir) {
+            Copy-Item "$localAgentsDir\*.md" $agentsDir -Force
+            $count = (Get-ChildItem "$agentsDir\*.md").Count
+            Write-Host "  ✅ 已更新 $count 个 Agent" -ForegroundColor Green
+        } else {
+            foreach ($name in $AGENT_NAMES) {
+                $destFile = Join-Path $agentsDir "$name.md"
+                if (Fetch-File "agents_for_codebuddy/$name.md" $destFile) {
+                    Write-Host "  ✅ $name" -ForegroundColor Green
+                }
+            }
+        }
+    } else {
+        Write-Host "  ℹ️  未找到 .codebuddy\agent\，跳过" -ForegroundColor Blue
+    }
+
+    # 更新 CLAUDE.md 中的维弈阁配置段落
+    Write-Host ""
+    Write-Host "▶ 更新配置文件中的维弈阁段落 ..." -ForegroundColor Yellow
+    $configPath = Join-Path $Target $CONFIG_FILE
+    if (Test-Path $configPath) {
+        $content = Get-Content $configPath -Raw -ErrorAction SilentlyContinue
+        if ($content -match "维弈阁 AI 团队") {
+            # 下载最新维弈阁配置
+            $tmpFile = Join-Path $env:TEMP "weiyige-claude-$(Get-Random).md"
+            Fetch-File "CLAUDE.md" $tmpFile | Out-Null
+
+            if (Test-Path $tmpFile) {
+                # 备份
+                $backupPath = "$configPath.weiyige-backup"
+                if (Test-Path $backupPath) { $backupPath = "$configPath.weiyige-backup.$(Get-Date -Format 'yyyyMMddHHmmss')" }
+                Copy-Item $configPath $backupPath -Force
+                Write-Host "  📦 已备份：$CONFIG_FILE → $(Split-Path $backupPath -Leaf)" -ForegroundColor Blue
+
+                # 找到维弈阁段落的起始位置并替换
+                $lines = Get-Content $configPath
+                $cutLine = -1
+                for ($i = 0; $i -lt $lines.Count; $i++) {
+                    if ($lines[$i] -match "# 维弈阁 AI 团队") {
+                        # 找到前面最近的 --- 分隔线
+                        $cutLine = $i
+                        for ($j = $i - 1; $j -ge 0; $j--) {
+                            if ($lines[$j] -match "^---") {
+                                $cutLine = $j
+                                break
+                            }
+                        }
+                        break
+                    }
+                }
+
+                if ($cutLine -ge 0) {
+                    # 保留维弈阁段落之前的内容（去掉末尾空行）
+                    $beforeLines = $lines[0..($cutLine - 1)] | Where-Object { $_ -ne $null }
+                    # 去掉末尾空行
+                    while ($beforeLines.Count -gt 0 -and [string]::IsNullOrWhiteSpace($beforeLines[-1])) {
+                        $beforeLines = $beforeLines[0..($beforeLines.Count - 2)]
+                    }
+                    $newContent = ($beforeLines -join "`n") + "`n`n---`n" + (Get-Content $tmpFile -Raw)
+                    Set-Content $configPath $newContent -NoNewline
+                    Write-Host "  ✅ 维弈阁配置段落已更新" -ForegroundColor Green
+                } else {
+                    Write-Host "  ℹ️  未找到维弈阁段落标记，跳过" -ForegroundColor Blue
+                }
+                Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
+            }
+        } else {
+            Write-Host "  ℹ️  配置文件中未找到维弈阁段落，跳过" -ForegroundColor Blue
+        }
+    }
+
+    Write-Host ""
+    Write-Host "✅ 更新完成！" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  更新位置：$weiyigeDir" -ForegroundColor White
+    Write-Host "  memory\ 目录已保留，你的偏好和经验教训不会丢失。" -ForegroundColor White
+    Write-Host ""
+}
+
 # ---------- 执行安装 ----------
 switch ($Mode) {
     "claude" {
@@ -320,5 +511,8 @@ switch ($Mode) {
         Install-FullMode
         Write-Host ""
         Print-Success
+    }
+    "update" {
+        Install-UpdateMode
     }
 }

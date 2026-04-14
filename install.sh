@@ -63,6 +63,7 @@ show_help() {
   echo "  --mode <模式>      安装模式（默认：full）"
   echo "                       claude  — 仅安装配置文件，最轻量"
   echo "                       full    — 完整安装所有 Agent 定义文件"
+  echo "                       update  — 更新已安装的维弈阁（保留用户数据）"
   echo "  --tool <工具>      指定 AI 编码工具（默认：自动检测）"
   echo "                       codebuddy / claude  → CLAUDE.md"
   echo "                       cursor              → .cursorrules"
@@ -76,6 +77,7 @@ show_help() {
   echo "  ./install.sh --target ~/my-project        # 安装到指定项目"
   echo "  ./install.sh --tool cursor                # 为 Cursor 安装"
   echo "  ./install.sh --mode claude                # 最轻量安装"
+  echo "  ./install.sh --mode update                # 更新已安装的维弈阁"
   echo ""
 }
 
@@ -449,8 +451,11 @@ case "$INSTALL_MODE" in
   full)
     install_full_mode
     ;;
+  update)
+    install_update_mode
+    ;;
   *)
-    echo -e "${RED}未知安装模式：$INSTALL_MODE（支持：claude / full）${NC}"
+    echo -e "${RED}未知安装模式：$INSTALL_MODE（支持：claude / full / update）${NC}"
     exit 1
     ;;
 esac
