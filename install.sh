@@ -307,14 +307,13 @@ install_full_mode() {
       echo -e "  ${GREEN}✅ $agent${NC}"
     else
       # 远程：下载固定核心文件 + 按需下载技能/规则
-      CORE_FILES="IDENTITY.md SOUL.md memory/knowledge.md memory/lessons.md memory/preferences.md"
+      CORE_FILES="IDENTITY.md SOUL.md SKILLS.md memory/knowledge.md memory/lessons.md memory/preferences.md"
       EXTRA_FILES=""
       case "$agent" in
-        PM_枢)     EXTRA_FILES="rules/design-review/RULE.mdc skills/prd-template.md" ;;
+        PM_枢)     EXTRA_FILES="rules/design-review/RULE.mdc" ;;
         架构_矩)   EXTRA_FILES="rules/eng-review/RULE.mdc" ;;
         设计_绘)   EXTRA_FILES="rules/design-review/RULE.mdc" ;;
         QA_鉴)     EXTRA_FILES="rules/qa/RULE.mdc" ;;
-        内容_辞)   EXTRA_FILES="skills/de-ai-ify.md skills/humanizer.md skills/copywriting.md" ;;
       esac
 
       success=true
@@ -440,6 +439,206 @@ print_success() {
   echo -e "  4. 不确定找谁？直接描述需求："
   echo -e "     ${CYAN}帮我优化这篇文章${NC}  → 自动路由到 辞"
   echo -e "     ${CYAN}这个架构有问题吗${NC}  → 自动路由到 矩"
+  echo ""
+}
+
+# ---------- 模式：update（更新已安装的维弈阁）----------
+install_update_mode() {
+  # 自动扫描已安装的 .weiyige 目录
+  WEIYIGE_DIR=""
+  if [ -d "$TARGET_DIR/.weiyige" ]; then
+    WEIYIGE_DIR="$TARGET_DIR/.weiyige"
+  else
+    # 向上查找（最多 3 层）
+    for i in 1 2 3; do
+      parent="$(cd "$TARGET_DIR/$(printf '../%.0s' $(seq 1 $i))" 2>/dev/null && pwd)"
+      if [ -d "$parent/.weiyige" ]; then
+        WEIYIGE_DIR="$parent/.weiyige"
+        TARGET_DIR="$parent"
+        break
+      fi
+    done
+  fi
+
+  if [ -z "$WEIYIGE_DIR" ] || [ ! -d "$WEIYIGE_DIR" ]; then
+    echo -e "${RED}❌ 未找到已安装的维弈阁目录（.weiyige/）${NC}"
+    echo -e "  请先安装：./install.sh --mode full"
+    exit 1
+  fi
+
+  echo -e "${GREEN}✅ 找到已安装目录：$WEIYIGE_DIR${NC}"
+  echo ""
+
+  # Agent 列表
+  AGENTS=(
+    "CEO_锋"
+    "PM_枢"
+    "架构_矩"
+    "设计_绘"
+    "QA_鉴"
+    "安全_盾"
+    "财务_算"
+    "内容_辞"
+    "顾问_隐"
+    "合伙人_砺"
+  )
+
+  # 更新 Agent 定义文件（覆盖 SOUL/IDENTITY/SKILLS/skills/rules，保留 memory/）
+  echo -e "${YELLOW}▶ 更新 Agent 定义文件（保留 memory/）...${NC}"
+  for agent in "${AGENTS[@]}"; do
+    AGENT_DIR="$WEIYIGE_DIR/$agent"
+    if [ ! -d "$AGENT_DIR" ]; then
+      mkdir -p "$AGENT_DIR"
+    fi
+
+    UPDATED=false
+
+    # 本地安装：直接覆盖核心文件
+    if [ -d "$PAVILION_DIR/$agent" ]; then
+      for f in IDENTITY.md SOUL.md SKILLS.md; do
+        if [ -f "$PAVILION_DIR/$agent/$f" ]; then
+          cp "$PAVILION_DIR/$agent/$f" "$AGENT_DIR/$f"
+          UPDATED=true
+        fi
+      done
+      # 覆盖 skills/ 和 rules/ 目录
+      if [ -d "$PAVILION_DIR/$agent/skills" ]; then
+        cp -r "$PAVILION_DIR/$agent/skills" "$AGENT_DIR/" 2>/dev/null || true
+        UPDATED=true
+      fi
+      if [ -d "$PAVILION_DIR/$agent/rules" ]; then
+        cp -r "$PAVILION_DIR/$agent/rules" "$AGENT_DIR/" 2>/dev/null || true
+        UPDATED=true
+      fi
+    else
+      # 远程安装：下载核心文件
+      for f in IDENTITY.md SOUL.md SKILLS.md; do
+        if fetch_file "$agent/$f" "$AGENT_DIR/$f" 2>/dev/null; then
+          UPDATED=true
+        fi
+      done
+      # 下载 skills/ 和 rules/
+      EXTRA_FILES=""
+      case "$agent" in
+        PM_枢)     EXTRA_FILES="rules/design-review/RULE.mdc" ;;
+        架构_矩)   EXTRA_FILES="rules/eng-review/RULE.mdc" ;;
+        设计_绘)   EXTRA_FILES="rules/design-review/RULE.mdc" ;;
+        QA_鉴)     EXTRA_FILES="rules/qa/RULE.mdc" ;;
+      esac
+      for f in $EXTRA_FILES; do
+        mkdir -p "$AGENT_DIR/$(dirname "$f")"
+        if fetch_file "$agent/$f" "$AGENT_DIR/$f" 2>/dev/null; then
+          UPDATED=true
+        fi
+      done
+    fi
+
+    # 确保 memory/ 目录存在（不覆盖内容）
+    mkdir -p "$AGENT_DIR/memory"
+
+    if $UPDATED; then
+      echo -e "  ${GREEN}✅ $agent${NC}"
+    else
+      echo -e "  ${BLUE}ℹ️  $agent — 无更新${NC}"
+    fi
+  done
+
+  # 更新协议文件
+  echo ""
+  echo -e "${YELLOW}▶ 更新协议文件 ...${NC}"
+  PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md")
+  for f in "${PROTOCOL_FILES[@]}"; do
+    if [ -f "$PAVILION_DIR/$f" ]; then
+      cp "$PAVILION_DIR/$f" "$WEIYIGE_DIR/$f"
+      echo -e "  ${GREEN}✅ $f${NC}"
+    else
+      if fetch_file "$f" "$WEIYIGE_DIR/$f" 2>/dev/null; then
+        echo -e "  ${GREEN}✅ $f${NC}"
+      else
+        echo -e "  ${YELLOW}⚠️  $f — 下载失败${NC}"
+      fi
+    fi
+  done
+
+  # 更新 CodeBuddy Agent 文件
+  echo ""
+  echo -e "${YELLOW}▶ 更新 CodeBuddy Agent 文件 ...${NC}"
+  AGENTS_DIR="$TARGET_DIR/.codebuddy/agent"
+  if [ -d "$AGENTS_DIR" ]; then
+    AGENT_FILES_FOUND=false
+    for f in "$PAVILION_DIR/agents_for_codebuddy/"*.md; do
+      if [ -f "$f" ]; then
+        cp "$f" "$AGENTS_DIR/"
+        AGENT_FILES_FOUND=true
+      fi
+    done
+
+    if $AGENT_FILES_FOUND; then
+      AGENT_COUNT=$(ls -1 "$AGENTS_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
+      echo -e "  ${GREEN}✅ 已更新 ${AGENT_COUNT} 个 Agent${NC}"
+    else
+      AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人")
+      for name in "${AGENT_NAMES[@]}"; do
+        if fetch_file "agents_for_codebuddy/${name}.md" "$AGENTS_DIR/${name}.md" 2>/dev/null; then
+          echo -e "  ${GREEN}✅ ${name}${NC}"
+        fi
+      done
+    fi
+  else
+    echo -e "  ${BLUE}ℹ️  未找到 .codebuddy/agent/，跳过${NC}"
+  fi
+
+  # 更新 CLAUDE.md 中的维弈阁配置段落
+  echo ""
+  echo -e "${YELLOW}▶ 更新配置文件中的维弈阁段落 ...${NC}"
+  local config_path="$TARGET_DIR/$CONFIG_FILE"
+  if [ -f "$config_path" ] && grep -q "维弈阁 AI 团队" "$config_path" 2>/dev/null; then
+    local tmp_file
+    tmp_file=$(mktemp)
+    fetch_file "CLAUDE.md" "$tmp_file"
+
+    if [ -s "$tmp_file" ]; then
+      # 备份
+      backup_config "$config_path"
+
+      # 找到维弈阁段落的起始位置
+      local line_num
+      line_num=$(grep -n "# 维弈阁 AI 团队" "$config_path" | head -1 | cut -d: -f1)
+      if [ -n "$line_num" ]; then
+        # 找到前面的 --- 分隔线
+        local sep_line=$line_num
+        local i=$((line_num - 1))
+        while [ $i -ge 1 ]; do
+          if sed -n "${i}p" "$config_path" | grep -q "^---"; then
+            sep_line=$i
+            break
+          fi
+          i=$((i - 1))
+        done
+
+        # 保留维弈阁段落之前的内容（去掉末尾空行）
+        head -n $((sep_line - 1)) "$config_path" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > "${config_path}.tmp"
+        # 追加新的维弈阁配置
+        echo "" >> "${config_path}.tmp"
+        echo "---" >> "${config_path}.tmp"
+        cat "$tmp_file" >> "${config_path}.tmp"
+        mv "${config_path}.tmp" "$config_path"
+        echo -e "  ${GREEN}✅ 维弈阁配置段落已更新${NC}"
+      else
+        rm -f "${config_path}.tmp"
+        echo -e "  ${BLUE}ℹ️  未找到维弈阁段落标记，跳过${NC}"
+      fi
+    fi
+    rm -f "$tmp_file"
+  else
+    echo -e "  ${BLUE}ℹ️  配置文件中未找到维弈阁段落，跳过${NC}"
+  fi
+
+  echo ""
+  echo -e "${GREEN}${BOLD}✅ 更新完成！${NC}"
+  echo ""
+  echo -e "  更新位置：${BOLD}$WEIYIGE_DIR${NC}"
+  echo -e "  memory/ 目录已保留，你的偏好和经验教训不会丢失。"
   echo ""
 }
 

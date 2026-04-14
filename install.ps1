@@ -194,14 +194,13 @@ function Install-FullMode {
             Write-Host "  ✅ $agent" -ForegroundColor Green
         } else {
             # 远程下载
-            $coreFiles = @("IDENTITY.md", "SOUL.md", "memory/knowledge.md", "memory/lessons.md", "memory/preferences.md")
+            $coreFiles = @("IDENTITY.md", "SOUL.md", "SKILLS.md", "memory/knowledge.md", "memory/lessons.md", "memory/preferences.md")
             $extraFiles = @()
             switch ($agent) {
-                "PM_枢"   { $extraFiles = @("rules/design-review/RULE.mdc", "skills/prd-template.md") }
+                "PM_枢"   { $extraFiles = @("rules/design-review/RULE.mdc") }
                 "架构_矩" { $extraFiles = @("rules/eng-review/RULE.mdc") }
                 "设计_绘" { $extraFiles = @("rules/design-review/RULE.mdc") }
                 "QA_鉴"   { $extraFiles = @("rules/qa/RULE.mdc") }
-                "内容_辞" { $extraFiles = @("skills/de-ai-ify.md", "skills/humanizer.md", "skills/copywriting.md") }
             }
 
             $success = $true
@@ -343,7 +342,7 @@ function Install-UpdateMode {
         $localAgentDir = Join-Path $SCRIPT_DIR $agent
 
         # 覆盖 SOUL.md + IDENTITY.md
-        foreach ($f in @("IDENTITY.md", "SOUL.md")) {
+        foreach ($f in @("IDENTITY.md", "SOUL.md", "SKILLS.md")) {
             $destFile = Join-Path $agentDir $f
             if (Test-Path (Join-Path $localAgentDir $f)) {
                 Copy-Item (Join-Path $localAgentDir $f) $destFile -Force
