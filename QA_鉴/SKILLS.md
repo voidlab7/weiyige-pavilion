@@ -1,6 +1,6 @@
 # QA（鉴）— Skills 卡片
 
-> 版本: v1.0 | 创建: 2026-04-13 | 基于 Harness Engineering 范式
+> 版本: v1.1 | 创建: 2026-04-13 | 更新: 2026-04-15 | 基于 Harness Engineering 范式
 
 ---
 
@@ -10,9 +10,13 @@
 - **输入**:
   - 目标 URL（必填）
   - 测试深度: Quick / Standard / Deep（默认 Standard）
-- **输出**: 测试报告（7 维度健康评分 + Bug 清单 + 修复提交）
-- **工具**: `browser_take_screenshot`、`browser_snapshot`、`browser_click`、`browser_console_messages`、`browser_network_requests`、`replace_in_file`
+- **输出**: 测试报告（计算型检查结果 + 7 维度健康评分 + Bug 清单 + 修复提交）
+- **工具**: `execute_command`（运行 Lint/类型检查/测试）、`browser_take_screenshot`、`browser_snapshot`、`browser_click`、`browser_console_messages`、`browser_network_requests`、`replace_in_file`
 - **约束**:
+  - **前置：计算型检查**（必须在浏览器测试之前执行）
+    1. 运行项目中已有的 Lint/类型检查/单元测试（`eslint`/`tsc`/`ruff`/`pytest`/`vitest` 等）
+    2. 计算型检查不通过 → 先修复再进浏览器测试（不浪费时间在格式/类型错误上）
+    3. 结果作为测试报告的**第一节**
   - 必须像真实用户一样操作——启动浏览器、点击、输入、导航
   - 7 维度健康评分必须逐项检查
   - Bug 按严重度排序: Critical > High > Medium > Low
@@ -23,6 +27,9 @@
   ```
   用户: "测试一下毛孩子测试"
   输出: 🐛 QA测试 | Standard 模式
+        ── 计算型检查 ──
+        ESLint: 0 errors ✅ / TypeScript: 0 errors ✅ / Tests: 12/12 ✅
+        ── 浏览器测试 ──
         Phase 3-6 基线: 7维度评分 Console:9/10 Visual:7/10 Functional:6/10
         🐛 BUG-001 [HIGH] 第5题点击后无响应
         🐛 BUG-002 [MEDIUM] 结果页分享按钮偏移
