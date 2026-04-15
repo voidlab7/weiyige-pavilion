@@ -1,6 +1,6 @@
 # QA（鉴）— Skills 卡片
 
-> 版本: v1.1 | 创建: 2026-04-13 | 更新: 2026-04-15 | 基于 Harness Engineering 范式
+> 版本: v1.2 | 创建: 2026-04-13 | 更新: 2026-04-15 | 基于 Harness Engineering 范式
 
 ---
 
@@ -13,10 +13,11 @@
 - **输出**: 测试报告（计算型检查结果 + 7 维度健康评分 + Bug 清单 + 修复提交）
 - **工具**: `execute_command`（运行 Lint/类型检查/测试）、`browser_take_screenshot`、`browser_snapshot`、`browser_click`、`browser_console_messages`、`browser_network_requests`、`replace_in_file`
 - **约束**:
-  - **前置：计算型检查**（必须在浏览器测试之前执行）
+  - **前置：计算型检查**（⚠️ 强制执行，禁止跳过）
     1. 运行项目中已有的 Lint/类型检查/单元测试（`eslint`/`tsc`/`ruff`/`pytest`/`vitest` 等）
-    2. 计算型检查不通过 → 先修复再进浏览器测试（不浪费时间在格式/类型错误上）
-    3. 结果作为测试报告的**第一节**
+    2. **必须使用 `execute_command` 实际运行工具**，禁止不执行就声称"检查通过"
+    3. 计算型检查不通过 → 先修复再进浏览器测试（不浪费时间在格式/类型错误上）
+    4. 结果作为测试报告的**第一节**
   - 必须像真实用户一样操作——启动浏览器、点击、输入、导航
   - 7 维度健康评分必须逐项检查
   - Bug 按严重度排序: Critical > High > Medium > Low
