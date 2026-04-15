@@ -455,7 +455,7 @@ function Install-UpdateMode {
     # 更新 CodeBuddy Agent 文件
     Write-Host ""
     Write-Host "▶ 更新 CodeBuddy Agent 文件 ..." -ForegroundColor Yellow
-    $agentsDir = Join-Path $Target ".codebuddy\agent"
+    $agentsDir = Join-Path $Target ".codebuddy\agents"
     if (Test-Path $agentsDir) {
         $localAgentsDir = Join-Path $SCRIPT_DIR "agents_for_codebuddy"
         if (Test-Path $localAgentsDir) {

@@ -372,7 +372,7 @@ install_full_mode() {
   # 安装 CodeBuddy 多 Agent 适配文件
   echo ""
   echo -e "${YELLOW}▶ 安装 CodeBuddy 多 Agent 适配文件 ...${NC}"
-  AGENTS_DIR="$TARGET_DIR/.codebuddy/agent"
+  AGENTS_DIR="$TARGET_DIR/.codebuddy/agents"
   mkdir -p "$AGENTS_DIR"
 
   AGENT_FILES_FOUND=false
@@ -385,7 +385,7 @@ install_full_mode() {
 
   if $AGENT_FILES_FOUND; then
     AGENT_COUNT=$(ls -1 "$AGENTS_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
-    echo -e "  ${GREEN}✅ 已安装 ${AGENT_COUNT} 个 Agent 到 .codebuddy/agent/${NC}"
+    echo -e "  ${GREEN}✅ 已安装 ${AGENT_COUNT} 个 Agent 到 .codebuddy/agents/${NC}"
   else
     # 远程安装：逐个下载
     AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人")
@@ -446,9 +446,9 @@ print_success() {
   echo -e "     工具会自动读取 ${CONFIG_FILE}，激活维弈阁团队"
   echo ""
   echo -e "  2. ${BOLD}多 Agent 模式${NC}（推荐）："
-  echo -e "     已将 Agent 文件安装到 ${BOLD}.codebuddy/agent/${NC}"
+  echo -e "     已将 Agent 文件安装到 ${BOLD}.codebuddy/agents/${NC}"
   echo -e "     CodeBuddy 会根据意图自动调度对应 Agent"
-  echo -e "     如需手动添加：cp agents_for_codebuddy/*.md .codebuddy/agent/"
+  echo -e "     如需手动添加：cp agents_for_codebuddy/*.md .codebuddy/agents/"
   echo ""
   echo -e "  3. 试试第一条指令："
   echo -e "     ${CYAN}@辞 帮我写一篇公众号文章${NC}"
@@ -606,7 +606,7 @@ install_update_mode() {
   # 更新 CodeBuddy Agent 文件
   echo ""
   echo -e "${YELLOW}▶ 更新 CodeBuddy Agent 文件 ...${NC}"
-  AGENTS_DIR="$TARGET_DIR/.codebuddy/agent"
+  AGENTS_DIR="$TARGET_DIR/.codebuddy/agents"
   if [ -d "$AGENTS_DIR" ]; then
     AGENT_FILES_FOUND=false
     for f in "$PAVILION_DIR/agents_for_codebuddy/"*.md; do
@@ -628,7 +628,7 @@ install_update_mode() {
       done
     fi
   else
-    echo -e "  ${BLUE}ℹ️  未找到 .codebuddy/agent/，跳过${NC}"
+    echo -e "  ${BLUE}ℹ️  未找到 .codebuddy/agents/，跳过${NC}"
   fi
 
   # 更新 CLAUDE.md 中的维弈阁配置段落
