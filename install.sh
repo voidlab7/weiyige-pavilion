@@ -388,7 +388,7 @@ install_full_mode() {
     echo -e "  ${GREEN}✅ 已安装 ${AGENT_COUNT} 个 Agent 到 .codebuddy/agents/${NC}"
   else
     # 远程安装：逐个下载
-    AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人")
+    AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "墨·执事")
     for name in "${AGENT_NAMES[@]}"; do
       if fetch_file "agents_for_codebuddy/${name}.md" "$AGENTS_DIR/${name}.md"; then
         echo -e "  ${GREEN}✅ ${name}${NC}"
@@ -620,7 +620,7 @@ install_update_mode() {
       AGENT_COUNT=$(ls -1 "$AGENTS_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
       echo -e "  ${GREEN}✅ 已更新 ${AGENT_COUNT} 个 Agent${NC}"
     else
-      AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人")
+      AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "墨·执事")
       for name in "${AGENT_NAMES[@]}"; do
         if fetch_file "agents_for_codebuddy/${name}.md" "$AGENTS_DIR/${name}.md" 2>/dev/null; then
           echo -e "  ${GREEN}✅ ${name}${NC}"
