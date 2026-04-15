@@ -345,6 +345,25 @@ install_full_mode() {
     fi
   done
 
+  # 复制阶段门禁清单
+  echo ""
+  echo -e "${YELLOW}▶ 安装 Gates 阶段门禁清单 ...${NC}"
+  GATES_DIR="$WEIYIGE_DIR/gates"
+  mkdir -p "$GATES_DIR"
+  GATES_FILES=("gate-01-ideation.md" "gate-02-requirements.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "README.md")
+  GATES_SUCCESS=0
+  GATES_TOTAL=${#GATES_FILES[@]}
+  for f in "${GATES_FILES[@]}"; do
+    if fetch_file "gates/$f" "$GATES_DIR/$f" && [ -s "$GATES_DIR/$f" ]; then
+      GATES_SUCCESS=$((GATES_SUCCESS + 1))
+    fi
+  done
+  if [ "$GATES_SUCCESS" -eq "$GATES_TOTAL" ]; then
+    echo -e "  ${GREEN}✅ Gates 已安装（${GATES_SUCCESS} 个门禁清单）${NC}"
+  else
+    echo -e "  ${YELLOW}⚠️  Gates 部分安装（${GATES_SUCCESS}/${GATES_TOTAL}）${NC}"
+  fi
+
   # 安装配置文件（智能处理：不覆盖已有文件）
   echo ""
   echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
@@ -559,6 +578,30 @@ install_update_mode() {
       fi
     fi
   done
+
+  # 更新 Gates 阶段门禁清单
+  echo ""
+  echo -e "${YELLOW}▶ 更新 Gates 阶段门禁清单 ...${NC}"
+  GATES_DIR="$WEIYIGE_DIR/gates"
+  mkdir -p "$GATES_DIR"
+  GATES_FILES=("gate-01-ideation.md" "gate-02-requirements.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "README.md")
+  GATES_SUCCESS=0
+  GATES_TOTAL=${#GATES_FILES[@]}
+  for f in "${GATES_FILES[@]}"; do
+    if [ -f "$PAVILION_DIR/gates/$f" ]; then
+      cp "$PAVILION_DIR/gates/$f" "$GATES_DIR/$f"
+      GATES_SUCCESS=$((GATES_SUCCESS + 1))
+    else
+      if fetch_file "gates/$f" "$GATES_DIR/$f" 2>/dev/null && [ -s "$GATES_DIR/$f" ]; then
+        GATES_SUCCESS=$((GATES_SUCCESS + 1))
+      fi
+    fi
+  done
+  if [ "$GATES_SUCCESS" -eq "$GATES_TOTAL" ]; then
+    echo -e "  ${GREEN}✅ Gates 已更新（${GATES_SUCCESS} 个门禁清单）${NC}"
+  else
+    echo -e "  ${YELLOW}⚠️  Gates 部分更新（${GATES_SUCCESS}/${GATES_TOTAL}）${NC}"
+  fi
 
   # 更新 CodeBuddy Agent 文件
   echo ""

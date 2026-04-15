@@ -233,6 +233,25 @@ function Install-FullMode {
         }
     }
 
+    # Gates 阶段门禁清单
+    Write-Host ""
+    Write-Host "▶ 安装 Gates 阶段门禁清单 ..." -ForegroundColor Yellow
+    $gatesDir = Join-Path $weiyigeDir "gates"
+    New-Item -ItemType Directory -Path $gatesDir -Force | Out-Null
+    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirements.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "README.md")
+    $gatesSuccess = 0
+    foreach ($f in $gatesFiles) {
+        $destFile = Join-Path $gatesDir $f
+        if (Fetch-File "gates/$f" $destFile) {
+            $gatesSuccess++
+        }
+    }
+    if ($gatesSuccess -eq $gatesFiles.Count) {
+        Write-Host "  ✅ Gates 已安装（$gatesSuccess 个门禁清单）" -ForegroundColor Green
+    } else {
+        Write-Host "  ⚠️  Gates 部分安装（$gatesSuccess/$($gatesFiles.Count)）" -ForegroundColor Yellow
+    }
+
     # 配置文件
     Write-Host ""
     Write-Host "▶ 安装配置文件 ..." -ForegroundColor Yellow
@@ -408,6 +427,29 @@ function Install-UpdateMode {
                 Write-Host "  ⚠️  $f — 下载失败" -ForegroundColor Yellow
             }
         }
+    }
+
+    # 更新 Gates 阶段门禁清单
+    Write-Host ""
+    Write-Host "▶ 更新 Gates 阶段门禁清单 ..." -ForegroundColor Yellow
+    $gatesDir = Join-Path $weiyigeDir "gates"
+    if (-not (Test-Path $gatesDir)) { New-Item -ItemType Directory -Path $gatesDir -Force | Out-Null }
+    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirements.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "README.md")
+    $gatesSuccess = 0
+    foreach ($f in $gatesFiles) {
+        $destFile = Join-Path $gatesDir $f
+        $localFile = Join-Path $SCRIPT_DIR "gates\$f"
+        if (Test-Path $localFile) {
+            Copy-Item $localFile $destFile -Force
+            $gatesSuccess++
+        } else {
+            if (Fetch-File "gates/$f" $destFile) { $gatesSuccess++ }
+        }
+    }
+    if ($gatesSuccess -eq $gatesFiles.Count) {
+        Write-Host "  ✅ Gates 已更新（$gatesSuccess 个门禁清单）" -ForegroundColor Green
+    } else {
+        Write-Host "  ⚠️  Gates 部分更新（$gatesSuccess/$($gatesFiles.Count)）" -ForegroundColor Yellow
     }
 
     # 更新 CodeBuddy Agent 文件
