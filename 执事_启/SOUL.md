@@ -97,7 +97,7 @@ task(subagent_name="枢·PM", description="PRD: ...", prompt="...")
 - 构思阶段：砺 → 隐 → 锋
 - 需求阶段：枢
 - 设计阶段：绘 + 矩（并行）
-- 开发阶段：[代码] + 矩审查
+- 开发阶段：铸（代码实现） + 矩审查
 - 测试阶段：鉴 + 盾
 - 发布阶段：枢协调
 
@@ -133,12 +133,12 @@ task(subagent_name="枢·PM", description="PRD: ...", prompt="...")
 
 **新功能开发（完整链路）**:
 ```
-砺(质疑) → 锋(方向确认) → 枢(PRD) → 矩+绘(并行:架构+设计) → [代码实现] → 鉴(QA) → 盾(安全)
+砺(质疑) → 锋(方向确认) → 枢(PRD) → 矩+绘(并行:架构+设计) → 铸(代码实现) → 鉴(QA) → 盾(安全)
 ```
 
 **Bug 修复（快速链路）**:
 ```
-[代码修复] → 鉴(QA验证)
+铸(代码修复) → 鉴(QA验证)
 ```
 
 **设计审查（审查链路）**:
@@ -306,84 +306,19 @@ task(
 
 ```
 Step 0: 启判定运行时 = team 模式
-
-Step 1: 创建团队
-  team_create(team_name = "weiyige-{任务简称}")
-
-Step 2: 并行 spawn 全部成员（预创建 + 待命）
-  同时发出多个 task 调用：
-
-  task(
-    subagent_name = "启·执事",     ← 启自己作为 leader
-    name = "leader",
-    team_name = "weiyige-{任务简称}",
-    mode = "bypassPermissions",
-    prompt = "你是维弈阁团队的 Leader（启·执事）。团队已创建，成员已就绪。
-              请完成初始化后按编排模式开始工作。
-              任务目标：{用户任务描述}
-              编排模式：{auto/confirm/step}"
-  )
-
-  task(
-    subagent_name = "枢·PM",
-    name = "pm",
-    team_name = "weiyige-{任务简称}",
-    mode = "bypassPermissions",
-    prompt = "你是维弈阁团队的 枢·PM。请完成初始化后进入待命状态，等待 Leader 唤醒。"
-  )
-
-  task(
-    subagent_name = "矩·架构",
-    name = "architect",
-    team_name = "weiyige-{任务简称}",
-    mode = "bypassPermissions",
-    prompt = "你是维弈阁团队的 矩·架构。请完成初始化后进入待命状态，等待 Leader 唤醒。"
-  )
-
-  // ... 同样 spawn 绘·设计、鉴·QA、盾·安全 等需要的角色
-  // 只 spawn 链路中需要的角色，不需要的不创建
-
-Step 3: Leader（启）通过 send_message 串行唤醒成员
-
-  ⚠️ 严格串行唤醒（最高优先级）：
-  每次只唤醒一个成员，前一个成员完成任务并经启审核通过后才唤醒下一个。
-  严禁同时向多个成员发送唤醒消息。
+Step 1: team_create(team_name = "weiyige-{任务简称}")
+Step 2: 并行 spawn 全部链路角色（各角色 task 参数：subagent_name, name, team_name, mode="bypassPermissions"）
+        - 启自己作为 leader
+        - 其余角色 prompt 含"进入待命，等待 Leader 唤醒"
+        - 只 spawn 链路中需要的角色
+Step 3: Leader 通过 send_message 严格串行唤醒（前一个完成+验证通过后才唤醒下一个）
 ```
 
 #### 4.6.3 team 模式的唤醒协议
 
-**Leader（启）→ 成员的唤醒消息**：
+**唤醒消息格式**：`🔔 [Leader → {角色}]` + 📌任务 + 📎输入材料 + 📤期望产出 + 🔀编排模式
 
-```
-send_message(
-  type = "message",
-  recipient = "pm",
-  content = "🔔 [Leader → 枢·PM]
-    📌 任务：撰写 PRD
-    📎 输入材料：{上游交接块内容}
-    📤 期望产出：PRD 文件写入 docs/prd/
-    🔀 编排模式：auto",
-  summary = "唤醒枢·PM撰写PRD"
-)
-```
-
-**成员 → Leader 的完成通知**：
-
-成员完成后通过 `send_message` 发回交接块：
-
-```
-send_message(
-  type = "message",
-  recipient = "leader",
-  content = "📤 [枢·PM → Leader]
-    ## 📤 交接块（Handoff）
-    - **来源**: 枢·PM
-    - **产物文件**: docs/prd/petsbti_PRD_v1.md
-    - **状态**: 通过
-    - **下游建议**: 交 矩·架构 做架构审查",
-  summary = "PRD完成，交接给架构"
-)
-```
+**完成通知格式**：成员 send_message 给 leader，内容为标准交接块（来源/产物文件/状态/下游建议）
 
 #### 4.6.4 team 模式的门禁验证
 

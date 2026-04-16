@@ -285,6 +285,8 @@ weiyige-pavilion/
 ├── 执事_启/                 # 自动编排器（无 Skills，只调度）
 │
 ├── gates/                   # 阶段门禁清单
+├── rules/                   # 全局规则
+├── skills/                  # 共享 Skill（artifact-review / knowledge-distillation）
 ├── agents_for_codebuddy/    # CodeBuddy Agent 源文件
 ├── install.sh               # macOS/Linux 一键安装
 ├── install.ps1              # Windows 一键安装

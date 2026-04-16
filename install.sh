@@ -45,16 +45,18 @@ INSTALL_TOOL=""  # 空=自动检测
 AGENTS=(
   "CEO_锋" "PM_枢" "架构_矩" "设计_绘" "QA_鉴"
   "安全_盾" "财务_算" "内容_辞" "顾问_隐" "合伙人_砺"
-  "执事_启" "探索_寻"
+  "执事_启" "探索_寻" "开发_铸"
 )
 
-CB_AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "启·执事")
+CB_AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "启·执事" "寻·探索" "铸·开发")
 
 PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
 
 GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "README.md")
 
 RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
+
+SKILLS_DIRS=("artifact-review" "knowledge-distillation")
 
 # ---------- 工具 → 配置文件映射 ----------
 get_config_file() {
@@ -273,6 +275,58 @@ install_file_set() {
   fi
 }
 
+# ---------- 安装/更新 Skills 目录 ----------
+# $1=WEIYIGE_DIR  $2=mode(full/update)
+# Skills 同时安装到两个位置：
+#   .weiyige/skills/      — 规则模式下由 CLAUDE.md 引用
+#   .codebuddy/skills/    — CodeBuddy 多 Agent 模式自动发现和加载
+install_skills() {
+  local wei_dir="$1" mode="$2"
+  local skills_dir="$wei_dir/skills"
+  local cb_skills_dir="$TARGET_DIR/.codebuddy/skills"
+  mkdir -p "$skills_dir"
+  mkdir -p "$cb_skills_dir"
+
+  echo ""
+  echo -e "${YELLOW}▶ $([ "$mode" = "update" ] && echo "更新" || echo "安装") Skills ...${NC}"
+
+  for skill in "${SKILLS_DIRS[@]}"; do
+    local dest="$skills_dir/$skill"
+    local cb_dest="$cb_skills_dir/$skill"
+    mkdir -p "$dest"
+    mkdir -p "$cb_dest"
+
+    if [ -d "$PAVILION_DIR/skills/$skill" ]; then
+      # 本地安装：递归复制到两个位置
+      cp -r "$PAVILION_DIR/skills/$skill/"* "$dest/" 2>/dev/null || true
+      cp -r "$PAVILION_DIR/skills/$skill/"* "$cb_dest/" 2>/dev/null || true
+      echo -e "  ${GREEN}✅ $skill${NC}"
+    else
+      # 远程安装：下载 SKILL.md + references/
+      local failed=false
+      if ! fetch_file "skills/$skill/SKILL.md" "$dest/SKILL.md"; then
+        failed=true
+      fi
+      # 尝试下载 references（artifact-review 有）
+      for ref in requirement-review.md tech-design-review.md code-review.md test-review.md; do
+        mkdir -p "$dest/references"
+        fetch_file "skills/$skill/references/$ref" "$dest/references/$ref" 2>/dev/null || true
+      done
+      # 复制到 .codebuddy/skills/
+      if [ -d "$dest" ]; then
+        cp -r "$dest/"* "$cb_dest/" 2>/dev/null || true
+      fi
+      if ! $failed; then
+        echo -e "  ${GREEN}✅ $skill${NC}"
+      else
+        echo -e "  ${YELLOW}⚠️  $skill — SKILL.md 下载失败${NC}"
+      fi
+    fi
+  done
+
+  echo -e "  ${BLUE}ℹ️  Skills 已同步到 .weiyige/skills/ 和 .codebuddy/skills/${NC}"
+}
+
 # ---------- 安装/更新 CodeBuddy Agent 文件 ----------
 install_cb_agents() {
   echo ""
@@ -420,7 +474,8 @@ print_success() {
   echo ""
   echo -e "  2. ${BOLD}多 Agent 模式${NC}（推荐）："
   echo -e "     已将 Agent 文件安装到 ${BOLD}.codebuddy/agents/${NC}"
-  echo -e "     CodeBuddy 会根据意图自动调度对应 Agent"
+  echo -e "     已将 Skills 安装到 ${BOLD}.codebuddy/skills/${NC}"
+  echo -e "     CodeBuddy 会根据意图自动调度对应 Agent 和 Skill"
   echo ""
   echo -e "  3. 试试第一条指令："
   echo -e "     ${CYAN}@辞 帮我写一篇公众号文章${NC}"
@@ -475,6 +530,7 @@ install_full_mode() {
   install_file_set "$WEIYIGE_DIR" ""    PROTOCOL_FILES "安装协议文件"
   install_file_set "$WEIYIGE_DIR" "gates" GATES_FILES  "安装 Gates 阶段门禁清单"
   install_file_set "$WEIYIGE_DIR" "rules" RULES_FILES  "安装 Rules 规则文件"
+  install_skills "$WEIYIGE_DIR" "full"
 
   echo ""
   echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
@@ -519,6 +575,7 @@ install_update_mode() {
   install_file_set "$WEIYIGE_DIR" ""    PROTOCOL_FILES "更新协议文件"
   install_file_set "$WEIYIGE_DIR" "gates" GATES_FILES  "更新 Gates 阶段门禁清单"
   install_file_set "$WEIYIGE_DIR" "rules" RULES_FILES  "更新 Rules 规则文件"
+  install_skills "$WEIYIGE_DIR" "update"
 
   # 更新 CodeBuddy Agent 文件
   echo ""

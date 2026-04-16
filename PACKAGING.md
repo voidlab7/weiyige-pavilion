@@ -1,7 +1,7 @@
 # 维弈阁打包与发布规范（Packaging）
 
 > 版本: v1.0 | 创建: 2026-04-16
-> 借鉴: GSLB DevOps 的 package-skill.sh + PACKAGING.md 版本化发布设计
+> 借鉴: 版本化发布设计
 
 ---
 
@@ -130,3 +130,4 @@ cd weiyige-pavilion
 | v1.4 | `.weiyige/` + `.codebuddy/agents/` | 12 | 新增执事_启 |
 | v1.5 | `.weiyige/` + `.codebuddy/agents/` | 12 | gates/ 增加产物验证 |
 | v1.6 | `.weiyige/` + `.codebuddy/agents/` | 12 | SOUL.md 增加自检 + 全局规则 |
+| v2.0 | `.weiyige/` + `.codebuddy/agents/` | 13 | 新增铸·开发 + `skills/` 共享目录（artifact-review / knowledge-distillation） |

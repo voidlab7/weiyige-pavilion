@@ -217,7 +217,8 @@ update_memory({
 | `.weiyige/[Agent]/SOUL.md` | Agent 思维框架和方法论 |
 | `.weiyige/[Agent]/IDENTITY.md` | Agent 人格和风格定义 |
 | `.weiyige/[Agent]/memory/` | Agent 记忆存储（偏好/教训/知识） |
-| `agents_for_codebuddy/` | CodeBuddy 多 Agent 模式适配文件，安装后拷贝到 `.codebuddy/agent/` |
+| `.weiyige/skills/` | 共享 Skill（artifact-review / knowledge-distillation），审查和知识沉淀时加载 |
+| `agents_for_codebuddy/` | CodeBuddy 多 Agent 模式适配文件，安装后拷贝到 `.codebuddy/agents/` |
 
 ---
 
@@ -232,13 +233,13 @@ update_memory({
 | 模式 | 原理 | 配置位置 |
 |------|------|---------|
 | **规则模式**（默认） | CLAUDE.md 作为路由中枢，AI 读取 `.weiyige/` 下的 Agent 定义 | `CLAUDE.md` + `.weiyige/` |
-| **多 Agent 模式** | 每个 Agent 是独立 agent，CodeBuddy 原生调度 | `.codebuddy/agent/*.md` |
+| **多 Agent 模式** | 每个 Agent 是独立 agent，CodeBuddy 原生调度 | `.codebuddy/agents/*.md` |
 
-**启用多 Agent 模式**：将 `agents_for_codebuddy/` 目录下的文件拷贝到项目的 `.codebuddy/agent/` 目录：
+**启用多 Agent 模式**：将 `agents_for_codebuddy/` 目录下的文件拷贝到项目的 `.codebuddy/agents/` 目录：
 
 ```bash
-mkdir -p .codebuddy/agent
-cp agents_for_codebuddy/*.md .codebuddy/agent/
+mkdir -p .codebuddy/agents
+cp agents_for_codebuddy/*.md .codebuddy/agents/
 ```
 
 两种模式可以共存。多 Agent 模式下，CodeBuddy 会根据每个 agent 的 `description` 自动匹配用户意图并调度。

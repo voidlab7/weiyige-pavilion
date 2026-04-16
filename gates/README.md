@@ -1,6 +1,6 @@
 # 阶段门禁清单（Gate Checklists）
 
-> 来源：[GSLB CodeBuddy 工作流](gslb-devepos-ai-results/) — 审核引擎与流程检查分离设计
+> 审核引擎与流程检查分离设计
 > 
 > 每个阶段有独立的门禁清单，审查时**逐条勾选**。
 > 门禁清单只含**流程完成度检查**，产物质量评审由 `rules/review-scoring.md` 的多维度评分负责。
