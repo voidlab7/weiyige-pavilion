@@ -296,6 +296,8 @@ install_full_mode() {
     "内容_辞"
     "顾问_隐"
     "合伙人_砺"
+    "执事_墨"
+    "探索_寻"
   )
 
   echo ""
@@ -338,7 +340,7 @@ install_full_mode() {
   # 复制协议文件
   echo ""
   echo -e "${YELLOW}▶ 安装协议文件 ...${NC}"
-  PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md")
+  PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
   for f in "${PROTOCOL_FILES[@]}"; do
     fetch_file "$f" "$WEIYIGE_DIR/$f"
     if [ -f "$WEIYIGE_DIR/$f" ] && [ -s "$WEIYIGE_DIR/$f" ]; then
@@ -353,7 +355,7 @@ install_full_mode() {
   echo -e "${YELLOW}▶ 安装 Gates 阶段门禁清单 ...${NC}"
   GATES_DIR="$WEIYIGE_DIR/gates"
   mkdir -p "$GATES_DIR"
-  GATES_FILES=("gate-01-ideation.md" "gate-02-requirements.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "README.md")
+  GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "README.md")
   GATES_SUCCESS=0
   GATES_TOTAL=${#GATES_FILES[@]}
   for f in "${GATES_FILES[@]}"; do
@@ -365,6 +367,25 @@ install_full_mode() {
     echo -e "  ${GREEN}✅ Gates 已安装（${GATES_SUCCESS} 个门禁清单）${NC}"
   else
     echo -e "  ${YELLOW}⚠️  Gates 部分安装（${GATES_SUCCESS}/${GATES_TOTAL}）${NC}"
+  fi
+
+  # 安装规则文件
+  echo ""
+  echo -e "${YELLOW}▶ 安装 Rules 规则文件 ...${NC}"
+  RULES_DIR="$WEIYIGE_DIR/rules"
+  mkdir -p "$RULES_DIR"
+  RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
+  RULES_SUCCESS=0
+  RULES_TOTAL=${#RULES_FILES[@]}
+  for f in "${RULES_FILES[@]}"; do
+    if fetch_file "rules/$f" "$RULES_DIR/$f" && [ -s "$RULES_DIR/$f" ]; then
+      RULES_SUCCESS=$((RULES_SUCCESS + 1))
+    fi
+  done
+  if [ "$RULES_SUCCESS" -eq "$RULES_TOTAL" ]; then
+    echo -e "  ${GREEN}✅ Rules 已安装（${RULES_SUCCESS} 个规则文件）${NC}"
+  else
+    echo -e "  ${YELLOW}⚠️  Rules 部分安装（${RULES_SUCCESS}/${RULES_TOTAL}）${NC}"
   fi
 
   # 安装配置文件（智能处理：不覆盖已有文件）
@@ -503,6 +524,8 @@ install_update_mode() {
     "内容_辞"
     "顾问_隐"
     "合伙人_砺"
+    "执事_墨"
+    "探索_寻"
   )
 
   # 更新 Agent 定义文件（覆盖 SOUL/IDENTITY/SKILLS/skills/rules，保留 memory/）
@@ -568,7 +591,7 @@ install_update_mode() {
   # 更新协议文件
   echo ""
   echo -e "${YELLOW}▶ 更新协议文件 ...${NC}"
-  PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md")
+  PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
   for f in "${PROTOCOL_FILES[@]}"; do
     if [ -f "$PAVILION_DIR/$f" ]; then
       cp "$PAVILION_DIR/$f" "$WEIYIGE_DIR/$f"
@@ -587,7 +610,7 @@ install_update_mode() {
   echo -e "${YELLOW}▶ 更新 Gates 阶段门禁清单 ...${NC}"
   GATES_DIR="$WEIYIGE_DIR/gates"
   mkdir -p "$GATES_DIR"
-  GATES_FILES=("gate-01-ideation.md" "gate-02-requirements.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "README.md")
+  GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "README.md")
   GATES_SUCCESS=0
   GATES_TOTAL=${#GATES_FILES[@]}
   for f in "${GATES_FILES[@]}"; do
@@ -604,6 +627,30 @@ install_update_mode() {
     echo -e "  ${GREEN}✅ Gates 已更新（${GATES_SUCCESS} 个门禁清单）${NC}"
   else
     echo -e "  ${YELLOW}⚠️  Gates 部分更新（${GATES_SUCCESS}/${GATES_TOTAL}）${NC}"
+  fi
+
+  # 更新 Rules 规则文件
+  echo ""
+  echo -e "${YELLOW}▶ 更新 Rules 规则文件 ...${NC}"
+  RULES_DIR="$WEIYIGE_DIR/rules"
+  mkdir -p "$RULES_DIR"
+  RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
+  RULES_SUCCESS=0
+  RULES_TOTAL=${#RULES_FILES[@]}
+  for f in "${RULES_FILES[@]}"; do
+    if [ -f "$PAVILION_DIR/rules/$f" ]; then
+      cp "$PAVILION_DIR/rules/$f" "$RULES_DIR/$f"
+      RULES_SUCCESS=$((RULES_SUCCESS + 1))
+    else
+      if fetch_file "rules/$f" "$RULES_DIR/$f" 2>/dev/null && [ -s "$RULES_DIR/$f" ]; then
+        RULES_SUCCESS=$((RULES_SUCCESS + 1))
+      fi
+    fi
+  done
+  if [ "$RULES_SUCCESS" -eq "$RULES_TOTAL" ]; then
+    echo -e "  ${GREEN}✅ Rules 已更新（${RULES_SUCCESS} 个规则文件）${NC}"
+  else
+    echo -e "  ${YELLOW}⚠️  Rules 部分更新（${RULES_SUCCESS}/${RULES_TOTAL}）${NC}"
   fi
 
   # 更新 CodeBuddy Agent 文件
