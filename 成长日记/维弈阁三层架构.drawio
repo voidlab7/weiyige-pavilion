@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" modified="2026-04-12T00:12:00.000Z" agent="CodeBuddy" version="24.0.0">
   <diagram name="维弈阁三层架构" id="weiyige-layers">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+    <mxGraphQidel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -106,11 +106,11 @@
           <mxGeometry x="555" y="295" width="130" height="45" as="geometry" />
         </mxCell>
 
-        <!-- 墨 执事 -->
+        <!-- 启 执事 -->
         <mxCell id="mo" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;arcSize=12;" vertex="1" parent="1">
           <mxGeometry x="445" y="350" width="250" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="mo_name" value="墨 · 执事" style="text;html=1;fontSize=14;fontStyle=1;align=left;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a1a;" vertex="1" parent="1">
+        <mxCell id="mo_name" value="启 · 执事" style="text;html=1;fontSize=14;fontStyle=1;align=left;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a1a;" vertex="1" parent="1">
           <mxGeometry x="455" y="350" width="100" height="45" as="geometry" />
         </mxCell>
         <mxCell id="mo_desc" value="管家 · 流程编排" style="text;html=1;fontSize=11;align=right;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#555555;" vertex="1" parent="1">
@@ -188,6 +188,6 @@
         </mxCell>
 
       </root>
-    </mxGraphModel>
+    </mxGraphQidel>
   </diagram>
 </mxfile>

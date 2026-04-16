@@ -28,7 +28,7 @@
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
 | `team.mode` | string | ❌ | `"rule"` | 运行模式：`rule`（规则模式）/ `multi-agent`（多 Agent 模式）/ `hybrid`（共存） |
-| `team.orchestrator` | string | ❌ | `"manual"` | 编排方式：`manual`（用户手动 @）/ `auto`（墨自动编排） |
+| `team.orchestrator` | string | ❌ | `"manual"` | 编排方式：`manual`（用户手动 @）/ `auto`（启自动编排） |
 | `team.default_model` | string | ❌ | `""` | 默认模型（留空则用各角色自带配置） |
 
 ---

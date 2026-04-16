@@ -127,6 +127,6 @@ cd weiyige-pavilion
 | v1.1 | `.weiyige/` | 10 | 新增 PROTOCOL/ROUTER/MEMORY.md |
 | v1.2 | `.weiyige/` + `.codebuddy/agents/` | 10 | 新增 agents_for_codebuddy/ |
 | v1.3 | `.weiyige/` + `.codebuddy/agents/` | 11 | 新增探索_寻 + SKILLS.md |
-| v1.4 | `.weiyige/` + `.codebuddy/agents/` | 12 | 新增执事_墨 |
+| v1.4 | `.weiyige/` + `.codebuddy/agents/` | 12 | 新增执事_启 |
 | v1.5 | `.weiyige/` + `.codebuddy/agents/` | 12 | gates/ 增加产物验证 |
 | v1.6 | `.weiyige/` + `.codebuddy/agents/` | 12 | SOUL.md 增加自检 + 全局规则 |

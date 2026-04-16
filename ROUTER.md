@@ -181,8 +181,8 @@
 | `@辞` 或 `@content` | 内容_辞 | Standard |
 | `@隐` 或 `@advisor` | 顾问_隐 | Standard |
 | `@砺` 或 `@devil` | 合伙人_砺 | Standard |
-| `@team` | 墨·执事自动编排 | Standard |
-| `@墨` 或 `@steward` 或 `@auto` | 墨·执事（自动编排全链路） | Standard |
+| `@team` | 启·执事自动编排 | Standard |
+| `@启` 或 `@steward` 或 `@auto` | 启·执事（自动编排全链路） | Standard |
 | `@quick [Agent]` | 指定 Agent | Quick |
 | `@deep [Agent]` | 指定 Agent | Deep |
 

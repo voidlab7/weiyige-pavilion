@@ -215,7 +215,7 @@
 
 > **思想来源**：
 > - [Sigrid Jin / Claw Code](https://github.com/sigridjin) — AI Agent 自治编排实践
-> - [Martin Fowler - Harness Engineering](https://martinfowler.com/articles/harness-engineering.html)（Birgitta Böckeler, 2026-04-02）— Agent = Model + Harness，Guides（前馈） + Sensors（反馈）
+> - [Martin Fowler - Harness Engineering](https://martinfowler.com/articles/harness-engineering.html)（Birgitta Böckeler, 2026-04-02）— Agent = Qidel + Harness，Guides（前馈） + Sensors（反馈）
 >
 > **本质问题**：维弈阁当前 100% 依赖推断型约束（LLM 互相审查），**计算型 Sensor 为零**。补上这一层，同一模型的成功率就能从 42% 跳到 78%。
 >
@@ -255,18 +255,18 @@
 
 ### 6.3 自动编排（P1 — 从人肉调度到 Agent 链）
 
-解决：**用户还在手动 @角色串联流程，墨（执事）的编排能力未落地**
+解决：**用户还在手动 @角色串联流程，启（执事）的编排能力未落地**
 
-- [x] **[H-04] 墨（执事）串联 Agent 链 — 无人值守模式**
+- [x] **[H-04] 启（执事）串联 Agent 链 — 无人值守模式**
   - 问题：用户设定任务后仍需手动 @枢 → @矩 → @绘 → @鉴 逐个调度
-  - 方案：墨解析用户意图 → 自动路由到 Agent 链 → 每个 Agent 输出交接块 → 墨汇总最终报告。失败时暂停等人，不继续
-  - 落地点：完善 `执事_墨/SOUL.md` 的编排逻辑 + 利用 CodeBuddy Team Mode（`task` 工具 `name`/`team_name` 参数）并行 spawn Agent
-  - 验证：给墨一个"新增测试产品"的任务，墨能自动串联 枢→矩→绘→[代码]→鉴 全链路
+  - 方案：启解析用户意图 → 自动路由到 Agent 链 → 每个 Agent 输出交接块 → 启汇总最终报告。失败时暂停等人，不继续
+  - 落地点：完善 `执事_启/SOUL.md` 的编排逻辑 + 利用 CodeBuddy Team Qide（`task` 工具 `name`/`team_name` 参数）并行 spawn Agent
+  - 验证：给启一个"新增测试产品"的任务，启能自动串联 枢→矩→绘→[代码]→鉴 全链路
 
 - [x] **[H-05] 多 Agent 并行审查**
   - 问题：当前审查是串行的——矩审完绘才审。但工程审查和 UI 审查没有依赖关系
   - 方案：H-04 的编排逻辑中，对无依赖关系的审查步骤并行执行（矩+绘并行、盾独立）
-  - 落地点：`执事_墨/SOUL.md` 编排规则
+  - 落地点：`执事_启/SOUL.md` 编排规则
   - 验证：一次 review 流程中，绘和矩并行执行，总耗时缩短 40%+
 
 ---
@@ -315,8 +315,8 @@
 | 🔴 P0 | H-01 | 计算型检查前置 | 全靠 LLM 判断 | ✅ 已完成（2026-04-15） |
 | 🔴 P0 | H-02 | 开发阶段左移检查 | 审查集中在阶段门 | ✅ 已完成（2026-04-15） |
 | 🟡 P1 | H-03 | 教训→规则升级 | 教训没变成规则 | ✅ 已完成（2026-04-15） |
-| 🟡 P1 | H-04 | 墨串联 Agent 链 | 人肉调度 | ✅ 已有（执事_墨/SOUL.md） |
-| 🟡 P1 | H-05 | 多 Agent 并行审查 | 串行等待 | ✅ 已有（执事_墨/SOUL.md 3.2） |
+| 🟡 P1 | H-04 | 启串联 Agent 链 | 人肉调度 | ✅ 已有（执事_启/SOUL.md） |
+| 🟡 P1 | H-05 | 多 Agent 并行审查 | 串行等待 | ✅ 已有（执事_启/SOUL.md 3.2） |
 | 🟢 P2 | H-06 | 驾驭性评估 | 不评估项目 AI 友好度 | ✅ 已完成（2026-04-15） |
 | 🟢 P2 | H-07 | PRD→可测试规格→自动测试 | 需求到测试无结构化链路 | ✅ 已完成（2026-04-15） |
 | 🟢 P2 | H-08 | Token 成本看板 | 成本黑盒 | ✅ 已有（财务_算/SKILLS.md Skill-05） |

@@ -170,7 +170,7 @@ $AGENTS = @(
 
 $AGENT_NAMES = @(
     "锋·CEO", "枢·PM", "矩·架构", "绘·设计", "鉴·QA",
-    "盾·安全", "算·财务", "辞·内容", "隐·智囊", "砺·合伙人", "墨·执事"
+    "盾·安全", "算·财务", "辞·内容", "隐·智囊", "砺·合伙人", "启·执事"
 )
 
 # ---------- Full 模式安装 ----------
@@ -434,7 +434,7 @@ function Install-UpdateMode {
     Write-Host "▶ 更新 Gates 阶段门禁清单 ..." -ForegroundColor Yellow
     $gatesDir = Join-Path $weiyigeDir "gates"
     if (-not (Test-Path $gatesDir)) { New-Item -ItemType Directory -Path $gatesDir -Force | Out-Null }
-    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirements.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "README.md")
+    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirement.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "review-reminder.md", "README.md")
     $gatesSuccess = 0
     foreach ($f in $gatesFiles) {
         $destFile = Join-Path $gatesDir $f

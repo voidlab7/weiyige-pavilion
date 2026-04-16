@@ -45,10 +45,10 @@ INSTALL_TOOL=""  # 空=自动检测
 AGENTS=(
   "CEO_锋" "PM_枢" "架构_矩" "设计_绘" "QA_鉴"
   "安全_盾" "财务_算" "内容_辞" "顾问_隐" "合伙人_砺"
-  "执事_墨" "探索_寻"
+  "执事_启" "探索_寻"
 )
 
-CB_AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "墨·执事")
+CB_AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "启·执事")
 
 PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
 
