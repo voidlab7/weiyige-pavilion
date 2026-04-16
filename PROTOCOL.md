@@ -1,8 +1,15 @@
 # 维弈阁协作协议（Weiyige Collaboration Protocol）
 
-> 版本: v1.2 | 创建: 2026-04-11 | 更新: 2026-04-16 | 状态: 生效中
+> 版本: v1.3 | 创建: 2026-04-11 | 更新: 2026-04-16 | 状态: 生效中
 
 协作的本质是**信息的可靠传递 + 决策的明确归属**。本协议定义了维弈阁所有 Agent 之间的协作规范。
+
+**配套文件**（本协议引用，独立维护）：
+- `rules/rules-global.md` — 12 条全局规则（所有角色必须遵守）
+- `rules/review-scoring.md` — 产物审核多维度评分规范
+- `gates/review-reminder.md` — 审核入口强制指令
+- `SKILLS-REGISTRY.md` — Skill 注册表（内置 + 外部）
+- `PROJECT-CONFIG-SPEC.md` — project.yaml 字段规范
 
 ---
 
