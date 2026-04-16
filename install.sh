@@ -41,13 +41,31 @@ TARGET_DIR="$(pwd)"
 INSTALL_MODE="full"
 INSTALL_TOOL=""  # 空=自动检测
 
+# ---------- 共享常量（消除重复）----------
+AGENTS=(
+  "CEO_锋" "PM_枢" "架构_矩" "设计_绘" "QA_鉴"
+  "安全_盾" "财务_算" "内容_辞" "顾问_隐" "合伙人_砺"
+  "执事_墨" "探索_寻"
+)
+
+CB_AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "墨·执事")
+
+PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
+
+GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "README.md")
+
+RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
+
 # ---------- 工具 → 配置文件映射 ----------
-# 各 AI 编码工具读取的项目级配置文件
-TOOL_CLAUDE="CLAUDE.md"                           # CodeBuddy / Claude Code
-TOOL_CURSOR=".cursorrules"                         # Cursor
-TOOL_COPILOT=".github/copilot-instructions.md"     # GitHub Copilot
-TOOL_WINDSURF=".windsurfrules"                     # Windsurf
-TOOL_CLINE=".clinerules"                           # Cline
+get_config_file() {
+  case "$1" in
+    cursor)    echo ".cursorrules" ;;
+    copilot)   echo ".github/copilot-instructions.md" ;;
+    windsurf)  echo ".windsurfrules" ;;
+    cline)     echo ".clinerules" ;;
+    *)         echo "CLAUDE.md" ;;
+  esac
+}
 
 # ---------- 帮助信息 ----------
 show_help() {
@@ -87,27 +105,11 @@ show_help() {
 # ---------- 解析参数 ----------
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --target)
-      TARGET_DIR="$2"
-      shift 2
-      ;;
-    --mode)
-      INSTALL_MODE="$2"
-      shift 2
-      ;;
-    --tool)
-      INSTALL_TOOL="$2"
-      shift 2
-      ;;
-    --help|-h)
-      show_help
-      exit 0
-      ;;
-    *)
-      echo -e "${RED}未知参数: $1${NC}"
-      show_help
-      exit 1
-      ;;
+    --target)  TARGET_DIR="$2";  shift 2 ;;
+    --mode)    INSTALL_MODE="$2"; shift 2 ;;
+    --tool)    INSTALL_TOOL="$2"; shift 2 ;;
+    --help|-h) show_help; exit 0 ;;
+    *)         echo -e "${RED}未知参数: $1${NC}"; show_help; exit 1 ;;
   esac
 done
 
@@ -116,87 +118,49 @@ if [ ! -d "$TARGET_DIR" ]; then
   echo -e "${RED}错误：目标目录不存在：$TARGET_DIR${NC}"
   exit 1
 fi
-
 TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
 
 # ---------- 自动检测 AI 工具 ----------
 detect_tool() {
-  # 优先级：已有配置文件 > 项目特征
-  if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
-    echo "codebuddy"
-    return
-  fi
-  if [ -f "$TARGET_DIR/.cursorrules" ] || [ -d "$TARGET_DIR/.cursor" ]; then
-    echo "cursor"
-    return
-  fi
-  if [ -f "$TARGET_DIR/.windsurfrules" ] || [ -d "$TARGET_DIR/.windsurf" ]; then
-    echo "windsurf"
-    return
-  fi
-  if [ -f "$TARGET_DIR/.clinerules" ]; then
-    echo "cline"
-    return
-  fi
-  if [ -f "$TARGET_DIR/.github/copilot-instructions.md" ]; then
-    echo "copilot"
-    return
-  fi
-  # 默认：CodeBuddy / Claude Code（最通用的 CLAUDE.md 格式）
+  if [ -f "$TARGET_DIR/CLAUDE.md" ]; then echo "codebuddy"; return; fi
+  if [ -f "$TARGET_DIR/.cursorrules" ] || [ -d "$TARGET_DIR/.cursor" ]; then echo "cursor"; return; fi
+  if [ -f "$TARGET_DIR/.windsurfrules" ] || [ -d "$TARGET_DIR/.windsurf" ]; then echo "windsurf"; return; fi
+  if [ -f "$TARGET_DIR/.clinerules" ]; then echo "cline"; return; fi
+  if [ -f "$TARGET_DIR/.github/copilot-instructions.md" ]; then echo "copilot"; return; fi
   echo "codebuddy"
 }
 
 if [ -z "$INSTALL_TOOL" ]; then
   INSTALL_TOOL=$(detect_tool)
 fi
-
-# ---------- 工具 → 配置文件名 ----------
-get_config_file() {
-  case "$1" in
-    codebuddy|claude)  echo "CLAUDE.md" ;;
-    cursor)            echo ".cursorrules" ;;
-    copilot)           echo ".github/copilot-instructions.md" ;;
-    windsurf)          echo ".windsurfrules" ;;
-    cline)             echo ".clinerules" ;;
-    *)                 echo "CLAUDE.md" ;;
-  esac
-}
-
 CONFIG_FILE=$(get_config_file "$INSTALL_TOOL")
 
 # ---------- 下载文件（远程 or 本地）----------
 fetch_file() {
-  local src_path="$1"
-  local dest_path="$2"
-
+  local src_path="$1" dest_path="$2"
   # 优先本地
   if [ -f "$PAVILION_DIR/$src_path" ]; then
     cp "$PAVILION_DIR/$src_path" "$dest_path"
     return 0
   fi
-
   # 回退远程
   if command -v curl &>/dev/null; then
     curl -fsSL "$REMOTE_RAW/$src_path" -o "$dest_path" 2>/dev/null
-    return $?
   elif command -v wget &>/dev/null; then
     wget -q "$REMOTE_RAW/$src_path" -O "$dest_path" 2>/dev/null
-    return $?
   else
-    echo -e "${RED}需要 curl 或 wget 来下载文件${NC}"
+    echo -e "${RED}需要 curl 或 wget 来下载文件${NC}" >&2
     return 1
   fi
 }
 
-# ---------- 备份记录（安装结束后统一提示）----------
+# ---------- 备份记录 ----------
 BACKUP_FILES=""
 
-# ---------- 备份已有配置文件 ----------
 backup_config() {
   local file_path="$1"
   if [ -f "$file_path" ] && [ -s "$file_path" ]; then
     local backup_path="${file_path}.weiyige-backup"
-    # 如果备份已存在，加时间戳
     if [ -f "$backup_path" ]; then
       backup_path="${file_path}.weiyige-backup.$(date +%Y%m%d%H%M%S)"
     fi
@@ -206,137 +170,61 @@ backup_config() {
   fi
 }
 
-# ---------- 安装配置文件 ----------
-install_config_file() {
-  local config_path="$TARGET_DIR/$CONFIG_FILE"
-
-  # 先把维弈阁配置内容下载到临时位置
-  local tmp_file
-  tmp_file=$(mktemp)
-  fetch_file "CLAUDE.md" "$tmp_file"
-
-  if [ ! -s "$tmp_file" ]; then
-    echo -e "${RED}❌ 配置文件下载失败${NC}"
-    rm -f "$tmp_file"
-    return 1
-  fi
-
-  # 检查用户是否已有配置文件
-  if [ -f "$config_path" ] && [ -s "$config_path" ]; then
-    # 检查是否已包含维弈阁配置（避免重复追加）
-    if grep -q "维弈阁 AI 团队" "$config_path" 2>/dev/null; then
-      rm -f "$tmp_file"
-      echo -e "  ${BLUE}ℹ️  ${CONFIG_FILE} 已包含维弈阁配置，跳过${NC}"
-      return 0
-    fi
-
-    # 备份原文件
-    backup_config "$config_path"
-
-    # 追加维弈阁配置到原文件末尾
-    echo "" >> "$config_path"
-    echo "---" >> "$config_path"
-    cat "$tmp_file" >> "$config_path"
-    rm -f "$tmp_file"
-
-    echo -e "  ${GREEN}✅ 维弈阁配置已追加到 ${CONFIG_FILE} 末尾${NC}"
-    return 0
-  fi
-
-  # 用户没有配置文件 → 直接创建
-  mkdir -p "$(dirname "$config_path")"
-  cp "$tmp_file" "$config_path"
-  rm -f "$tmp_file"
-  echo -e "  ${GREEN}✅ ${CONFIG_FILE} 已创建（路由表内联，开箱即用）${NC}"
-  return 0
+# ---------- 获取 Agent 额外文件 ----------
+get_agent_extra_files() {
+  case "$1" in
+    PM_枢)   echo "rules/design-review/RULE.mdc" ;;
+    架构_矩) echo "rules/eng-review/RULE.mdc" ;;
+    设计_绘) echo "rules/design-review/RULE.mdc" ;;
+    QA_鉴)   echo "rules/qa/RULE.mdc" ;;
+  esac
 }
 
-# ---------- 打印 Banner ----------
-echo ""
-echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}${BOLD}║     维弈阁 AI 团队  一键安装              ║${NC}"
-echo -e "${CYAN}${BOLD}║     Weiyige Pavilion — Install            ║${NC}"
-echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════╝${NC}"
-echo ""
-echo -e "  ${BLUE}安装目标：${NC} $TARGET_DIR"
-echo -e "  ${BLUE}安装模式：${NC} $INSTALL_MODE"
-echo -e "  ${BLUE}AI 工具： ${NC} $INSTALL_TOOL → ${CONFIG_FILE}"
-echo -e "  ${BLUE}文件来源：${NC} $([ -f "$PAVILION_DIR/CLAUDE.md" ] && echo "本地" || echo "远程 GitHub")"
-echo ""
-
-# ---------- 模式：claude（仅配置文件）----------
-install_claude_mode() {
-  echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
-  install_config_file
-
+# ---------- 安装/更新 Agent 目录 ----------
+# $1=WEIYIGE_DIR  $2=mode(full/update)
+install_agents() {
+  local wei_dir="$1" mode="$2"
   echo ""
-  echo -e "${YELLOW}⚠️  claude 模式不含 Agent 深度定义文件。${NC}"
-  echo -e "  如需完整功能（Agent 人格、技能、记忆），请用 ${BOLD}--mode full${NC} 安装。"
-  echo ""
-  print_success
-}
+  echo -e "${YELLOW}▶ $([ "$mode" = "update" ] && echo "更新" || echo "安装") Agent 定义文件...${NC}"
 
-# ---------- 模式：full（完整安装）----------
-install_full_mode() {
-  WEIYIGE_DIR="$TARGET_DIR/.weiyige"
-
-  echo -e "${YELLOW}▶ 创建 .weiyige 目录 ...${NC}"
-  mkdir -p "$WEIYIGE_DIR"
-  echo -e "  ${GREEN}✅ $WEIYIGE_DIR${NC}"
-
-  # Agent 列表（Bash 3.x 兼容 — 用普通数组，不用关联数组）
-  AGENTS=(
-    "CEO_锋"
-    "PM_枢"
-    "架构_矩"
-    "设计_绘"
-    "QA_鉴"
-    "安全_盾"
-    "财务_算"
-    "内容_辞"
-    "顾问_隐"
-    "合伙人_砺"
-    "执事_墨"
-    "探索_寻"
-  )
-
-  echo ""
-  echo -e "${YELLOW}▶ 安装 Agent 定义文件 ...${NC}"
   for agent in "${AGENTS[@]}"; do
-    AGENT_DIR="$WEIYIGE_DIR/$agent"
-    mkdir -p "$AGENT_DIR"
+    local agent_dir="$wei_dir/$agent"
+    mkdir -p "$agent_dir"
 
-    # 先尝试本地复制整个目录
     if [ -d "$PAVILION_DIR/$agent" ]; then
-      cp -r "$PAVILION_DIR/$agent/"* "$AGENT_DIR/" 2>/dev/null || true
+      # ── 本地安装 ──
+      if [ "$mode" = "full" ]; then
+        cp -r "$PAVILION_DIR/$agent/"* "$agent_dir/" 2>/dev/null || true
+      else
+        # update: 覆盖核心文件，保留 memory/
+        for f in IDENTITY.md SOUL.md SKILLS.md; do
+          [ -f "$PAVILION_DIR/$agent/$f" ] && cp "$PAVILION_DIR/$agent/$f" "$agent_dir/"
+        done
+        [ -d "$PAVILION_DIR/$agent/skills" ] && cp -r "$PAVILION_DIR/$agent/skills" "$agent_dir/" 2>/dev/null || true
+        [ -d "$PAVILION_DIR/$agent/rules" ] && cp -r "$PAVILION_DIR/$agent/rules" "$agent_dir/" 2>/dev/null || true
+      fi
       echo -e "  ${GREEN}✅ $agent${NC}"
     else
-      # 远程：下载核心文件（IDENTITY.md + SOUL.md 必选，SKILLS.md 可选）
-      # memory/ 文件可选（部分角色无 SKILLS.md 或 memory/）
-      REQUIRED_FILES="IDENTITY.md SOUL.md"
-      OPTIONAL_FILES="SKILLS.md memory/knowledge.md memory/lessons.md memory/preferences.md"
-      EXTRA_FILES=""
-      case "$agent" in
-        PM_枢)     EXTRA_FILES="rules/design-review/RULE.mdc" ;;
-        架构_矩)   EXTRA_FILES="rules/eng-review/RULE.mdc" ;;
-        设计_绘)   EXTRA_FILES="rules/design-review/RULE.mdc" ;;
-        QA_鉴)     EXTRA_FILES="rules/qa/RULE.mdc" ;;
-      esac
-
-      failed=false
-      # 必选文件：失败则标记
-      for f in $REQUIRED_FILES; do
-        mkdir -p "$AGENT_DIR/$(dirname "$f")"
-        if ! fetch_file "$agent/$f" "$AGENT_DIR/$f"; then
-          failed=true
-          break
+      # ── 远程安装 ──
+      local failed=false
+      # 必选文件
+      for f in IDENTITY.md SOUL.md; do
+        if ! fetch_file "$agent/$f" "$agent_dir/$f"; then
+          failed=true; break
         fi
       done
-      # 可选文件：失败不影响
       if ! $failed; then
-        for f in $OPTIONAL_FILES $EXTRA_FILES; do
-          mkdir -p "$AGENT_DIR/$(dirname "$f")"
-          fetch_file "$agent/$f" "$AGENT_DIR/$f" 2>/dev/null || true
+        # 可选文件
+        for f in SKILLS.md memory/knowledge.md memory/lessons.md memory/preferences.md; do
+          mkdir -p "$agent_dir/$(dirname "$f")"
+          fetch_file "$agent/$f" "$agent_dir/$f" 2>/dev/null || true
+        done
+        # 额外文件
+        local extra
+        extra=$(get_agent_extra_files "$agent")
+        for f in $extra; do
+          mkdir -p "$agent_dir/$(dirname "$f")"
+          fetch_file "$agent/$f" "$agent_dir/$f" 2>/dev/null || true
         done
       fi
       if ! $failed; then
@@ -345,94 +233,150 @@ install_full_mode() {
         echo -e "  ${YELLOW}⚠️  $agent — 核心文件下载失败${NC}"
       fi
     fi
-  done
 
-  # 复制协议文件
+    # 确保 memory/ 目录存在
+    mkdir -p "$agent_dir/memory"
+  done
+}
+
+# ---------- 安装/更新文件列表 ----------
+# $1=WEIYIGE_DIR  $2=subdir  $3=files_array_name  $4=label
+install_file_set() {
+  local wei_dir="$1" subdir="$2" files_var="$3" label="$4"
+  local dest_dir="$wei_dir/$subdir"
+  mkdir -p "$dest_dir"
+
   echo ""
-  echo -e "${YELLOW}▶ 安装协议文件 ...${NC}"
-  PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
-  for f in "${PROTOCOL_FILES[@]}"; do
-    fetch_file "$f" "$WEIYIGE_DIR/$f"
-    if [ -f "$WEIYIGE_DIR/$f" ] && [ -s "$WEIYIGE_DIR/$f" ]; then
-      echo -e "  ${GREEN}✅ $f${NC}"
+  echo -e "${YELLOW}▶ $label ...${NC}"
+
+  # 间接引用数组（Bash 4.3+ 用 ${!files_var[@]}，这里兼容 3.x）
+  eval "local files=(\"\${$files_var[@]}\")"
+  local success=0 total=${#files[@]}
+
+  for f in "${files[@]}"; do
+    local src_prefix="$subdir"
+    [ -n "$subdir" ] && src_prefix="$subdir/" || src_prefix=""
+    if [ -f "$PAVILION_DIR/$src_prefix$f" ]; then
+      cp "$PAVILION_DIR/$src_prefix$f" "$dest_dir/$f"
+      success=$((success + 1))
     else
-      echo -e "  ${YELLOW}⚠️  $f — 下载失败${NC}"
+      if fetch_file "$src_prefix$f" "$dest_dir/$f" && [ -s "$dest_dir/$f" ]; then
+        success=$((success + 1))
+      fi
     fi
   done
 
-  # 复制阶段门禁清单
-  echo ""
-  echo -e "${YELLOW}▶ 安装 Gates 阶段门禁清单 ...${NC}"
-  GATES_DIR="$WEIYIGE_DIR/gates"
-  mkdir -p "$GATES_DIR"
-  GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "README.md")
-  GATES_SUCCESS=0
-  GATES_TOTAL=${#GATES_FILES[@]}
-  for f in "${GATES_FILES[@]}"; do
-    if fetch_file "gates/$f" "$GATES_DIR/$f" && [ -s "$GATES_DIR/$f" ]; then
-      GATES_SUCCESS=$((GATES_SUCCESS + 1))
-    fi
-  done
-  if [ "$GATES_SUCCESS" -eq "$GATES_TOTAL" ]; then
-    echo -e "  ${GREEN}✅ Gates 已安装（${GATES_SUCCESS} 个门禁清单）${NC}"
+  if [ "$success" -eq "$total" ]; then
+    echo -e "  ${GREEN}✅ $label 已完成（${success}/${total}）${NC}"
   else
-    echo -e "  ${YELLOW}⚠️  Gates 部分安装（${GATES_SUCCESS}/${GATES_TOTAL}）${NC}"
+    echo -e "  ${YELLOW}⚠️  $label 部分完成（${success}/${total}）${NC}"
   fi
+}
 
-  # 安装规则文件
+# ---------- 安装/更新 CodeBuddy Agent 文件 ----------
+install_cb_agents() {
   echo ""
-  echo -e "${YELLOW}▶ 安装 Rules 规则文件 ...${NC}"
-  RULES_DIR="$WEIYIGE_DIR/rules"
-  mkdir -p "$RULES_DIR"
-  RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
-  RULES_SUCCESS=0
-  RULES_TOTAL=${#RULES_FILES[@]}
-  for f in "${RULES_FILES[@]}"; do
-    if fetch_file "rules/$f" "$RULES_DIR/$f" && [ -s "$RULES_DIR/$f" ]; then
-      RULES_SUCCESS=$((RULES_SUCCESS + 1))
-    fi
-  done
-  if [ "$RULES_SUCCESS" -eq "$RULES_TOTAL" ]; then
-    echo -e "  ${GREEN}✅ Rules 已安装（${RULES_SUCCESS} 个规则文件）${NC}"
-  else
-    echo -e "  ${YELLOW}⚠️  Rules 部分安装（${RULES_SUCCESS}/${RULES_TOTAL}）${NC}"
-  fi
+  echo -e "${YELLOW}▶ 安装 CodeBuddy Agent 文件 ...${NC}"
+  local agents_dir="$TARGET_DIR/.codebuddy/agents"
+  mkdir -p "$agents_dir"
 
-  # 安装配置文件（智能处理：不覆盖已有文件）
-  echo ""
-  echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
-  install_config_file
-
-  # 安装 CodeBuddy 多 Agent 适配文件
-  echo ""
-  echo -e "${YELLOW}▶ 安装 CodeBuddy 多 Agent 适配文件 ...${NC}"
-  AGENTS_DIR="$TARGET_DIR/.codebuddy/agents"
-  mkdir -p "$AGENTS_DIR"
-
-  AGENT_FILES_FOUND=false
+  # 本地：直接复制
+  local local_found=false
   for f in "$PAVILION_DIR/agents_for_codebuddy/"*.md; do
     if [ -f "$f" ]; then
-      cp "$f" "$AGENTS_DIR/"
-      AGENT_FILES_FOUND=true
+      cp "$f" "$agents_dir/"
+      local_found=true
     fi
   done
 
-  if $AGENT_FILES_FOUND; then
-    AGENT_COUNT=$(ls -1 "$AGENTS_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
-    echo -e "  ${GREEN}✅ 已安装 ${AGENT_COUNT} 个 Agent 到 .codebuddy/agents/${NC}"
+  if $local_found; then
+    local count
+    count=$(ls -1 "$agents_dir/"*.md 2>/dev/null | wc -l | tr -d ' ')
+    echo -e "  ${GREEN}✅ 已安装 ${count} 个 Agent 到 .codebuddy/agents/${NC}"
   else
-    # 远程安装：逐个下载
-    AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "墨·执事")
-    for name in "${AGENT_NAMES[@]}"; do
-      if fetch_file "agents_for_codebuddy/${name}.md" "$AGENTS_DIR/${name}.md"; then
+    # 远程：逐个下载
+    for name in "${CB_AGENT_NAMES[@]}"; do
+      if fetch_file "agents_for_codebuddy/${name}.md" "$agents_dir/${name}.md"; then
         echo -e "  ${GREEN}✅ ${name}${NC}"
       else
         echo -e "  ${YELLOW}⚠️  ${name} — 下载失败${NC}"
       fi
     done
   fi
+}
 
-  # 添加 .gitignore 条目
+# ---------- 安装配置文件（智能处理）----------
+install_config_file() {
+  local config_path="$TARGET_DIR/$CONFIG_FILE"
+  local tmp_file
+  tmp_file=$(mktemp)
+  fetch_file "CLAUDE.md" "$tmp_file"
+
+  if [ ! -s "$tmp_file" ]; then
+    echo -e "${RED}❌ 配置文件下载失败${NC}"
+    rm -f "$tmp_file"; return 1
+  fi
+
+  if [ -f "$config_path" ] && [ -s "$config_path" ]; then
+    # 已包含维弈阁配置？
+    if grep -q "维弈阁 AI 团队" "$config_path" 2>/dev/null; then
+      rm -f "$tmp_file"
+      echo -e "  ${BLUE}ℹ️  ${CONFIG_FILE} 已包含维弈阁配置，跳过${NC}"
+      return 0
+    fi
+    backup_config "$config_path"
+    echo "" >> "$config_path"
+    echo "---" >> "$config_path"
+    cat "$tmp_file" >> "$config_path"
+    rm -f "$tmp_file"
+    echo -e "  ${GREEN}✅ 维弈阁配置已追加到 ${CONFIG_FILE} 末尾${NC}"
+  else
+    mkdir -p "$(dirname "$config_path")"
+    cp "$tmp_file" "$config_path"
+    rm -f "$tmp_file"
+    echo -e "  ${GREEN}✅ ${CONFIG_FILE} 已创建（路由表内联，开箱即用）${NC}"
+  fi
+}
+
+# ---------- 更新配置文件中的维弈阁段落 ----------
+update_config_section() {
+  local config_path="$TARGET_DIR/$CONFIG_FILE"
+  if [ -f "$config_path" ] && grep -q "维弈阁 AI 团队" "$config_path" 2>/dev/null; then
+    local tmp_file
+    tmp_file=$(mktemp)
+    fetch_file "CLAUDE.md" "$tmp_file"
+
+    if [ -s "$tmp_file" ]; then
+      backup_config "$config_path"
+      local line_num
+      line_num=$(grep -n "# 维弈阁 AI 团队" "$config_path" | head -1 | cut -d: -f1)
+      if [ -n "$line_num" ]; then
+        local sep_line=$line_num i=$((line_num - 1))
+        while [ $i -ge 1 ]; do
+          if sed -n "${i}p" "$config_path" | grep -q "^---"; then
+            sep_line=$i; break
+          fi
+          i=$((i - 1))
+        done
+        head -n $((sep_line - 1)) "$config_path" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > "${config_path}.tmp"
+        echo "" >> "${config_path}.tmp"
+        echo "---" >> "${config_path}.tmp"
+        cat "$tmp_file" >> "${config_path}.tmp"
+        mv "${config_path}.tmp" "$config_path"
+        echo -e "  ${GREEN}✅ 维弈阁配置段落已更新${NC}"
+      else
+        rm -f "${config_path}.tmp"
+        echo -e "  ${BLUE}ℹ️  未找到维弈阁段落标记，跳过${NC}"
+      fi
+    fi
+    rm -f "$tmp_file"
+  else
+    echo -e "  ${BLUE}ℹ️  配置文件中未找到维弈阁段落，跳过${NC}"
+  fi
+}
+
+# ---------- .gitignore ----------
+setup_gitignore() {
   echo ""
   echo -e "${YELLOW}▶ 检查 .gitignore ...${NC}"
   if [ -f "$TARGET_DIR/.gitignore" ]; then
@@ -447,9 +391,6 @@ install_full_mode() {
   else
     echo -e "  ${BLUE}ℹ️  未找到 .gitignore，跳过${NC}"
   fi
-
-  echo ""
-  print_success
 }
 
 # ---------- 成功提示 ----------
@@ -460,12 +401,10 @@ print_success() {
   echo -e "  配置文件：${BOLD}$TARGET_DIR/$CONFIG_FILE${NC}"
   echo ""
 
-  # 备份文件提示（统一展示）
   if [ -n "$BACKUP_FILES" ]; then
     echo -e "  ${BLUE}━━━ 备份文件 ━━━${NC}"
     echo ""
-    OLD_IFS="$IFS"
-    IFS="|"
+    local OLD_IFS="$IFS"; IFS="|"
     for entry in $BACKUP_FILES; do
       [ -z "$entry" ] && continue
       echo -e "  📦 $entry"
@@ -482,7 +421,6 @@ print_success() {
   echo -e "  2. ${BOLD}多 Agent 模式${NC}（推荐）："
   echo -e "     已将 Agent 文件安装到 ${BOLD}.codebuddy/agents/${NC}"
   echo -e "     CodeBuddy 会根据意图自动调度对应 Agent"
-  echo -e "     如需手动添加：cp agents_for_codebuddy/*.md .codebuddy/agents/"
   echo ""
   echo -e "  3. 试试第一条指令："
   echo -e "     ${CYAN}@辞 帮我写一篇公众号文章${NC}"
@@ -495,15 +433,71 @@ print_success() {
   echo ""
 }
 
-# ---------- 模式：update（更新已安装的维弈阁）----------
+# ================================================
+#  Banner
+# ================================================
+echo ""
+echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}${BOLD}║     维弈阁 AI 团队  一键安装              ║${NC}"
+echo -e "${CYAN}${BOLD}║     Weiyige Pavilion — Install            ║${NC}"
+echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "  ${BLUE}安装目标：${NC} $TARGET_DIR"
+echo -e "  ${BLUE}安装模式：${NC} $INSTALL_MODE"
+echo -e "  ${BLUE}AI 工具： ${NC} $INSTALL_TOOL → ${CONFIG_FILE}"
+echo -e "  ${BLUE}文件来源：${NC} $([ -f "$PAVILION_DIR/CLAUDE.md" ] && echo "本地" || echo "远程 GitHub")"
+echo -e "  ${BLUE}版本号：  ${NC} v${WEIYIGE_VERSION}"
+echo ""
+
+# ================================================
+#  模式：claude（仅配置文件）
+# ================================================
+install_claude_mode() {
+  echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
+  install_config_file
+  echo ""
+  echo -e "${YELLOW}⚠️  claude 模式不含 Agent 深度定义文件。${NC}"
+  echo -e "  如需完整功能（Agent 人格、技能、记忆），请用 ${BOLD}--mode full${NC} 安装。"
+  echo ""
+  print_success
+}
+
+# ================================================
+#  模式：full（完整安装）
+# ================================================
+install_full_mode() {
+  WEIYIGE_DIR="$TARGET_DIR/.weiyige"
+  echo -e "${YELLOW}▶ 创建 .weiyige 目录 ...${NC}"
+  mkdir -p "$WEIYIGE_DIR"
+  echo -e "  ${GREEN}✅ $WEIYIGE_DIR${NC}"
+
+  install_agents "$WEIYIGE_DIR" "full"
+  install_file_set "$WEIYIGE_DIR" ""    PROTOCOL_FILES "安装协议文件"
+  install_file_set "$WEIYIGE_DIR" "gates" GATES_FILES  "安装 Gates 阶段门禁清单"
+  install_file_set "$WEIYIGE_DIR" "rules" RULES_FILES  "安装 Rules 规则文件"
+
+  echo ""
+  echo -e "${YELLOW}▶ 安装配置文件 ...${NC}"
+  install_config_file
+
+  install_cb_agents
+  setup_gitignore
+
+  echo ""
+  print_success
+}
+
+# ================================================
+#  模式：update（更新已安装的维弈阁）
+# ================================================
 install_update_mode() {
-  # 自动扫描已安装的 .weiyige 目录
   WEIYIGE_DIR=""
   if [ -d "$TARGET_DIR/.weiyige" ]; then
     WEIYIGE_DIR="$TARGET_DIR/.weiyige"
   else
     # 向上查找（最多 3 层）
     for i in 1 2 3; do
+      local parent
       parent="$(cd "$TARGET_DIR/$(printf '../%.0s' $(seq 1 $i))" 2>/dev/null && pwd)"
       if [ -d "$parent/.weiyige" ]; then
         WEIYIGE_DIR="$parent/.weiyige"
@@ -520,222 +514,39 @@ install_update_mode() {
   fi
 
   echo -e "${GREEN}✅ 找到已安装目录：$WEIYIGE_DIR${NC}"
-  echo ""
 
-  # Agent 列表
-  AGENTS=(
-    "CEO_锋"
-    "PM_枢"
-    "架构_矩"
-    "设计_绘"
-    "QA_鉴"
-    "安全_盾"
-    "财务_算"
-    "内容_辞"
-    "顾问_隐"
-    "合伙人_砺"
-    "执事_墨"
-    "探索_寻"
-  )
-
-  # 更新 Agent 定义文件（覆盖 SOUL/IDENTITY/SKILLS/skills/rules，保留 memory/）
-  echo -e "${YELLOW}▶ 更新 Agent 定义文件（保留 memory/）...${NC}"
-  for agent in "${AGENTS[@]}"; do
-    AGENT_DIR="$WEIYIGE_DIR/$agent"
-    if [ ! -d "$AGENT_DIR" ]; then
-      mkdir -p "$AGENT_DIR"
-    fi
-
-    UPDATED=false
-
-    # 本地安装：直接覆盖核心文件
-    if [ -d "$PAVILION_DIR/$agent" ]; then
-      for f in IDENTITY.md SOUL.md SKILLS.md; do
-        if [ -f "$PAVILION_DIR/$agent/$f" ]; then
-          cp "$PAVILION_DIR/$agent/$f" "$AGENT_DIR/$f"
-          UPDATED=true
-        fi
-      done
-      # 覆盖 skills/ 和 rules/ 目录
-      if [ -d "$PAVILION_DIR/$agent/skills" ]; then
-        cp -r "$PAVILION_DIR/$agent/skills" "$AGENT_DIR/" 2>/dev/null || true
-        UPDATED=true
-      fi
-      if [ -d "$PAVILION_DIR/$agent/rules" ]; then
-        cp -r "$PAVILION_DIR/$agent/rules" "$AGENT_DIR/" 2>/dev/null || true
-        UPDATED=true
-      fi
-    else
-      # 远程安装：下载核心文件
-      for f in IDENTITY.md SOUL.md SKILLS.md; do
-        if fetch_file "$agent/$f" "$AGENT_DIR/$f" 2>/dev/null; then
-          UPDATED=true
-        fi
-      done
-      # 下载 skills/ 和 rules/
-      EXTRA_FILES=""
-      case "$agent" in
-        PM_枢)     EXTRA_FILES="rules/design-review/RULE.mdc" ;;
-        架构_矩)   EXTRA_FILES="rules/eng-review/RULE.mdc" ;;
-        设计_绘)   EXTRA_FILES="rules/design-review/RULE.mdc" ;;
-        QA_鉴)     EXTRA_FILES="rules/qa/RULE.mdc" ;;
-      esac
-      for f in $EXTRA_FILES; do
-        mkdir -p "$AGENT_DIR/$(dirname "$f")"
-        if fetch_file "$agent/$f" "$AGENT_DIR/$f" 2>/dev/null; then
-          UPDATED=true
-        fi
-      done
-    fi
-
-    # 确保 memory/ 目录存在（不覆盖内容）
-    mkdir -p "$AGENT_DIR/memory"
-
-    if $UPDATED; then
-      echo -e "  ${GREEN}✅ $agent${NC}"
-    else
-      echo -e "  ${BLUE}ℹ️  $agent — 无更新${NC}"
-    fi
-  done
-
-  # 更新协议文件
-  echo ""
-  echo -e "${YELLOW}▶ 更新协议文件 ...${NC}"
-  PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
-  for f in "${PROTOCOL_FILES[@]}"; do
-    if [ -f "$PAVILION_DIR/$f" ]; then
-      cp "$PAVILION_DIR/$f" "$WEIYIGE_DIR/$f"
-      echo -e "  ${GREEN}✅ $f${NC}"
-    else
-      if fetch_file "$f" "$WEIYIGE_DIR/$f" 2>/dev/null; then
-        echo -e "  ${GREEN}✅ $f${NC}"
-      else
-        echo -e "  ${YELLOW}⚠️  $f — 下载失败${NC}"
-      fi
-    fi
-  done
-
-  # 更新 Gates 阶段门禁清单
-  echo ""
-  echo -e "${YELLOW}▶ 更新 Gates 阶段门禁清单 ...${NC}"
-  GATES_DIR="$WEIYIGE_DIR/gates"
-  mkdir -p "$GATES_DIR"
-  GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "README.md")
-  GATES_SUCCESS=0
-  GATES_TOTAL=${#GATES_FILES[@]}
-  for f in "${GATES_FILES[@]}"; do
-    if [ -f "$PAVILION_DIR/gates/$f" ]; then
-      cp "$PAVILION_DIR/gates/$f" "$GATES_DIR/$f"
-      GATES_SUCCESS=$((GATES_SUCCESS + 1))
-    else
-      if fetch_file "gates/$f" "$GATES_DIR/$f" 2>/dev/null && [ -s "$GATES_DIR/$f" ]; then
-        GATES_SUCCESS=$((GATES_SUCCESS + 1))
-      fi
-    fi
-  done
-  if [ "$GATES_SUCCESS" -eq "$GATES_TOTAL" ]; then
-    echo -e "  ${GREEN}✅ Gates 已更新（${GATES_SUCCESS} 个门禁清单）${NC}"
-  else
-    echo -e "  ${YELLOW}⚠️  Gates 部分更新（${GATES_SUCCESS}/${GATES_TOTAL}）${NC}"
-  fi
-
-  # 更新 Rules 规则文件
-  echo ""
-  echo -e "${YELLOW}▶ 更新 Rules 规则文件 ...${NC}"
-  RULES_DIR="$WEIYIGE_DIR/rules"
-  mkdir -p "$RULES_DIR"
-  RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
-  RULES_SUCCESS=0
-  RULES_TOTAL=${#RULES_FILES[@]}
-  for f in "${RULES_FILES[@]}"; do
-    if [ -f "$PAVILION_DIR/rules/$f" ]; then
-      cp "$PAVILION_DIR/rules/$f" "$RULES_DIR/$f"
-      RULES_SUCCESS=$((RULES_SUCCESS + 1))
-    else
-      if fetch_file "rules/$f" "$RULES_DIR/$f" 2>/dev/null && [ -s "$RULES_DIR/$f" ]; then
-        RULES_SUCCESS=$((RULES_SUCCESS + 1))
-      fi
-    fi
-  done
-  if [ "$RULES_SUCCESS" -eq "$RULES_TOTAL" ]; then
-    echo -e "  ${GREEN}✅ Rules 已更新（${RULES_SUCCESS} 个规则文件）${NC}"
-  else
-    echo -e "  ${YELLOW}⚠️  Rules 部分更新（${RULES_SUCCESS}/${RULES_TOTAL}）${NC}"
-  fi
+  install_agents "$WEIYIGE_DIR" "update"
+  install_file_set "$WEIYIGE_DIR" ""    PROTOCOL_FILES "更新协议文件"
+  install_file_set "$WEIYIGE_DIR" "gates" GATES_FILES  "更新 Gates 阶段门禁清单"
+  install_file_set "$WEIYIGE_DIR" "rules" RULES_FILES  "更新 Rules 规则文件"
 
   # 更新 CodeBuddy Agent 文件
   echo ""
   echo -e "${YELLOW}▶ 更新 CodeBuddy Agent 文件 ...${NC}"
-  AGENTS_DIR="$TARGET_DIR/.codebuddy/agents"
-  if [ -d "$AGENTS_DIR" ]; then
-    AGENT_FILES_FOUND=false
+  local agents_dir="$TARGET_DIR/.codebuddy/agents"
+  if [ -d "$agents_dir" ]; then
+    local local_found=false
     for f in "$PAVILION_DIR/agents_for_codebuddy/"*.md; do
-      if [ -f "$f" ]; then
-        cp "$f" "$AGENTS_DIR/"
-        AGENT_FILES_FOUND=true
-      fi
+      [ -f "$f" ] && cp "$f" "$agents_dir/" && local_found=true
     done
-
-    if $AGENT_FILES_FOUND; then
-      AGENT_COUNT=$(ls -1 "$AGENTS_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
-      echo -e "  ${GREEN}✅ 已更新 ${AGENT_COUNT} 个 Agent${NC}"
+    if $local_found; then
+      local count
+      count=$(ls -1 "$agents_dir/"*.md 2>/dev/null | wc -l | tr -d ' ')
+      echo -e "  ${GREEN}✅ 已更新 ${count} 个 Agent${NC}"
     else
-      AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "墨·执事")
-      for name in "${AGENT_NAMES[@]}"; do
-        if fetch_file "agents_for_codebuddy/${name}.md" "$AGENTS_DIR/${name}.md" 2>/dev/null; then
+      for name in "${CB_AGENT_NAMES[@]}"; do
+        fetch_file "agents_for_codebuddy/${name}.md" "$agents_dir/${name}.md" 2>/dev/null && \
           echo -e "  ${GREEN}✅ ${name}${NC}"
-        fi
       done
     fi
   else
     echo -e "  ${BLUE}ℹ️  未找到 .codebuddy/agents/，跳过${NC}"
   fi
 
-  # 更新 CLAUDE.md 中的维弈阁配置段落
+  # 更新配置文件中的维弈阁段落
   echo ""
   echo -e "${YELLOW}▶ 更新配置文件中的维弈阁段落 ...${NC}"
-  local config_path="$TARGET_DIR/$CONFIG_FILE"
-  if [ -f "$config_path" ] && grep -q "维弈阁 AI 团队" "$config_path" 2>/dev/null; then
-    local tmp_file
-    tmp_file=$(mktemp)
-    fetch_file "CLAUDE.md" "$tmp_file"
-
-    if [ -s "$tmp_file" ]; then
-      # 备份
-      backup_config "$config_path"
-
-      # 找到维弈阁段落的起始位置
-      local line_num
-      line_num=$(grep -n "# 维弈阁 AI 团队" "$config_path" | head -1 | cut -d: -f1)
-      if [ -n "$line_num" ]; then
-        # 找到前面的 --- 分隔线
-        local sep_line=$line_num
-        local i=$((line_num - 1))
-        while [ $i -ge 1 ]; do
-          if sed -n "${i}p" "$config_path" | grep -q "^---"; then
-            sep_line=$i
-            break
-          fi
-          i=$((i - 1))
-        done
-
-        # 保留维弈阁段落之前的内容（去掉末尾空行）
-        head -n $((sep_line - 1)) "$config_path" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > "${config_path}.tmp"
-        # 追加新的维弈阁配置
-        echo "" >> "${config_path}.tmp"
-        echo "---" >> "${config_path}.tmp"
-        cat "$tmp_file" >> "${config_path}.tmp"
-        mv "${config_path}.tmp" "$config_path"
-        echo -e "  ${GREEN}✅ 维弈阁配置段落已更新${NC}"
-      else
-        rm -f "${config_path}.tmp"
-        echo -e "  ${BLUE}ℹ️  未找到维弈阁段落标记，跳过${NC}"
-      fi
-    fi
-    rm -f "$tmp_file"
-  else
-    echo -e "  ${BLUE}ℹ️  配置文件中未找到维弈阁段落，跳过${NC}"
-  fi
+  update_config_section
 
   echo ""
   echo -e "${GREEN}${BOLD}✅ 更新完成！${NC}"
@@ -745,19 +556,12 @@ install_update_mode() {
   echo ""
 }
 
-# ---------- 执行安装 ----------
+# ================================================
+#  执行
+# ================================================
 case "$INSTALL_MODE" in
-  claude)
-    install_claude_mode
-    ;;
-  full)
-    install_full_mode
-    ;;
-  update)
-    install_update_mode
-    ;;
-  *)
-    echo -e "${RED}未知安装模式：$INSTALL_MODE（支持：claude / full / update）${NC}"
-    exit 1
-    ;;
+  claude) install_claude_mode ;;
+  full)   install_full_mode ;;
+  update) install_update_mode ;;
+  *)      echo -e "${RED}未知安装模式：$INSTALL_MODE（支持：claude / full / update）${NC}"; exit 1 ;;
 esac
