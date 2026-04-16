@@ -167,7 +167,23 @@ task(subagent_name="枢·PM", description="PRD: ...", prompt="...")
 
 ## 四、调度执行方法
 
-### 4.1 使用 task 工具调用子 Agent（同步，平台无关）
+### 4.0 运行时选择（首次执行时判定，不可中途切换）
+
+```
+判定规则（按优先级）：
+
+1. 用户指令包含 "team模式" / "--team" / "@team mode" → team 模式
+2. 否则 → task 模式（默认，兼容所有平台）
+
+判定后输出：
+  🔧 运行时：task 模式（同步子 Agent）
+  或
+  🔧 运行时：team 模式（CodeBuddy 异步团队）
+```
+
+---
+
+### 4.1 task 模式：使用 task 工具调用子 Agent（同步，平台无关）
 
 墨通过 `task` 工具 spawn 子 Agent。**task 是同步的——调用后等待子 Agent 完成，结果直接返回给墨。**
 
@@ -267,6 +283,155 @@ task(
 不要在 task 之间插入等待用户输入的断点。
 每个 task 返回后，立即输出进度行，然后立即调用下一个 task。
 这不是多轮对话——这是一轮回复中的多次工具调用。
+```
+
+---
+
+### 4.6 team 模式：CodeBuddy 异步团队（send_message 通信）
+
+> 借鉴 CodeBuddy 多智能体 `team-topology.yaml` + `start-workflow.md` 设计。
+> team 模式利用 CodeBuddy 的 `team_create` / `task(name=...)` / `send_message` 实现真正的多 Agent 并行。
+
+#### 4.6.1 team 模式的核心区别
+
+| 对比项 | task 模式 | team 模式 |
+|-------|----------|----------|
+| 创建方式 | 逐个 `task()` 同步调用 | `team_create` 一次创建团队 + `task(name=...)` 并行 spawn 全部成员 |
+| 通信方式 | 子 Agent 结果直接返回给墨 | 成员通过 `send_message` 异步通信 |
+| 并行能力 | 墨手动并行（同时发多个 task） | **天然并行**，成员各自独立运行 |
+| 成员生命周期 | task 完成即销毁 | 成员持续存在，支持打回/重做 |
+| 状态流转 | 墨在内存中追踪 | **墨通过 `send_message` 强制串行唤醒**，确保阶段门禁 |
+
+#### 4.6.2 team 模式启动流程
+
+```
+Step 0: 墨判定运行时 = team 模式
+
+Step 1: 创建团队
+  team_create(team_name = "weiyige-{任务简称}")
+
+Step 2: 并行 spawn 全部成员（预创建 + 待命）
+  同时发出多个 task 调用：
+
+  task(
+    subagent_name = "墨·执事",     ← 墨自己作为 leader
+    name = "leader",
+    team_name = "weiyige-{任务简称}",
+    mode = "bypassPermissions",
+    prompt = "你是维弈阁团队的 Leader（墨·执事）。团队已创建，成员已就绪。
+              请完成初始化后按编排模式开始工作。
+              任务目标：{用户任务描述}
+              编排模式：{auto/confirm/step}"
+  )
+
+  task(
+    subagent_name = "枢·PM",
+    name = "pm",
+    team_name = "weiyige-{任务简称}",
+    mode = "bypassPermissions",
+    prompt = "你是维弈阁团队的 枢·PM。请完成初始化后进入待命状态，等待 Leader 唤醒。"
+  )
+
+  task(
+    subagent_name = "矩·架构",
+    name = "architect",
+    team_name = "weiyige-{任务简称}",
+    mode = "bypassPermissions",
+    prompt = "你是维弈阁团队的 矩·架构。请完成初始化后进入待命状态，等待 Leader 唤醒。"
+  )
+
+  // ... 同样 spawn 绘·设计、鉴·QA、盾·安全 等需要的角色
+  // 只 spawn 链路中需要的角色，不需要的不创建
+
+Step 3: Leader（墨）通过 send_message 串行唤醒成员
+
+  ⚠️ 严格串行唤醒（最高优先级）：
+  每次只唤醒一个成员，前一个成员完成任务并经墨审核通过后才唤醒下一个。
+  严禁同时向多个成员发送唤醒消息。
+```
+
+#### 4.6.3 team 模式的唤醒协议
+
+**Leader（墨）→ 成员的唤醒消息**：
+
+```
+send_message(
+  type = "message",
+  recipient = "pm",
+  content = "🔔 [Leader → 枢·PM]
+    📌 任务：撰写 PRD
+    📎 输入材料：{上游交接块内容}
+    📤 期望产出：PRD 文件写入 docs/prd/
+    🔀 编排模式：auto",
+  summary = "唤醒枢·PM撰写PRD"
+)
+```
+
+**成员 → Leader 的完成通知**：
+
+成员完成后通过 `send_message` 发回交接块：
+
+```
+send_message(
+  type = "message",
+  recipient = "leader",
+  content = "📤 [枢·PM → Leader]
+    ## 📤 交接块（Handoff）
+    - **来源**: 枢·PM
+    - **产物文件**: docs/prd/petsbti_PRD_v1.md
+    - **状态**: 通过
+    - **下游建议**: 交 矩·架构 做架构审查",
+  summary = "PRD完成，交接给架构"
+)
+```
+
+#### 4.6.4 team 模式的门禁验证
+
+Leader（墨）收到成员完成消息后：
+
+```
+1. 解析交接块 → 提取 "产物文件" 路径
+2. read_file(产物文件路径) → 验证文件存在
+3. 验证通过 → 唤醒下一个成员
+4. 验证失败 → send_message 打回，要求补充文件
+5. 打回超限 → 暂停，通知用户（send_message(type="message", recipient="main")）
+```
+
+#### 4.6.5 team 模式的打回
+
+```
+send_message(
+  type = "message",
+  recipient = "pm",
+  content = "❌ [Leader 打回] 产物文件未落盘
+    路径 docs/prd/petsbti_PRD_v1.md 不存在。
+    请写入 PRD 文件后重新发送交接块。
+    当前迭代：第 1/3 轮",
+  summary = "打回枢·PM补充PRD文件"
+)
+```
+
+#### 4.6.6 team 模式的收尾
+
+```
+全链路完成后：
+1. Leader 输出汇总报告
+2. 向所有成员发送 shutdown_request
+3. 等待确认
+4. team_delete() 关闭团队
+```
+
+#### 4.6.7 成员的待命→激活协议
+
+**每个成员的 agent 文件中必须包含**：
+
+```
+## 待命→激活协议
+
+- 初始化完成后进入**待命**，不执行任何业务操作。
+- **激活条件**：收到 Leader 的 `🔔 [Leader → {角色名}]` 消息。
+- 打回重做：收到打回消息后按修改建议重新执行。
+- 完成后通过 send_message 发送交接块给 Leader。
 ```
 
 ---
@@ -372,8 +537,8 @@ Agent A 返回 ❌ 未通过
 
 ## 八、关键约束
 
-1. **平台无关**——编排只依赖 `task` 工具（同步子 Agent 调用），在 CodeBuddy、OpenClaw、Claude Code、Cursor 等所有支持 task/子 Agent 的平台上均可工作
-2. **墨不跨会话持久化**——当前会话结束，墨的编排状态丢失。长链路任务建议用户在同一会话内完成
+1. **双运行时**——task 模式（同步，平台无关）+ team 模式（CodeBuddy 异步团队）。task 模式是默认，team 模式需用户指令触发
+2. **墨不跨会话持久化**——当前会话结束，墨的编排状态丢失。长链路任务建议用户在同一会话内完成（team 模式下成员历史可恢复）
 3. **墨依赖 Agent 输出交接块**——如果某个 Agent 没输出交接块，墨视为"需要信息"，暂停并提醒用户
 4. **墨尊重用户权限**——涉及 git push、SCP 部署等破坏性操作，墨不自动执行，而是提醒用户确认
-5. **auto 模式的续行是靠 prompt 强制的**——墨在一轮回复中连续调用多个 task，不在中间插入等待
+5. **auto 模式的续行是靠 prompt 强制的**——task 模式下墨在一轮回复中连续调用多个 task；team 模式下墨通过 send_message 立即唤醒下一个成员
