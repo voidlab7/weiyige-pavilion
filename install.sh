@@ -311,8 +311,10 @@ install_full_mode() {
       cp -r "$PAVILION_DIR/$agent/"* "$AGENT_DIR/" 2>/dev/null || true
       echo -e "  ${GREEN}✅ $agent${NC}"
     else
-      # 远程：下载固定核心文件 + 按需下载技能/规则
-      CORE_FILES="IDENTITY.md SOUL.md SKILLS.md memory/knowledge.md memory/lessons.md memory/preferences.md"
+      # 远程：下载核心文件（IDENTITY.md + SOUL.md 必选，SKILLS.md 可选）
+      # memory/ 文件可选（部分角色无 SKILLS.md 或 memory/）
+      REQUIRED_FILES="IDENTITY.md SOUL.md"
+      OPTIONAL_FILES="SKILLS.md memory/knowledge.md memory/lessons.md memory/preferences.md"
       EXTRA_FILES=""
       case "$agent" in
         PM_枢)     EXTRA_FILES="rules/design-review/RULE.mdc" ;;
@@ -321,18 +323,26 @@ install_full_mode() {
         QA_鉴)     EXTRA_FILES="rules/qa/RULE.mdc" ;;
       esac
 
-      success=true
-      for f in $CORE_FILES $EXTRA_FILES; do
+      failed=false
+      # 必选文件：失败则标记
+      for f in $REQUIRED_FILES; do
         mkdir -p "$AGENT_DIR/$(dirname "$f")"
         if ! fetch_file "$agent/$f" "$AGENT_DIR/$f"; then
-          success=false
+          failed=true
           break
         fi
       done
-      if $success; then
+      # 可选文件：失败不影响
+      if ! $failed; then
+        for f in $OPTIONAL_FILES $EXTRA_FILES; do
+          mkdir -p "$AGENT_DIR/$(dirname "$f")"
+          fetch_file "$agent/$f" "$AGENT_DIR/$f" 2>/dev/null || true
+        done
+      fi
+      if ! $failed; then
         echo -e "  ${GREEN}✅ $agent${NC}"
       else
-        echo -e "  ${YELLOW}⚠️  $agent — 部分文件下载失败${NC}"
+        echo -e "  ${YELLOW}⚠️  $agent — 核心文件下载失败${NC}"
       fi
     fi
   done
