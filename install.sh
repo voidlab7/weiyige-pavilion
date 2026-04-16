@@ -31,7 +31,7 @@ NC='\033[0m'
 REMOTE_RAW="https://raw.githubusercontent.com/voidlab7/weiyige-pavilion/main"
 
 # ---------- 版本号 ----------
-WEIYIGE_VERSION="1.7"
+WEIYIGE_VERSION="2.0.1"
 
 # ---------- 脚本所在目录（本地安装时使用）----------
 PAVILION_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
