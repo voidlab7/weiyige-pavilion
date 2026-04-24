@@ -128,7 +128,7 @@ Phase 11: TODOS.md 更新
 - [ ] 修复后回归测试已通过（无新增 Bug）
 - [ ] WTF-likelihood 未超过 20%（超过则停止并报告）
 - [ ] before/after 截图已保存（如有 UI 修复）
-- [ ] QA 报告文件已写入 `docs/reviews/`，可通过 `read_file` 读取
+- [ ] QA 报告文件已写入 `ai-workspace/{task-id}/artifacts/05-testing/qa-report.md`，可通过 `read_file` 读取
 - [ ] PRD 验收标准（Given/When/Then）已逐条验证
 - [ ] 交接块已准备（含健康评分 + 下游建议）
 - [ ] 有值得记录的 Bug 模式/教训已写入 `memory/`

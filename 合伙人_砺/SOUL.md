@@ -88,7 +88,7 @@
 
 **Phase 5: 设计文档**
 
-在 `docs/designs/` 目录下写设计文档，包含：
+在 `ai-workspace/{task-id}/artifacts/01-ideation/` 目录下写设计文档，包含：
 - 问题陈述
 - 需求证据
 - 现状

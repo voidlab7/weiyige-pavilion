@@ -11,8 +11,8 @@
 - [ ] Medium Bug 已修复（Standard 模式）或已记录（Quick 模式）
 - [ ] 回归测试已通过（修复不引入新 Bug）
 - [ ] 盾的安全审计已完成（如需要）
-- [ ] **鉴的测试报告文件已存在且可读** → `docs/reviews/YYYY-MM-DD_鉴_qa-report.md`（通过 `read_file` 验证）
-- [ ] **盾的安全审计报告文件已存在且可读**（如需要）→ `docs/reviews/YYYY-MM-DD_盾_security-audit.md`
+- [ ] **鉴的测试报告文件已存在且可读** → `ai-workspace/{task-id}/artifacts/05-testing/qa-report.md`（通过 `read_file` 验证）
+- [ ] **盾的安全审计报告文件已存在且可读**（如需要）→ `ai-workspace/{task-id}/artifacts/05-testing/security-audit.md`
 - [ ] PRD 中的验收标准（Given/When/Then）已逐条验证
 
 ## 退出裁定

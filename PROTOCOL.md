@@ -1,6 +1,6 @@
 # 维弈阁协作协议（Weiyige Collaboration Protocol）
 
-> 版本: v1.3 | 创建: 2026-04-11 | 更新: 2026-04-16 | 状态: 生效中
+> 版本: v2.0 | 创建: 2026-04-11 | 更新: 2026-04-25 | 状态: 生效中
 
 协作的本质是**信息的可靠传递 + 决策的明确归属**。本协议定义了维弈阁所有 Agent 之间的协作规范。
 
@@ -8,7 +8,6 @@
 - `rules/rules-global.md` — 12 条全局规则（所有角色必须遵守）
 - `rules/review-scoring.md` — 产物审核多维度评分规范
 - `gates/review-reminder.md` — 审核入口强制指令
-- `SKILLS-REGISTRY.md` — Skill 注册表（内置 + 外部）
 - `PROJECT-CONFIG-SPEC.md` — project.yaml 字段规范
 
 ---
@@ -81,7 +80,7 @@
 - **来源**: [Agent 名称]
 - **阶段**: [当前项目阶段，见 STATUS.md]
 - **产出类型**: [审查报告 / PRD / 设计文档 / 测试报告 / 安全报告 / 其他]
-- **产物文件**: [产出文件的路径，如 `docs/reviews/2026-04-16_矩_eng-review.md`；无文件产出填 `无`]
+- **产物文件**: [产出文件的路径，如 `ai-workspace/{task-id}/artifacts/03-design/eng-review.md`；无文件产出填 `无`]
 - **状态**: [通过 / 有条件通过 / 未通过 / 需要信息]
 - **关键决策**:
   1. [决策 1]: [结论]
@@ -132,7 +131,11 @@
 
 ## 三、项目状态追踪（STATUS.md）
 
-每个项目根目录必须有 `STATUS.md`，所有 Agent 读写此文件来同步状态。
+每个项目根目录必须有 `STATUS.md`，所有 Agent 读写此文件来同步**全局项目状态**。
+
+**STATUS.md vs state.json 的关系**：
+- `STATUS.md`（项目根目录）— 全局项目状态，跨需求，人可读，Git 跟踪
+- `ai-workspace/{task-id}/state.json`（需求级）— 单个需求的执行状态，机器读写，支持断点续做，不入 Git
 
 ### 3.1 STATUS.md 模板
 
@@ -214,13 +217,16 @@
 3. 不通过不进审查——不浪费推断型 Token
 4. 鉴的测试阶段专注功能行为验证，计算型问题在开发阶段已解决
 
-### 3.5 阶段门禁清单
+### 3.5 阶段门禁清单（两层门禁）
 
 > 审核引擎与流程检查分离设计
 
-每个阶段有独立的门禁清单（`gates/gate-*.md`），阶段退出时**逐条勾选**。
+每个阶段有**两层门禁**（详见 `gates/two-layer-gate.md`）：
 
-门禁清单只含**流程完成度检查**（"该做的做了没"），产物质量评审由对应 Agent 的 Skill 评分负责。两者分离，避免清单太长 AI 跳过。
+**Layer 0（确定性，0 Token）**：文件存在性、格式完整性、左移检查 → FAIL 直接打回
+**Layer 1（AI 语义）**：`use_skill("artifact-review")` + `gates/gate-*.md` 检查项 → 评分 + 通过/打回
+
+门禁清单只含**流程完成度检查**，产物质量评审由 Layer 1 的 artifact-review Skill 评分负责。两者分离，避免清单太长 AI 跳过。
 
 ### 3.6 角色完成前自检（Self-Check）
 
@@ -315,14 +321,26 @@
 project-root/
 ├── STATUS.md              # 项目状态追踪（所有 Agent 共享）
 ├── TODOS.md               # 延期事项追踪
+├── ai-workspace/          # 需求级工作区（每个需求独立目录）
+│   └── {task-id}/
+│       ├── state.json         # 状态持久化（断点续做）
+│       ├── progress-board.md  # 进度看板
+│       ├── runtime-knowledge/ # 运行时知识积累
+│       └── artifacts/         # 阶段产物
+│           ├── 01-ideation/       # 构思（方向确认）
+│           ├── 02-requirement/    # 需求（PRD）
+│           ├── 03-design/         # 设计（架构审查+设计评审）
+│           ├── 04-development/    # 开发（左移检查报告）
+│           ├── 05-testing/        # 测试（QA报告+安全报告）
+│           └── 06-summary/        # 汇总（最终报告）
 ├── docs/
-│   ├── designs/           # 设计文档（砺的 office-hours 产出）
-│   ├── prd/               # PRD 文档（枢的产出）
-│   ├── reviews/           # 审查报告（锋、矩、绘、鉴、盾的产出）
+│   ├── designs/           # 设计文档（跨需求沉淀）
 │   └── decisions/         # 决策记录归档
 ├── memory/                # 项目级记忆（见 MEMORY.md）
 └── src/                   # 源代码
 ```
+
+> **核心变更**：每个需求的产物集中在 `ai-workspace/{task-id}/artifacts/` 下，不再散落在 `docs/reviews/`、`docs/prd/` 等位置。审核评分、进度看板、state.json 与产物同目录，可追溯可复盘。
 
 ### 5.2 文件命名规范
 
@@ -349,11 +367,15 @@ project-root/
 
 | 阶段 | 产物 | 路径模式 | 负责 Agent |
 |------|------|---------|-----------|
-| 需求 | PRD | `docs/prd/[项目名]_PRD_v[N].md` | 枢 |
-| 设计 | 架构审查报告 | `docs/reviews/YYYY-MM-DD_矩_eng-review.md` | 矩 |
-| 设计 | 设计审查报告 | `docs/reviews/YYYY-MM-DD_绘_design-review.md` | 绘 |
-| 测试 | 测试报告 | `docs/reviews/YYYY-MM-DD_鉴_qa-report.md` | 鉴 |
-| 测试 | 安全审计报告（如需） | `docs/reviews/YYYY-MM-DD_盾_security-audit.md` | 盾 |
+| 构思 | 方向确认 | `ai-workspace/{task-id}/artifacts/01-ideation/direction.md` | 锋 |
+| 需求 | PRD | `ai-workspace/{task-id}/artifacts/02-requirement/PRD.md` | 枢 |
+| 设计 | 架构审查报告 | `ai-workspace/{task-id}/artifacts/03-design/eng-review.md` | 矩 |
+| 设计 | 设计审查报告 | `ai-workspace/{task-id}/artifacts/03-design/design-review.md` | 绘 |
+| 开发 | 左移检查报告 | `ai-workspace/{task-id}/artifacts/04-development/shift-left-report.md` | 铸 |
+| 测试 | QA 测试报告 | `ai-workspace/{task-id}/artifacts/05-testing/qa-report.md` | 鉴 |
+| 测试 | 安全审计报告 | `ai-workspace/{task-id}/artifacts/05-testing/security-audit.md` | 盾 |
+| 审核 | 审核评分报告 | `ai-workspace/{task-id}/artifacts/{阶段}/review-report.md` | 启 |
+| 汇总 | 最终报告 | `ai-workspace/{task-id}/artifacts/06-summary/workflow-summary.md` | 启 |
 
 **规则**：
 1. 上表中的产物**必须写入文件**，不可仅在交接块中内联
@@ -560,6 +582,7 @@ project-root/
 
 | 版本 | 日期 | 变更内容 |
 |------|------|---------|
+| v2.0 | 2026-04-25 | 架构升级：ai-workspace 需求级工作区；state.json 状态持久化；两层门禁(Layer 0 + Layer 1)；进度看板；异常矩阵；runtime-knowledge；产物路径从 docs/ 迁移到 ai-workspace/；启从"规划者+调度者"改为"Leader 角色"（创建团队交主 Agent） |
 | v1.3 | 2026-04-16 | 新增铸·开发角色：开发阶段由铸负责代码实现；RACI 矩阵新增"代码实现"行；跨 Agent 调用协议更新（矩→铸、铸→鉴）；寻·探索 agent 文件补齐 |
 | v1.2 | 2026-04-16 | 增加产物验证机制：交接块增加 `产物文件` 字段；新增 5.3 产物验证规则；6 个 gate 门禁增加文件存在性检查项；启·执事增加 spawn 前产物文件验证步骤 |
 | v1.1 | 2026-04-11 | 增加第六章：反馈闭环机制（闭环模型、迭代次数限制、审查回应格式、各环节闭环规则） |

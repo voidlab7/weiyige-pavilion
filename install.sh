@@ -50,9 +50,9 @@ AGENTS=(
 
 CB_AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "启·执事" "寻·探索" "铸·开发")
 
-PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "SKILLS-REGISTRY.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
+PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
 
-GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "README.md")
+GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "two-layer-gate.md" "README.md")
 
 RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
 
@@ -179,6 +179,7 @@ get_agent_extra_files() {
     架构_矩) echo "rules/eng-review/RULE.mdc" ;;
     设计_绘) echo "rules/design-review/RULE.mdc" ;;
     QA_鉴)   echo "rules/qa/RULE.mdc" ;;
+    执事_启) echo "start.md state-template.json progress-board-template.md exception-matrix.md runtime-knowledge.md" ;;
   esac
 }
 

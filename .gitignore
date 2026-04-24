@@ -2,3 +2,16 @@
 gslb-devepos-ai-results/
 .codebuddy/agents/暖·知心.md
 agents_for_codebuddy/
+
+# OpenClaw 残留（不属于维弈阁）
+SOUL.md
+IDENTITY.md
+TOOLS.md
+USER.md
+HEARTBEAT.md
+.openclaw/
+内容_辞/auth-profiles.json
+内容_辞/models.json
+
+# 运行时产物（不入仓库）
+ai-workspace/

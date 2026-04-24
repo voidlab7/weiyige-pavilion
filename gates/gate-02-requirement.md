@@ -10,7 +10,7 @@
 - [ ] NOT in scope 已明确列出（考虑过但不做的 + 理由）
 - [ ] 时间表已拆到天级别
 - [ ] 产品三角已审查（砺/矩/算 三角确认）
-- [ ] PRD 已写入 `docs/prd/` 目录
+- [ ] PRD 已写入 `ai-workspace/{task-id}/artifacts/02-requirement/PRD.md`
 - [ ] **PRD 文件已存在且可读**（通过 `read_file` 验证路径，非声称）
 
 ## 退出裁定

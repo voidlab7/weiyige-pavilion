@@ -165,12 +165,14 @@ function Install-ConfigFile {
 # ---------- Agent 列表 ----------
 $AGENTS = @(
     "CEO_锋", "PM_枢", "架构_矩", "设计_绘", "QA_鉴",
-    "安全_盾", "财务_算", "内容_辞", "顾问_隐", "合伙人_砺"
+    "安全_盾", "财务_算", "内容_辞", "顾问_隐", "合伙人_砺",
+    "执事_启", "探索_寻", "开发_铸"
 )
 
 $AGENT_NAMES = @(
     "锋·CEO", "枢·PM", "矩·架构", "绘·设计", "鉴·QA",
-    "盾·安全", "算·财务", "辞·内容", "隐·智囊", "砺·合伙人", "启·执事"
+    "盾·安全", "算·财务", "辞·内容", "隐·智囊", "砺·合伙人",
+    "启·执事", "寻·探索", "铸·开发"
 )
 
 # ---------- Full 模式安装 ----------
@@ -238,7 +240,7 @@ function Install-FullMode {
     Write-Host "▶ 安装 Gates 阶段门禁清单 ..." -ForegroundColor Yellow
     $gatesDir = Join-Path $weiyigeDir "gates"
     New-Item -ItemType Directory -Path $gatesDir -Force | Out-Null
-    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirements.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "README.md")
+    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirement.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "review-reminder.md", "two-layer-gate.md", "README.md")
     $gatesSuccess = 0
     foreach ($f in $gatesFiles) {
         $destFile = Join-Path $gatesDir $f
@@ -260,14 +262,14 @@ function Install-FullMode {
     # CodeBuddy 多 Agent 适配文件
     Write-Host ""
     Write-Host "▶ 安装 CodeBuddy 多 Agent 适配文件 ..." -ForegroundColor Yellow
-    $agentsDir = Join-Path $Target ".codebuddy\agent"
+    $agentsDir = Join-Path $Target ".codebuddy\agents"
     New-Item -ItemType Directory -Path $agentsDir -Force | Out-Null
 
     $localAgentsDir = Join-Path $SCRIPT_DIR "agents_for_codebuddy"
     if (Test-Path $localAgentsDir) {
         Copy-Item "$localAgentsDir\*.md" $agentsDir -Force
         $count = (Get-ChildItem "$agentsDir\*.md").Count
-        Write-Host "  ✅ 已安装 $count 个 Agent 到 .codebuddy\agent\" -ForegroundColor Green
+        Write-Host "  ✅ 已安装 $count 个 Agent 到 .codebuddy\agents\" -ForegroundColor Green
     } else {
         # 远程下载
         foreach ($name in $AGENT_NAMES) {
@@ -385,11 +387,12 @@ function Install-UpdateMode {
         if (-not (Test-Path $localAgentDir)) {
             $extraFiles = @()
             switch ($agent) {
-                "PM_枢"   { $extraFiles = @("rules/design-review/RULE.mdc", "skills/prd-template.md") }
+                "PM_枢"   { $extraFiles = @("skills/prd-template.md") }
                 "架构_矩" { $extraFiles = @("rules/eng-review/RULE.mdc") }
                 "设计_绘" { $extraFiles = @("rules/design-review/RULE.mdc") }
                 "QA_鉴"   { $extraFiles = @("rules/qa/RULE.mdc") }
                 "内容_辞" { $extraFiles = @("skills/de-ai-ify.md", "skills/humanizer.md", "skills/copywriting.md") }
+                "执事_启" { $extraFiles = @("start.md", "state-template.json", "progress-board-template.md", "exception-matrix.md", "runtime-knowledge.md") }
             }
             foreach ($f in $extraFiles) {
                 $destFile = Join-Path $agentDir $f
@@ -413,7 +416,7 @@ function Install-UpdateMode {
     # 更新协议文件
     Write-Host ""
     Write-Host "▶ 更新协议文件 ..." -ForegroundColor Yellow
-    $protocolFiles = @("PROTOCOL.md", "ROUTER.md", "MEMORY.md", "QUICKSTART.md")
+    $protocolFiles = @("PROTOCOL.md", "ROUTER.md", "MEMORY.md", "QUICKSTART.md", "PROJECT-CONFIG-SPEC.md", "PACKAGING.md")
     foreach ($f in $protocolFiles) {
         $destFile = Join-Path $weiyigeDir $f
         $localFile = Join-Path $SCRIPT_DIR $f
@@ -434,7 +437,7 @@ function Install-UpdateMode {
     Write-Host "▶ 更新 Gates 阶段门禁清单 ..." -ForegroundColor Yellow
     $gatesDir = Join-Path $weiyigeDir "gates"
     if (-not (Test-Path $gatesDir)) { New-Item -ItemType Directory -Path $gatesDir -Force | Out-Null }
-    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirement.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "review-reminder.md", "README.md")
+    $gatesFiles = @("gate-01-ideation.md", "gate-02-requirement.md", "gate-03-design.md", "gate-04-development.md", "gate-05-testing.md", "gate-06-release.md", "review-reminder.md", "two-layer-gate.md", "README.md")
     $gatesSuccess = 0
     foreach ($f in $gatesFiles) {
         $destFile = Join-Path $gatesDir $f

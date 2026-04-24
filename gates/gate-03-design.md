@@ -5,10 +5,10 @@
 ## 必查项（逐条勾选）
 
 - [ ] 矩的架构审查报告已输出（含计算型检查 + 多维度评分）
-- [ ] **矩的审查报告文件已存在且可读** → `docs/reviews/YYYY-MM-DD_矩_eng-review.md`（通过 `read_file` 验证）
+- [ ] **矩的审查报告文件已存在且可读** → `ai-workspace/{task-id}/artifacts/03-design/eng-review.md`（通过 `read_file` 验证）
 - [ ] 矩的评分总分 ≥ 30/50（有条件通过以上）
 - [ ] 绘的设计审查报告已输出
-- [ ] **绘的审查报告文件已存在且可读** → `docs/reviews/YYYY-MM-DD_绘_design-review.md`（通过 `read_file` 验证）
+- [ ] **绘的审查报告文件已存在且可读** → `ai-workspace/{task-id}/artifacts/03-design/design-review.md`（通过 `read_file` 验证）
 - [ ] 数据流 4 路径已追踪（正常/nil/空/错误）
 - [ ] ASCII 架构图/数据流图已产出
 - [ ] 安全问题（如有）已升级到盾

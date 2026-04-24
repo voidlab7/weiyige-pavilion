@@ -1,0 +1,96 @@
+{
+  "_schema_version": "1.0",
+  "_description": "维弈阁任务状态持久化文件。启（Leader）启动时读取此文件进行三路路由判断。",
+  "task_id": "",
+  "task_title": "",
+  "run_mode": "auto",
+  "current_phase": "",
+  "started_at": "",
+  "completed_at": "",
+  "phases": {
+    "01-ideation": {
+      "status": "pending",
+      "agents": [],
+      "artifact_path": "",
+      "review_score": null,
+      "review_verdict": "",
+      "layer0_result": "",
+      "started_at": "",
+      "completed_at": "",
+      "retry_count": 0,
+      "error": null
+    },
+    "02-requirement": {
+      "status": "pending",
+      "agents": [],
+      "artifact_path": "",
+      "review_score": null,
+      "review_verdict": "",
+      "layer0_result": "",
+      "started_at": "",
+      "completed_at": "",
+      "retry_count": 0,
+      "error": null
+    },
+    "03-design": {
+      "status": "pending",
+      "agents": [],
+      "artifact_path": "",
+      "review_score": null,
+      "review_verdict": "",
+      "layer0_result": "",
+      "started_at": "",
+      "completed_at": "",
+      "retry_count": 0,
+      "error": null
+    },
+    "04-development": {
+      "status": "pending",
+      "agents": [],
+      "artifact_path": "",
+      "review_score": null,
+      "review_verdict": "",
+      "layer0_result": "",
+      "started_at": "",
+      "completed_at": "",
+      "retry_count": 0,
+      "error": null
+    },
+    "05-testing": {
+      "status": "pending",
+      "agents": [],
+      "artifact_path": "",
+      "review_score": null,
+      "review_verdict": "",
+      "layer0_result": "",
+      "started_at": "",
+      "completed_at": "",
+      "retry_count": 0,
+      "error": null
+    },
+    "06-release": {
+      "status": "pending",
+      "agents": [],
+      "artifact_path": "",
+      "review_score": null,
+      "review_verdict": "",
+      "layer0_result": "",
+      "started_at": "",
+      "completed_at": "",
+      "retry_count": 0,
+      "error": null
+    }
+  },
+  "runtime_knowledge": {
+    "patterns_count": 0,
+    "last_updated": null
+  },
+  "timing": {
+    "total_duration_minutes": 0,
+    "phase_durations": {},
+    "slowest_phase": "",
+    "bottleneck_step": ""
+  },
+  "exceptions": [],
+  "progress_board_path": ""
+}
