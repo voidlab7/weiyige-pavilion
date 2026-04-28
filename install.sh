@@ -56,7 +56,7 @@ GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" 
 
 RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
 
-SKILLS_DIRS=("artifact-review" "knowledge-distillation")
+SKILLS_DIRS=("artifact-review" "knowledge-distillation" "micropen")
 
 # ---------- 工具 → 配置文件映射 ----------
 get_config_file() {
