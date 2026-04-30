@@ -1,7 +1,6 @@
 .DS_Store
 gslb-devepos-ai-results/
 .codebuddy/agents/暖·知心.md
-agents_for_codebuddy/
 
 # OpenClaw 残留（不属于维弈阁）
 SOUL.md
@@ -15,3 +14,6 @@ HEARTBEAT.md
 
 # 运行时产物（不入仓库）
 ai-workspace/
+
+# 维弈阁
+.weiyige/*/memory/
