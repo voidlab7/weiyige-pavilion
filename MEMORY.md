@@ -372,7 +372,30 @@ project-root/memory/
 
 ---
 
-## 五、初始化指南
+## 五、质量指标记忆口径
+
+Agent 的质量指标必须能从产物或复盘中追溯，不只写目标。
+
+### 5.1 砺·合伙人 Office Hours 指标
+
+| 指标 | 写入位置 | 字段 |
+|------|----------|------|
+| 追问深度 | Office Hours 设计文档 / 交接块 | `follow_up_count` |
+| 伪需求拦截率 | `合伙人_砺/memory/lessons.md` 或项目复盘 | `blocked_before_dev: true/false` |
+| 替代方案采纳率 | 设计文档 + 后续 PRD 对比 | `recommended_path_adopted: true/false` |
+| 二评采纳率 | 设计文档 `Second Opinion` | `accepted_items / total_items` |
+| Spec 一次通过率 | `Spec Review Result` | `review_rounds` |
+| 否决准确率 | 项目复盘 | `veto_outcome` |
+
+### 5.2 写入规则
+
+- 指标不要在每次普通对话里强行写 memory；只在阶段结束、复盘、或 Deep 模式产物完成后写。
+- 指标记录要附带产物路径，避免无法追溯。
+- 如果指标暴露流程问题，应升级到 `rules/`、`SKILLS.md` 或 `PROTOCOL.md`。
+
+---
+
+## 六、初始化指南
 
 ### 5.1 为现有 Agent 初始化 Memory
 
@@ -398,10 +421,11 @@ touch memory/changelog.md
 
 ---
 
-## 六、变更日志
+## 七、变更日志
 
 | 版本 | 日期 | 变更内容 |
 |------|------|---------|
+| v1.2 | 2026-05-03 | 增加质量指标记忆口径，明确砺 Office Hours 的追问深度、伪需求拦截率、二评采纳率、Spec 通过率等字段 |
 | v1.1 | 2026-04-15 | 增加 2.3 教训→规则升级机制（Harness Loop）：lessons.md 增加出现次数/规则升级字段 + 升级触发条件和流程 |
 | v1.0 | 2026-04-11 | 初始版本：定义三层记忆架构、数据结构、读写规范、沉淀流程 |
 

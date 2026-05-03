@@ -12,8 +12,15 @@ HEARTBEAT.md
 内容_辞/auth-profiles.json
 内容_辞/models.json
 
+# OpenClaw 各角色运行时残留
+*/auth-profiles.json
+*/models.json
+
 # 运行时产物（不入仓库）
 ai-workspace/
 
-# 维弈阁
+# .weiyige/ 是安装产物，从根目录角色定义生成
+.weiyige/
+
+# 维弈阁 memory（各项目保留自己的）
 .weiyige/*/memory/

@@ -1,6 +1,6 @@
 # 维弈阁协作协议（Weiyige Collaboration Protocol）
 
-> 版本: v2.0 | 创建: 2026-04-11 | 更新: 2026-04-25 | 状态: 生效中
+> 版本: v1.5 | 创建: 2026-04-11 | 更新: 2026-05-01 | 状态: 生效中
 
 协作的本质是**信息的可靠传递 + 决策的明确归属**。本协议定义了维弈阁所有 Agent 之间的协作规范。
 
@@ -8,6 +8,7 @@
 - `rules/rules-global.md` — 12 条全局规则（所有角色必须遵守）
 - `rules/review-scoring.md` — 产物审核多维度评分规范
 - `gates/review-reminder.md` — 审核入口强制指令
+- `SKILLS-REGISTRY.md` — Skill 注册表（内置 + 外部）
 - `PROJECT-CONFIG-SPEC.md` — project.yaml 字段规范
 
 ---
@@ -69,7 +70,56 @@
 
 ## 二、标准化信息传递格式
 
-### 2.1 Agent 输出标准格式（Handoff Block）
+### 2.0 Team 通信命名规范
+
+> 在 CodeBuddy Team 模式下，`task(name=...)` 和 `send_message(recipient=...)` 使用的标识符直接写入 inbox 的 `from`/`to` 字段。
+
+**规则**：所有 team 通信标识符**必须**使用维弈阁角色简称（单字），不可使用英文职能名或拼音缩写。
+
+| 角色 | 正确 name | 错误示例 |
+|------|----------|---------|
+| 锋·CEO | 锋 | ceo, feng, leader |
+| 砺·合伙人 | 砺 | partner, devil, li |
+| 隐·智囊 | 隐 | advisor, yin |
+| 枢·PM | 枢 | pm, shu |
+| 辞·内容 | 辞 | content, ci |
+| 寻·探索 | 寻 | scout, xun |
+| 矩·架构 | 矩 | arch, architect, ju |
+| 绘·设计 | 绘 | designer, hui |
+| 铸·开发 | 铸 | dev, zhu, forge |
+| 鉴·QA | 鉴 | qa, jian, tester |
+| 盾·安全 | 盾 | sec, dun, security |
+| 算·财务 | 算 | cfo, suan, finance |
+| 启·执事 | 启 | steward, qi |
+
+**原因**：inbox 消息的 `from`/`to` 是团队协作的可追溯凭证。用维弈阁角色简称可以让消息链路与角色身份一一对应，避免 `architect`/`ju`/`designer`/`hui` 等不一致命名造成的混乱。
+
+### 2.1 直连模式（新会话 / inline）
+
+当用户希望单个角色独立工作、且不希望当前主会话被同步 `task` 阻塞时，推荐使用直连模式。
+
+**触发信号**：
+- “直接扮演某角色”
+- “不要启动 task / 不要创建 subagent”
+- “不要等待 Leader / 不进入 team 待命”
+- “新开会话让某角色做”
+
+**运行规则**：
+1. 角色按自己的启动指令读取 `IDENTITY.md`、`SOUL.md`、`SKILLS.md`、`PROTOCOL.md` 和必要记忆。
+2. 不调用 `task`，不创建 team，不等待 Leader 消息。
+3. 直接执行用户给定任务；完成后输出交接块。
+4. 若不在 CodeBuddy team 模式中，不使用 `send_message`，直接在当前会话返回结果。
+5. 只有用户明确要求“启动团队 / 自动跑完 / 调度多个角色”时，才交给 `启` 进入 task/team 编排。
+
+**推荐口令**：
+```text
+@寻-live
+不要启动 task，不要创建 subagent，不要进入 team 待命，不要等待 Leader。
+请直接以「寻·探索」身份工作。
+任务：……
+```
+
+### 2.2 Agent 输出标准格式（Handoff Block）
 
 每个 Agent 完成工作后，必须在输出末尾附加一个**交接块**，供下游 Agent 消费：
 
@@ -80,7 +130,7 @@
 - **来源**: [Agent 名称]
 - **阶段**: [当前项目阶段，见 STATUS.md]
 - **产出类型**: [审查报告 / PRD / 设计文档 / 测试报告 / 安全报告 / 其他]
-- **产物文件**: [产出文件的路径，如 `ai-workspace/{task-id}/artifacts/03-design/eng-review.md`；无文件产出填 `无`]
+- **产物文件**: [产出文件的路径，如 `docs/reviews/2026-04-16_矩_eng-review.md`；无文件产出填 `无`]
 - **状态**: [通过 / 有条件通过 / 未通过 / 需要信息]
 - **关键决策**:
   1. [决策 1]: [结论]
@@ -92,7 +142,7 @@
 ---
 ```
 
-### 2.2 Agent 输入标准格式（Context Block）
+### 2.3 Agent 输入标准格式（Context Block）
 
 调用 Agent 时，应提供以下上下文：
 
@@ -109,7 +159,7 @@
 ---
 ```
 
-### 2.3 决策记录格式（Decision Record）
+### 2.4 决策记录格式（Decision Record）
 
 每个重要决策必须记录：
 
@@ -131,11 +181,7 @@
 
 ## 三、项目状态追踪（STATUS.md）
 
-每个项目根目录必须有 `STATUS.md`，所有 Agent 读写此文件来同步**全局项目状态**。
-
-**STATUS.md vs state.json 的关系**：
-- `STATUS.md`（项目根目录）— 全局项目状态，跨需求，人可读，Git 跟踪
-- `ai-workspace/{task-id}/state.json`（需求级）— 单个需求的执行状态，机器读写，支持断点续做，不入 Git
+每个项目根目录必须有 `STATUS.md`，所有 Agent 读写此文件来同步状态。
 
 ### 3.1 STATUS.md 模板
 
@@ -217,16 +263,13 @@
 3. 不通过不进审查——不浪费推断型 Token
 4. 鉴的测试阶段专注功能行为验证，计算型问题在开发阶段已解决
 
-### 3.5 阶段门禁清单（两层门禁）
+### 3.5 阶段门禁清单
 
 > 审核引擎与流程检查分离设计
 
-每个阶段有**两层门禁**（详见 `gates/two-layer-gate.md`）：
+每个阶段有独立的门禁清单（`gates/gate-*.md`），阶段退出时**逐条勾选**。
 
-**Layer 0（确定性，0 Token）**：文件存在性、格式完整性、左移检查 → FAIL 直接打回
-**Layer 1（AI 语义）**：`use_skill("artifact-review")` + `gates/gate-*.md` 检查项 → 评分 + 通过/打回
-
-门禁清单只含**流程完成度检查**，产物质量评审由 Layer 1 的 artifact-review Skill 评分负责。两者分离，避免清单太长 AI 跳过。
+门禁清单只含**流程完成度检查**（"该做的做了没"），产物质量评审由对应 Agent 的 Skill 评分负责。两者分离，避免清单太长 AI 跳过。
 
 ### 3.6 角色完成前自检（Self-Check）
 
@@ -300,11 +343,74 @@
 | 鉴 | 盾、铸、绘 | 发现安全问题交盾；发现 Bug 交铸修复；发现 UI 问题交绘 |
 | 盾 | 铸、鉴 | 安全修复建议交铸实现；安全确认后交鉴验证 |
 | 砺 | 锋 | 否决后交锋最终裁决 |
-| 隐 | 锋、砺 | 分析完成后交锋决策；建议砺质疑 |
+| 隐 | 锋、砺 | 分析完成后交锋决策；建议砺质疑；Deep 设计文档二评 |
 | 辞 | 锋 | 内容完成后交锋审批 |
 | 算 | 锋、枢 | 成本预警交锋决策；预算数据交枢规划 |
 
-### 4.3 信息不丢失原则
+### 4.3 Office Hours v2 专用交接
+
+#### 4.3.1 Related Design Discovery
+
+砺在 Office Hours 的方案生成前，必须搜索历史设计文档：
+
+- `ai-workspace/*/artifacts/01-ideation/*.md`
+- `artifacts/**/*.md`
+- `docs/designs/**/*.md`
+
+若发现相似设计，砺的设计文档必须包含：
+
+```markdown
+## Supersedes / Related Docs
+| 文档 | 关系 | 可复用内容 | 冲突 / 废弃原因 |
+|------|------|-----------|----------------|
+```
+
+#### 4.3.2 Cross-Agent Second Opinion
+
+Deep 模式的 Office Hours 设计文档完成后，砺必须交 `隐·智囊` 做独立二评。
+
+**Context Block 必填**：问题陈述、目标用户、`PREMISES`、推荐方案、替代方案、风险、开放问题、设计文档路径。
+
+**隐的输出必须覆盖**：盲点、反例、替代解释、长期后果、建议裁定。
+
+砺必须将二评和回应写回设计文档：
+
+```markdown
+## Second Opinion
+- **Reviewer**: 隐·智囊
+- **结论**: 支持 / 有条件支持 / 反对
+- **关键盲点**:
+- **砺的回应**: 采纳 / 不采纳 / 延后（说明理由）
+```
+
+#### 4.3.3 Visual Sketch Handoff
+
+如果 Office Hours 涉及网页 / App / UI / 页面体验，砺不亲自画稿，而是交 `绘·设计` 产出低保真视觉草图。
+
+给绘的 Context Block 必填：
+
+- 目标用户
+- 核心场景
+- 最小路径
+- 情绪关键词
+- 不可做事项 / 反模式
+- 验收标准
+
+#### 4.3.4 Spec Review Loop
+
+Deep 模式设计文档必须进入 Spec Review Loop，最多 3 轮。
+
+| 维度 | 检查问题 |
+|------|---------|
+| 完整性 | 模板字段是否齐全，证据是否足够 |
+| 一致性 | 前提、方案、风险、任务是否互相冲突 |
+| 清晰度 | 下游 Agent 是否无需猜测即可接手 |
+| 范围控制 | MVP 是否足够窄，Non-goals 是否明确 |
+| 可行性 | 下一步是否能在当前资源下执行 |
+
+审查结论必须写回设计文档：通过 / 有条件通过 / 需要重写。
+
+### 4.4 信息不丢失原则
 
 1. **交接块必填**：每个 Agent 输出必须包含交接块
 2. **STATUS.md 必更新**：阶段变更时必须更新 STATUS.md
@@ -321,26 +427,14 @@
 project-root/
 ├── STATUS.md              # 项目状态追踪（所有 Agent 共享）
 ├── TODOS.md               # 延期事项追踪
-├── ai-workspace/          # 需求级工作区（每个需求独立目录）
-│   └── {task-id}/
-│       ├── state.json         # 状态持久化（断点续做）
-│       ├── progress-board.md  # 进度看板
-│       ├── runtime-knowledge/ # 运行时知识积累
-│       └── artifacts/         # 阶段产物
-│           ├── 01-ideation/       # 构思（方向确认）
-│           ├── 02-requirement/    # 需求（PRD）
-│           ├── 03-design/         # 设计（架构审查+设计评审）
-│           ├── 04-development/    # 开发（左移检查报告）
-│           ├── 05-testing/        # 测试（QA报告+安全报告）
-│           └── 06-summary/        # 汇总（最终报告）
 ├── docs/
-│   ├── designs/           # 设计文档（跨需求沉淀）
+│   ├── designs/           # 设计文档（砺的 office-hours 产出）
+│   ├── prd/               # PRD 文档（枢的产出）
+│   ├── reviews/           # 审查报告（锋、矩、绘、鉴、盾的产出）
 │   └── decisions/         # 决策记录归档
 ├── memory/                # 项目级记忆（见 MEMORY.md）
 └── src/                   # 源代码
 ```
-
-> **核心变更**：每个需求的产物集中在 `ai-workspace/{task-id}/artifacts/` 下，不再散落在 `docs/reviews/`、`docs/prd/` 等位置。审核评分、进度看板、state.json 与产物同目录，可追溯可复盘。
 
 ### 5.2 文件命名规范
 
@@ -367,15 +461,11 @@ project-root/
 
 | 阶段 | 产物 | 路径模式 | 负责 Agent |
 |------|------|---------|-----------|
-| 构思 | 方向确认 | `ai-workspace/{task-id}/artifacts/01-ideation/direction.md` | 锋 |
-| 需求 | PRD | `ai-workspace/{task-id}/artifacts/02-requirement/PRD.md` | 枢 |
-| 设计 | 架构审查报告 | `ai-workspace/{task-id}/artifacts/03-design/eng-review.md` | 矩 |
-| 设计 | 设计审查报告 | `ai-workspace/{task-id}/artifacts/03-design/design-review.md` | 绘 |
-| 开发 | 左移检查报告 | `ai-workspace/{task-id}/artifacts/04-development/shift-left-report.md` | 铸 |
-| 测试 | QA 测试报告 | `ai-workspace/{task-id}/artifacts/05-testing/qa-report.md` | 鉴 |
-| 测试 | 安全审计报告 | `ai-workspace/{task-id}/artifacts/05-testing/security-audit.md` | 盾 |
-| 审核 | 审核评分报告 | `ai-workspace/{task-id}/artifacts/{阶段}/review-report.md` | 启 |
-| 汇总 | 最终报告 | `ai-workspace/{task-id}/artifacts/06-summary/workflow-summary.md` | 启 |
+| 需求 | PRD | `docs/prd/[项目名]_PRD_v[N].md` | 枢 |
+| 设计 | 架构审查报告 | `docs/reviews/YYYY-MM-DD_矩_eng-review.md` | 矩 |
+| 设计 | 设计审查报告 | `docs/reviews/YYYY-MM-DD_绘_design-review.md` | 绘 |
+| 测试 | 测试报告 | `docs/reviews/YYYY-MM-DD_鉴_qa-report.md` | 鉴 |
+| 测试 | 安全审计报告（如需） | `docs/reviews/YYYY-MM-DD_盾_security-audit.md` | 盾 |
 
 **规则**：
 1. 上表中的产物**必须写入文件**，不可仅在交接块中内联
@@ -582,7 +672,8 @@ project-root/
 
 | 版本 | 日期 | 变更内容 |
 |------|------|---------|
-| v2.0 | 2026-04-25 | 架构升级：ai-workspace 需求级工作区；state.json 状态持久化；两层门禁(Layer 0 + Layer 1)；进度看板；异常矩阵；runtime-knowledge；产物路径从 docs/ 迁移到 ai-workspace/；启从"规划者+调度者"改为"Leader 角色"（创建团队交主 Agent） |
+| v1.5 | 2026-05-01 | 新增 2.1 直连模式：单角色可在新会话/当前会话直接扮演运行，不启动 task、不等待 Leader，用于避免主会话被同步任务阻塞 |
+| v1.4 | 2026-04-17 | 新增 2.0 Team 通信命名规范：team 模式下 name/recipient 必须使用维弈阁角色简称（锋/砺/隐/枢/辞/寻/矩/绘/铸/鉴/盾/算/启），禁止英文职能名（architect/designer/pm 等），确保 inbox 消息 from/to 与角色身份一致 |
 | v1.3 | 2026-04-16 | 新增铸·开发角色：开发阶段由铸负责代码实现；RACI 矩阵新增"代码实现"行；跨 Agent 调用协议更新（矩→铸、铸→鉴）；寻·探索 agent 文件补齐 |
 | v1.2 | 2026-04-16 | 增加产物验证机制：交接块增加 `产物文件` 字段；新增 5.3 产物验证规则；6 个 gate 门禁增加文件存在性检查项；启·执事增加 spawn 前产物文件验证步骤 |
 | v1.1 | 2026-04-11 | 增加第六章：反馈闭环机制（闭环模型、迭代次数限制、审查回应格式、各环节闭环规则） |
@@ -590,4 +681,4 @@ project-root/
 
 ---
 
-*本协议是维弈阁团队协作的基础设施。没有协议，10 个 Agent 就是 10 个孤岛。*
+*本协议是维弈阁团队协作的基础设施。没有协议，13 个 Agent 就是 13 个孤岛。*

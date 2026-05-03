@@ -175,6 +175,10 @@ $AGENT_NAMES = @(
     "启·执事", "寻·探索", "铸·开发"
 )
 
+$PROTOCOL_FILES = @("PROTOCOL.md", "ROUTER.md", "MEMORY.md", "QUICKSTART.md", "PROJECT-CONFIG-SPEC.md", "PACKAGING.md")
+$RULES_FILES = @("rules-global.md", "review-scoring.md", "README.md")
+$SKILLS_DIRS = @("artifact-review", "knowledge-distillation", "micropen")
+
 # ---------- Full 模式安装 ----------
 function Install-FullMode {
     $weiyigeDir = Join-Path $Target ".weiyige"
@@ -315,8 +319,9 @@ function Print-Success {
     Write-Host "     工具会自动读取 $CONFIG_FILE，激活维弈阁团队"
     Write-Host ""
     Write-Host "  2. 多 Agent 模式（推荐）："
-    Write-Host "     已将 Agent 文件安装到 .codebuddy\agent\"
-    Write-Host "     CodeBuddy 会根据意图自动调度对应 Agent"
+    Write-Host "     已将 Agent 文件安装到 .codebuddy\agents\"
+    Write-Host "     已将 Skills 安装到 .codebuddy\skills\"
+    Write-Host "     CodeBuddy 会根据意图自动调度对应 Agent 和 Skill"
     Write-Host ""
     Write-Host "  3. 试试第一条指令："
     Write-Host "     @辞 帮我写一篇公众号文章" -ForegroundColor Cyan
@@ -455,6 +460,41 @@ function Install-UpdateMode {
         Write-Host "  ⚠️  Gates 部分更新（$gatesSuccess/$($gatesFiles.Count)）" -ForegroundColor Yellow
     }
 
+    # 更新 Rules 全局规则
+    Write-Host ""
+    Write-Host "▶ 更新 Rules 全局规则 ..." -ForegroundColor Yellow
+    $rulesDir = Join-Path $weiyigeDir "rules"
+    if (-not (Test-Path $rulesDir)) { New-Item -ItemType Directory -Path $rulesDir -Force | Out-Null }
+    foreach ($f in $RULES_FILES) {
+        $destFile = Join-Path $rulesDir $f
+        $localFile = Join-Path $SCRIPT_DIR "rules\$f"
+        if (Test-Path $localFile) { Copy-Item $localFile $destFile -Force } else { Fetch-File "rules/$f" $destFile | Out-Null }
+    }
+    Write-Host "  ✅ Rules 已更新" -ForegroundColor Green
+
+    # 更新共享 Skills
+    Write-Host ""
+    Write-Host "▶ 更新共享 Skills ..." -ForegroundColor Yellow
+    $skillsDir = Join-Path $weiyigeDir "skills"
+    $cbSkillsDir = Join-Path $Target ".codebuddy\skills"
+    New-Item -ItemType Directory -Path $skillsDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $cbSkillsDir -Force | Out-Null
+    foreach ($skill in $SKILLS_DIRS) {
+        $dest = Join-Path $skillsDir $skill
+        $cbDest = Join-Path $cbSkillsDir $skill
+        New-Item -ItemType Directory -Path $dest -Force | Out-Null
+        New-Item -ItemType Directory -Path $cbDest -Force | Out-Null
+        $localSkillDir = Join-Path $SCRIPT_DIR "skills\$skill"
+        if (Test-Path $localSkillDir) {
+            Copy-Item "$localSkillDir\*" $dest -Recurse -Force
+            Copy-Item "$localSkillDir\*" $cbDest -Recurse -Force
+        } else {
+            Fetch-File "skills/$skill/SKILL.md" (Join-Path $dest "SKILL.md") | Out-Null
+            Copy-Item "$dest\*" $cbDest -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+    Write-Host "  ✅ Skills 已同步" -ForegroundColor Green
+
     # 更新 CodeBuddy Agent 文件
     Write-Host ""
     Write-Host "▶ 更新 CodeBuddy Agent 文件 ..." -ForegroundColor Yellow
@@ -474,7 +514,7 @@ function Install-UpdateMode {
             }
         }
     } else {
-        Write-Host "  ℹ️  未找到 .codebuddy\agent\，跳过" -ForegroundColor Blue
+        Write-Host "  ℹ️  未找到 .codebuddy\agents\，跳过" -ForegroundColor Blue
     }
 
     # 更新 CLAUDE.md 中的维弈阁配置段落

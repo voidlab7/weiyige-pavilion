@@ -1,6 +1,6 @@
 # 顾问（隐）— Skills 卡片
 
-> 版本: v1.0 | 创建: 2026-04-13 | 基于 Harness Engineering 范式
+> 版本: v1.1 | 创建: 2026-04-13 | 更新: 2026-05-03 | 基于 Harness Engineering 范式
 
 ---
 

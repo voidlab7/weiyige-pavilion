@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>维弈阁全局调度中心方案</title>
+  <style>
+    :root { --bg:#f7f3ea; --paper:#fffaf0; --ink:#20201d; --muted:#6f6a5e; --line:#ded5c3; --gold:#c28a2c; --shadow:rgba(58,45,26,.12); --code:#25231f; }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background:radial-gradient(circle at top left,#fff7df 0,var(--bg) 32%,#efe7d7 100%); color:var(--ink); line-height:1.72; }
+    .layout { max-width:1320px; margin:0 auto; padding:42px 24px 80px; display:grid; grid-template-columns:280px minmax(0,1fr); gap:24px; }
+    header { grid-column:1/-1; background:rgba(255,250,240,.94); border:1px solid var(--line); box-shadow:0 18px 50px var(--shadow); border-radius:28px; padding:44px; position:relative; overflow:hidden; }
+    header::after { content:""; position:absolute; right:-80px; top:-80px; width:230px; height:230px; border-radius:999px; background:rgba(194,138,44,.14); }
+    .eyebrow { color:var(--gold); font-weight:900; letter-spacing:.14em; font-size:13px; }
+    h1 { font-size:clamp(36px,6vw,64px); line-height:1.06; margin:12px 0 16px; letter-spacing:-.04em; }
+    .lead { color:var(--muted); font-size:19px; max-width:820px; }
+    aside { position:sticky; top:18px; align-self:start; max-height:calc(100vh - 36px); overflow:auto; background:rgba(255,250,240,.94); border:1px solid var(--line); box-shadow:0 18px 50px var(--shadow); border-radius:22px; padding:18px; }
+    aside h2 { font-size:18px; margin:0 0 12px; }
+    aside a { display:block; text-decoration:none; color:#6d4d14; font-weight:700; padding:7px 8px; border-radius:10px; font-size:14px; }
+    aside a:hover { background:#f1dfb9; } .toc-h1 { color:var(--ink); } .toc-h2 { padding-left:18px; color:var(--muted); font-weight:600; }
+    main { min-width:0; background:rgba(255,250,240,.94); border:1px solid var(--line); box-shadow:0 18px 50px var(--shadow); border-radius:24px; padding:36px; }
+    main h1 { font-size:38px; border-bottom:2px solid var(--line); padding-bottom:14px; }
+    main h2 { margin-top:42px; font-size:30px; border-top:1px solid var(--line); padding-top:28px; }
+    main h3 { margin-top:26px; font-size:22px; } main h4 { margin-top:22px; font-size:18px; }
+    blockquote { margin:18px 0; border-left:5px solid var(--gold); background:#fff6df; padding:12px 18px; border-radius:14px; color:#4f412a; } blockquote p { margin:6px 0; }
+    pre { background:var(--code); color:#f8edd8; padding:22px; border-radius:18px; overflow:auto; font-size:14px; line-height:1.55; border:1px solid rgba(255,255,255,.08); }
+    code { background:#f1e7d3; padding:2px 6px; border-radius:6px; } pre code { background:transparent; padding:0; }
+    table { width:100%; border-collapse:separate; border-spacing:0; margin:18px 0; overflow:hidden; border:1px solid var(--line); border-radius:14px; } th,td { padding:12px 14px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; } th { background:#f4ead7; font-size:14px; } td { background:rgba(255,255,255,.45); } tr:last-child td { border-bottom:none; }
+    ul,ol { padding-left:1.4em; } li { margin:6px 0; } .checklist { list-style:none; padding-left:0; } .checkbox { display:inline-block; width:14px; height:14px; border:1px solid var(--gold); border-radius:4px; margin-right:8px; vertical-align:-2px; }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; } .pill { display:inline-flex; padding:6px 12px; border-radius:999px; background:#f1dfb9; color:#6d4d14; font-weight:800; font-size:13px; }
+    .footer { grid-column:1/-1; color:var(--muted); text-align:center; margin-top:10px; }
+    @media (max-width:980px) { .layout { grid-template-columns:1fr; } aside { position:static; max-height:none; } main { padding:24px; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <div class="eyebrow">维弈阁全局调度</div>
+      <h1>让数字分身，真正 7×24 轮转起来</h1>
+      <p class="lead">这份 HTML 已同步 Markdown 全文。左侧目录导航，右侧完整方案内容，包含全局调度、项目工作流、单任务进度、白天夜间模式和 OpenClaw 执行层。</p>
+      <div class="meta"><span class="pill">全文版</span><span class="pill">三层架构</span><span class="pill">weiyige-ops</span><span class="pill">OpenClaw 夜巡</span></div>
+    </header>
+    <aside><h2>目录</h2><a class="toc-h1" href="#维弈阁全局调度中心方案">维弈阁全局调度中心方案</a><a class="toc-h2" href="#1-背景问题">1. 背景问题</a><a class="toc-h2" href="#2-核心结论">2. 核心结论</a><a class="toc-h2" href="#3-推荐架构">3. 推荐架构</a><a class="toc-h2" href="#4-为什么建议新开-weiyige-ops">4. 为什么建议新开 `weiyige-ops`</a><a class="toc-h2" href="#5-目录设计">5. 目录设计</a><a class="toc-h2" href="#6-projectsyaml-示例">6. projects.yaml 示例</a><a class="toc-h2" href="#7-任务模板">7. 任务模板</a><a class="toc-h2" href="#8-OpenClaw-的角色">8. OpenClaw 的角色</a><a class="toc-h2" href="#9-调度策略">9. 调度策略</a><a class="toc-h2" href="#10-安全权限分层">10. 安全权限分层</a><a class="toc-h2" href="#11-晨报模板">11. 晨报模板</a><a class="toc-h2" href="#12-落地路线">12. 落地路线</a><a class="toc-h2" href="#13-三层架构细化">13. 三层架构细化</a><a class="toc-h2" href="#14-projectsyaml-具体怎么流转">14. `projects.yaml` 具体怎么“流转”</a><a class="toc-h2" href="#15-不同角色是否要管理不同项目">15. 不同角色是否要管理不同项目？</a><a class="toc-h2" href="#16-项目中怎么流转工作流">16. 项目中怎么流转工作流？</a><a class="toc-h2" href="#17-白天和夜间怎么区分">17. 白天和夜间怎么区分？</a><a class="toc-h2" href="#18-最终层次架构">18. 最终层次架构</a><a class="toc-h2" href="#19-最终建议">19. 最终建议</a></aside>
+    <main><h1 id="维弈阁全局调度中心方案">维弈阁全局调度中心方案</h1>
+<blockquote>
+<p>日期：2026-05-03</p>
+<p>主题：让「数字分身」在多个项目之间 7×24 轮转起来</p>
+<p>结论：<strong>新开一个 <code>weiyige-ops</code> 项目更好。<code>weiyige-pavilion</code> 继续作为维弈阁开源框架与能力建设仓库。</strong></p>
+</blockquote>
+<p>---</p>
+<h2 id="1-背景问题">1. 背景问题</h2>
+<p>当前维弈阁已经具备：</p>
+<ul>
+<li>13 个角色的组织能力</li>
+<li><code>.weiyige/</code> 项目内执行协议</li>
+<li><code>ai-workspace/{task-id}/</code> 任务级产物落盘</li>
+<li><code>state.json</code> 断点续做</li>
+<li><code>progress-board.md</code> 进度看板</li>
+<li>两层门禁、runtime-knowledge、异常矩阵</li>
+</ul>
+<p>但这些能力主要解决的是：</p>
+<blockquote>
+<p><strong>一个项目内，一个任务如何被规范执行。</strong></p>
+</blockquote>
+<p>你真正想要的是：</p>
+<blockquote>
+<p><strong>人离开电脑后，多个项目能自动轮转推进，第二天给你晨报。</strong></p>
+</blockquote>
+<p>这不是单项目内的 Agent 流程问题，而是一个 <strong>跨项目 Agent Ops 调度问题</strong>。</p>
+<p>---</p>
+<h2 id="2-核心结论">2. 核心结论</h2>
+<p>维弈阁应该分成两层：</p>
+<pre><code>全局维弈阁 / weiyige-ops
+  = 多项目调度中心、夜巡、资源分配、晨报、预算、安全策略
+
+项目内 .weiyige
+  = 单项目执行协议、角色方法论、产物落盘、state.json、progress-board</code></pre>
+<p>不建议每个项目自己独立轮转一套完整系统。</p>
+<p>原因：</p>
+<ol>
+<li>每个项目无法知道全局优先级</li>
+<li>多项目会抢机器、模型、Token、测试资源</li>
+<li>你早上 review 的精力有限</li>
+<li>push/deploy 等高风险动作必须集中管控</li>
+<li>多个项目各自跑会导致状态分散、晨报分散、阻塞分散</li>
+</ol>
+<p>---</p>
+<h2 id="3-推荐架构">3. 推荐架构</h2>
+<pre><code>┌──────────────────────────────────────────────┐
+│              weiyige-ops 全局调度中心          │
+│  projects.yaml / nightly-runner / morning     │
+└──────────────────────┬───────────────────────┘
+                       │ 选择项目 + 选择任务
+                       ▼
+┌──────────────────────────────────────────────┐
+│                OpenClaw Worker                │
+│  Headless 执行器 / 强模型入口 / 夜班工程师       │
+└──────────────────────┬───────────────────────┘
+                       │ 进入项目执行
+                       ▼
+┌──────────────────────────────────────────────┐
+│           project/.weiyige + ai-workspace     │
+│  单项目协议 / state.json / artifacts / gates   │
+└──────────────────────┬───────────────────────┘
+                       │ 产物落盘
+                       ▼
+┌──────────────────────────────────────────────┐
+│              morning report 全局晨报           │
+│  完成 / 阻塞 / 需要你决策 / 本地 commit          │
+└──────────────────────────────────────────────┘</code></pre>
+<p>---</p>
+<h2 id="4-为什么建议新开-weiyige-ops">4. 为什么建议新开 <code>weiyige-ops</code></h2>
+<h3 id="41-weiyige-pavilion-的定位">4.1 <code>weiyige-pavilion</code> 的定位</h3>
+<p><code>weiyige-pavilion</code> 应该继续是：</p>
+<ul>
+<li>开源工程</li>
+<li>角色定义仓库</li>
+<li>协议与安装脚本</li>
+<li><code>.weiyige/</code> 的来源</li>
+<li>面向所有用户的通用能力建设</li>
+</ul>
+<p>它应该尽量保持：</p>
+<ul>
+<li>不含个人项目绝对路径</li>
+<li>不含私有 token / API key</li>
+<li>不含个人任务队列</li>
+<li>不含私人项目优先级</li>
+<li>不含夜间运行日志</li>
+</ul>
+<h3 id="42-weiyige-ops-的定位">4.2 <code>weiyige-ops</code> 的定位</h3>
+<p><code>weiyige-ops</code> 应该是你的私人数字分身运营中心：</p>
+<ul>
+<li>管多个项目</li>
+<li>放绝对路径</li>
+<li>放优先级</li>
+<li>放夜巡日志</li>
+<li>放 OpenClaw 调用脚本</li>
+<li>放晨报</li>
+<li>放全局调度状态</li>
+<li>放个人偏好与预算策略</li>
+</ul>
+<p>这部分强烈建议独立仓库，甚至可以是 private。</p>
+<p>---</p>
+<h2 id="5-目录设计">5. 目录设计</h2>
+<h3 id="51-全局调度中心">5.1 全局调度中心</h3>
+<pre><code>~/workspace/weiyige-ops/
+├── projects.yaml                 # 所有项目注册表
+├── scheduler-state.json          # 全局调度状态
+├── run-once.sh                   # 手动跑一次
+├── nightly-runner.sh             # 夜巡循环
+├── openclaw-worker-prompt.md     # OpenClaw 固定执行提示词
+├── task-template.yaml            # 任务模板
+├── morning/
+│   └── 2026-05-04.md             # 每日晨报
+├── logs/
+│   └── 2026-05-03-night.log
+└── rules/
+    ├── safety.md                 # 夜间安全策略
+    └── scheduling.md             # 调度策略</code></pre>
+<h3 id="52-每个项目内部">5.2 每个项目内部</h3>
+<pre><code>project/
+├── .weiyige/                     # 从 weiyige-pavilion 安装
+├── ai-workspace/
+│   ├── queue/                    # 项目待办
+│   ├── running/
+│   ├── done/
+│   ├── blocked/
+│   └── {task-id}/
+│       ├── state.json
+│       ├── progress-board.md
+│       ├── runtime-knowledge/
+│       └── artifacts/
+│           ├── 01-ideation/
+│           ├── 02-requirement/
+│           ├── 03-design/
+│           ├── 04-development/
+│           ├── 05-testing/
+│           └── 06-summary/
+└── src/</code></pre>
+<p>---</p>
+<h2 id="6-projectsyaml-示例">6. projects.yaml 示例</h2>
+<pre><code>version: 1
+
+global:
+  max_parallel_tasks: 2
+  max_minutes_per_task: 60
+  nightly_window: &quot;00:30-08:30&quot;
+  default_forbidden_actions:
+    - push
+    - deploy
+    - delete_data
+
+projects:
+  - id: microlab
+    name: Microlab 官网
+    path: /Users/voidzhang/Documents/workspace/microlab
+    priority: 90
+    type: product
+    max_parallel_tasks: 1
+    allowed_actions:
+      - read
+      - edit
+      - test
+      - local_commit
+    forbidden_actions:
+      - push
+      - deploy
+
+  - id: weiyige
+    name: 维弈阁开源工程
+    path: /Users/voidzhang/Documents/workspace/weiyige-pavilion
+    priority: 80
+    type: infra
+    max_parallel_tasks: 1
+    allowed_actions:
+      - read
+      - edit
+      - test
+      - local_commit
+    forbidden_actions:
+      - push_unless_explicit
+
+  - id: t_chrome
+    name: IMA Chromium
+    path: /Users/voidzhang/Documents/workspace/t_chrome_dev_138
+    priority: 70
+    type: chromium
+    max_parallel_tasks: 1
+    allowed_actions:
+      - read
+      - edit
+      - test_light
+      - local_commit
+    forbidden_actions:
+      - full_compile
+      - push
+      - deploy</code></pre>
+<p>---</p>
+<h2 id="7-任务模板">7. 任务模板</h2>
+<pre><code>id: weiyige-install-ps1-audit
+title: 检查 install.ps1 是否与 install.sh 功能一致
+project: weiyige-pavilion
+type: maintenance
+priority: 70
+max_minutes: 45
+
+allowed_actions:
+  - read
+  - edit
+  - test
+  - local_commit
+
+forbidden_actions:
+  - push
+  - deploy
+  - delete_data
+
+instructions:
+  - 对比 install.sh 和 install.ps1 的安装文件列表
+  - 找出遗漏项
+  - 修复 install.ps1
+  - 用临时目录模拟安装
+  - 产物写入 ai-workspace/weiyige-install-ps1-audit/
+
+acceptance:
+  - bash install.sh 临时安装通过
+  - install.ps1 逻辑与 install.sh 对齐
+  - 生成 review-report.md
+  - 生成 workflow-summary.md</code></pre>
+<p>---</p>
+<h2 id="8-OpenClaw-的角色">8. OpenClaw 的角色</h2>
+<p>OpenClaw 不应该取代维弈阁。</p>
+<p>它应该作为：</p>
+<blockquote>
+<p><strong>Headless Worker / 夜班工程师 / 强模型执行器</strong></p>
+</blockquote>
+<p>固定提示词应该类似：</p>
+<pre><code>你不是聊天助手。
+你是维弈阁夜间 worker。
+
+读取当前项目的 .weiyige/执事_启/start.md。
+读取 ai-workspace/queue/{task}.yaml。
+按维弈阁协议执行。
+所有产物必须写入 ai-workspace/{task-id}/。
+每完成一阶段更新 state.json 和 progress-board.md。
+禁止 push、deploy、删除数据。
+遇到权限不足、信息不足、破坏性操作，停止并写 blocked.md。</code></pre>
+<p>---</p>
+<h2 id="9-调度策略">9. 调度策略</h2>
+<p>全局调度器根据任务得分选择夜间任务：</p>
+<pre><code>任务得分 =
+  项目优先级 × 0.4
++  任务优先级 × 0.3
++  可完成度 × 0.2
++  阻塞解除价值 × 0.1
+- 风险惩罚</code></pre>
+<p>适合夜间自动跑：</p>
+<ul>
+<li>文档整理</li>
+<li>安装脚本验证</li>
+<li>小 bug 修复</li>
+<li>测试补充</li>
+<li>代码审查报告</li>
+<li>技术方案草稿</li>
+<li>公众号选题/初稿</li>
+</ul>
+<p>不适合夜间自动跑：</p>
+<ul>
+<li>大规模重构</li>
+<li>线上部署</li>
+<li>数据迁移</li>
+<li>主分支 push</li>
+<li>t_chrome 全量编译</li>
+<li>没有验收标准的需求</li>
+</ul>
+<p>---</p>
+<h2 id="10-安全权限分层">10. 安全权限分层</h2>
+<table>
+<tr><th>权限</th><th>夜间默认</th><th>说明</th></tr>
+<tr><td>read</td><td>允许</td><td>读代码、读文档</td></tr>
+<tr><td>edit</td><td>允许</td><td>本地修改</td></tr>
+<tr><td>test</td><td>允许</td><td>跑 lint/build/test</td></tr>
+<tr><td>local_commit</td><td>允许</td><td>可生成本地 commit</td></tr>
+<tr><td>push</td><td>默认禁止</td><td>早上人工确认</td></tr>
+<tr><td>deploy</td><td>禁止</td><td>永不夜间自动部署</td></tr>
+<tr><td>delete_data</td><td>禁止</td><td>永不允许</td></tr>
+</table>
+<p>夜间最理想产出：</p>
+<pre><code>代码已改
+测试已跑
+本地 commit 已生成
+PR/MR 草稿说明已写
+等待主人早上 review + push/deploy</code></pre>
+<p>---</p>
+<h2 id="11-晨报模板">11. 晨报模板</h2>
+<pre><code># 维弈阁夜巡晨报 — 2026-05-04
+
+## 昨晚完成
+
+### microlab
+- ✅ 修复 dashboard 白屏
+- 产物: ai-workspace/dashboard-fix/artifacts/06-summary/workflow-summary.md
+- 测试: npm run build 通过
+- 本地 commit: abc123
+
+### weiyige
+- ✅ 清理 install.ps1 路径问题
+- 测试: 临时目录安装通过
+
+## 阻塞
+
+### t_chrome
+- ⚠️ 编译环境不可用
+- 需要你确认是否触发 143 流水线
+
+## 需要你决策
+
+1. 是否 push microlab dashboard 修复？
+2. 是否继续 t_chrome 的 TASK-04 测试？</code></pre>
+<p>---</p>
+<h2 id="12-落地路线">12. 落地路线</h2>
+<h3 id="Phase-1单项目夜巡-MVP">Phase 1：单项目夜巡 MVP</h3>
+<ul>
+<li>创建 <code>weiyige-ops/</code></li>
+<li>注册 1 个项目</li>
+<li>创建 1 个 task.yaml</li>
+<li>用 OpenClaw 执行一次</li>
+<li>产物落盘 + 本地 commit + 晨报</li>
+</ul>
+<h3 id="Phase-2多项目轮转">Phase 2：多项目轮转</h3>
+<ul>
+<li><code>projects.yaml</code> 注册 3 个项目</li>
+<li>每晚最多跑 2 个任务</li>
+<li>加锁，避免同项目并发</li>
+<li>汇总全局晨报</li>
+</ul>
+<h3 id="Phase-3常驻化">Phase 3：常驻化</h3>
+<ul>
+<li>Mac 用 <code>launchd</code> 或 <code>tmux loop</code></li>
+<li>真 7×24 建议上 Mac mini / 云主机 / devbox</li>
+<li>加预算限制和失败告警</li>
+</ul>
+<p>---</p>
+<h2 id="13-三层架构细化">13. 三层架构细化</h2>
+<p>整体应分为三层，而不是简单的“全局调度 + 项目执行”两层。</p>
+<pre><code>第一层：全局项目调度中心（weiyige-ops）
+  看所有项目：项目状态、优先级、预算、风险、阻塞、夜间可跑任务
+
+第二层：项目工作流（project/.weiyige + project/ai-workspace）
+  管一个项目：项目内任务队列、任务流转、角色协作、项目级状态
+
+第三层：单个任务进度（project/ai-workspace/{task-id}）
+  管一个需求/bug/文档任务：state.json、progress-board、artifacts、review-report</code></pre>
+<h3 id="131-第一层全局项目调度中心">13.1 第一层：全局项目调度中心</h3>
+<p>全局层不直接写业务代码，它负责“看盘”和“调度”。</p>
+<pre><code>weiyige-ops/
+├── projects.yaml              # 项目注册表：路径、优先级、策略、权限
+├── scheduler-state.json       # 全局调度状态：正在跑什么、上次跑到哪里
+├── run-once.sh                # 跑一个任务
+├── nightly-runner.sh          # 夜间循环
+├── morning/                   # 全局晨报
+└── logs/                      # 调度日志</code></pre>
+<p>它回答这些问题：</p>
+<ul>
+<li>今晚有哪些项目可以跑？</li>
+<li>每个项目现在健康吗？</li>
+<li>哪个项目优先级最高？</li>
+<li>哪个任务最适合夜间自动执行？</li>
+<li>哪些任务需要白天人工确认？</li>
+<li>OpenClaw 现在是否空闲？</li>
+<li>这次运行是否超预算/超时/高风险？</li>
+</ul>
+<p><strong>关键原则：全局层只调度，不替项目内 Agent 做判断。</strong></p>
+<h3 id="132-第二层项目工作流">13.2 第二层：项目工作流</h3>
+<p>每个项目都有自己的 <code>.weiyige/</code> 和 <code>ai-workspace/</code>。</p>
+<pre><code>project/
+├── .weiyige/                 # 维弈阁协议和角色定义
+└── ai-workspace/
+    ├── project-status.json   # 项目级状态摘要，给全局调度中心读
+    ├── queue/                # 待处理任务
+    ├── running/              # 正在执行任务锁
+    ├── done/                 # 已完成任务记录
+    ├── blocked/              # 阻塞任务记录
+    └── {task-id}/            # 单任务工作区</code></pre>
+<p>项目层回答：</p>
+<ul>
+<li>本项目有哪些任务？</li>
+<li>哪个任务正在跑？</li>
+<li>本项目是否被锁？</li>
+<li>最近一次成功任务是什么？</li>
+<li>是否存在阻塞任务？</li>
+<li>项目内的产物在哪里？</li>
+</ul>
+<p>项目层可以有自己的 workflow，但 workflow 是从 <code>.weiyige/执事_启/start.md</code> 启动的，不需要每个项目重新发明一套。</p>
+<h3 id="133-第三层单个任务进度">13.3 第三层：单个任务进度</h3>
+<p>每个任务一个独立目录：</p>
+<pre><code>project/ai-workspace/{task-id}/
+├── task.yaml
+├── state.json
+├── progress-board.md
+├── runtime-knowledge/
+└── artifacts/
+    ├── 01-ideation/
+    ├── 02-requirement/
+    ├── 03-design/
+    ├── 04-development/
+    ├── 05-testing/
+    └── 06-summary/</code></pre>
+<p>任务层回答：</p>
+<ul>
+<li>当前任务到了哪个阶段？</li>
+<li>哪个 Agent 做了什么？</li>
+<li>产物文件在哪里？</li>
+<li>评分多少？</li>
+<li>是否通过 Layer 0 / Layer 1？</li>
+<li>是否需要打回？</li>
+<li>是否已完成或阻塞？</li>
+</ul>
+<p>---</p>
+<h2 id="14-projectsyaml-具体怎么流转">14. <code>projects.yaml</code> 具体怎么“流转”</h2>
+<p><code>projects.yaml</code> 不是进度文件，它是<strong>项目注册表 + 调度策略</strong>。</p>
+<p>它不频繁写入；真正频繁变化的是：</p>
+<ul>
+<li>全局：<code>scheduler-state.json</code></li>
+<li>项目：<code>project/ai-workspace/project-status.json</code></li>
+<li>任务：<code>project/ai-workspace/{task-id}/state.json</code></li>
+</ul>
+<h3 id="141-推荐字段">14.1 推荐字段</h3>
+<pre><code>version: 1
+
+global:
+  max_parallel_tasks: 2
+  max_minutes_per_task: 60
+  nightly_window: &quot;00:30-08:30&quot;
+  day_window: &quot;09:00-23:30&quot;
+  default_forbidden_actions: [push, deploy, delete_data]
+
+projects:
+  - id: weiyige
+    name: 维弈阁开源工程
+    path: /Users/voidzhang/Documents/workspace/weiyige-pavilion
+    priority: 80
+    owner_agent: 启·执事
+    product_agent: 枢·PM
+    tech_agent: 矩·架构
+    content_agent: 辞·内容
+    status_file: ai-workspace/project-status.json
+    queue_dir: ai-workspace/queue
+    max_parallel_tasks: 1
+    allowed_night_task_types:
+      - docs
+      - test
+      - small_fix
+      - review
+      - content_draft
+    forbidden_night_actions:
+      - push
+      - deploy
+      - delete_data
+    health:
+      stale_after_hours: 48
+      blocked_alert_after_hours: 12</code></pre>
+<h3 id="142-projectsyaml-的流转逻辑">14.2 <code>projects.yaml</code> 的流转逻辑</h3>
+<pre><code>nightly-runner 启动
+  ↓
+读取 projects.yaml
+  ↓
+遍历 projects[]
+  ↓
+读取每个项目的 ai-workspace/project-status.json
+  ↓
+扫描 ai-workspace/queue/*.yaml
+  ↓
+过滤：是否允许夜间跑？是否被锁？是否超预算？
+  ↓
+按任务得分排序
+  ↓
+选择 1~2 个任务交给 OpenClaw
+  ↓
+OpenClaw 进入项目执行任务
+  ↓
+项目内更新 task state.json / progress-board / artifacts
+  ↓
+全局层读取结果，更新 scheduler-state.json 和 morning report</code></pre>
+<h3 id="143-项目进度怎么更新">14.3 项目进度怎么更新？</h3>
+<p>项目进度不靠聊天总结，也不靠 Agent 口头汇报，必须<strong>文件优先</strong>。</p>
+<p>推荐每个项目都有：</p>
+<pre><code>project/ai-workspace/project-status.json</code></pre>
+<p>示例：</p>
+<pre><code>{
+  &quot;project_id&quot;: &quot;weiyige&quot;,
+  &quot;updated_at&quot;: &quot;2026-05-03T15:40:00+08:00&quot;,
+  &quot;health&quot;: &quot;green&quot;,
+  &quot;active_task&quot;: &quot;office-hours-v2-upgrade&quot;,
+  &quot;queue_count&quot;: 3,
+  &quot;blocked_count&quot;: 1,
+  &quot;last_completed_task&quot;: &quot;micropen-skill-install&quot;,
+  &quot;last_success_at&quot;: &quot;2026-05-03T10:20:00+08:00&quot;,
+  &quot;next_recommended_task&quot;: &quot;install-ps1-audit&quot;,
+  &quot;requires_human_decision&quot;: [
+    &quot;是否 push 6c03e86 到 GitHub&quot;
+  ]
+}</code></pre>
+<p>谁更新它？</p>
+<ul>
+<li>项目内的 <code>启·执事</code> 在每个任务完成/阻塞后更新</li>
+<li>全局 <code>weiyige-ops</code> 可以在读取任务结果后补充更新</li>
+<li>如果状态过期，调度器自动创建一个 <code>status-refresh</code> 只读任务，让 OpenClaw/启刷新项目状态</li>
+</ul>
+<p><strong>所以不是靠“不同 Agent 汇总”作为唯一来源，而是：Agent 负责写文件，全局调度器读文件。</strong></p>
+<p>---</p>
+<h2 id="15-不同角色是否要管理不同项目">15. 不同角色是否要管理不同项目？</h2>
+<p>不建议把角色固定绑定到项目。</p>
+<p>错误理解：</p>
+<pre><code>枢 管 microlab
+矩 管 t_chrome
+辞 管公众号
+启 管 weiyige</code></pre>
+<p>这会让角色职责和项目边界混在一起。</p>
+<p>正确理解：</p>
+<pre><code>项目由全局调度器管理。
+角色按能力进入项目。</code></pre>
+<p>例如：</p>
+<table>
+<tr><th>项目</th><th>任务</th><th>进入的角色</th></tr>
+<tr><td>microlab</td><td>新功能</td><td>枢 → 矩+绘 → 铸 → 鉴</td></tr>
+<tr><td>weiyige</td><td>安装脚本修复</td><td>矩 → 铸 → 鉴</td></tr>
+<tr><td>t_chrome</td><td>Chromium bug</td><td>矩 → 铸 → 鉴 → 盾</td></tr>
+<tr><td>内容号</td><td>公众号文章</td><td>辞 / MicroPen → 锋</td></tr>
+</table>
+<p>可以有“项目偏好角色”，但不是“项目负责人角色”。</p>
+<p><code>projects.yaml</code> 里可以配置推荐角色：</p>
+<pre><code>agent_preferences:
+  planning: 枢·PM
+  architecture: 矩·架构
+  coding: 铸·开发
+  qa: 鉴·QA
+  content: 辞·内容</code></pre>
+<p>但调度时仍按任务类型选择角色。</p>
+<p>---</p>
+<h2 id="16-项目中怎么流转工作流">16. 项目中怎么流转工作流？</h2>
+<p>项目内部仍然使用维弈阁的工作流。</p>
+<pre><code>task.yaml
+  ↓
+.project/.weiyige/执事_启/start.md
+  ↓
+启创建/恢复 ai-workspace/{task-id}
+  ↓
+按任务类型选择链路
+  ↓
+角色执行 + 产物落盘
+  ↓
+两层门禁审核
+  ↓
+更新 task state.json / progress-board
+  ↓
+任务完成后更新 project-status.json</code></pre>
+<h3 id="161-项目内部是否也有一套-agents">16.1 项目内部是否也有一套 agents？</h3>
+<p>有，但不是“另一套独立大脑”。</p>
+<p>每个项目安装 <code>.weiyige/</code> 后，本项目拥有同一套角色定义：</p>
+<pre><code>project/.weiyige/
+├── 枢·PM
+├── 矩·架构
+├── 铸·开发
+├── 鉴·QA
+└── ...</code></pre>
+<p>这些角色是“项目内执行角色”。</p>
+<p>全局 <code>weiyige-ops</code> 不直接替它们做工作，只负责把任务交给这个项目，然后由项目内的启和角色按协议执行。</p>
+<p>---</p>
+<h2 id="17-白天和夜间怎么区分">17. 白天和夜间怎么区分？</h2>
+<p>白天和夜间不是时间上的唯一差异，而是<strong>权限和交互模式</strong>不同。</p>
+<h3 id="171-白天模式Human-in-the-loop">17.1 白天模式（Human-in-the-loop）</h3>
+<p>适合：</p>
+<ul>
+<li>方向决策</li>
+<li>产品范围确认</li>
+<li>需求澄清</li>
+<li>push / deploy</li>
+<li>大重构批准</li>
+<li>线上风险操作</li>
+</ul>
+<p>运行方式：</p>
+<pre><code>你在 CodeBuddy 里交互
+  ↓
+维弈阁 Agent 给方案/提问/执行
+  ↓
+你随时确认、改方向、批准 push/deploy</code></pre>
+<p>特点：</p>
+<ul>
+<li>可以问你问题</li>
+<li>可以做高风险决策</li>
+<li>可以 push / deploy（经你确认）</li>
+<li>可以跑探索性任务</li>
+<li>更适合战略和产品判断</li>
+</ul>
+<h3 id="172-夜间模式Autonomous-safe">17.2 夜间模式（Autonomous-safe）</h3>
+<p>适合：</p>
+<ul>
+<li>小 bug 修复</li>
+<li>文档整理</li>
+<li>测试补充</li>
+<li>安装验证</li>
+<li>代码审查报告</li>
+<li>公众号选题/初稿</li>
+<li>技术方案草稿</li>
+</ul>
+<p>运行方式：</p>
+<pre><code>weiyige-ops nightly-runner
+  ↓
+选择安全任务
+  ↓
+OpenClaw headless 执行
+  ↓
+本地修改 + 测试 + local commit
+  ↓
+生成晨报，等待你早上确认</code></pre>
+<p>夜间禁止：</p>
+<ul>
+<li>push</li>
+<li>deploy</li>
+<li>删除数据</li>
+<li>数据迁移</li>
+<li>大规模重构</li>
+<li>无验收标准的任务</li>
+<li>需要实时问你的任务</li>
+</ul>
+<h3 id="173-白天--夜间交接">17.3 白天 / 夜间交接</h3>
+<pre><code>白天：你把任务写入 queue，并标注是否允许夜间跑
+  ↓
+夜间：OpenClaw 按安全策略执行
+  ↓
+早上：morning report 告诉你完成/阻塞/需决策
+  ↓
+白天：你 review、push、部署、补充下一批任务</code></pre>
+<p>---</p>
+<h2 id="18-最终层次架构">18. 最终层次架构</h2>
+<pre><code>L1 全局调度层：weiyige-ops
+│
+├── 看所有项目
+├── 读取 projects.yaml
+├── 读取每个 project-status.json
+├── 选择项目 + 任务
+├── 控制 WIP / 时间 / Token / 权限
+├── 调用 OpenClaw
+└── 生成全局晨报
+
+        ↓ 调度某个项目任务
+
+L2 项目工作流层：project/.weiyige + project/ai-workspace
+│
+├── 项目任务队列 queue/
+├── 项目状态 project-status.json
+├── 项目内启·执事 Leader
+├── 项目内角色协作
+└── 项目内门禁与产物规范
+
+        ↓ 执行一个具体任务
+
+L3 单任务执行层：ai-workspace/{task-id}
+│
+├── task.yaml
+├── state.json
+├── progress-board.md
+├── artifacts/
+├── review-report.md
+└── workflow-summary.md</code></pre>
+<p>一句话总结：</p>
+<blockquote>
+<p><strong>全局层管“今晚谁最值得跑”，项目层管“这个项目怎么跑”，任务层管“这个任务跑到哪了”。</strong></p>
+</blockquote>
+<p>---</p>
+<h2 id="19-最终建议">19. 最终建议</h2>
+<p><strong>新开 <code>weiyige-ops</code>。</strong></p>
+<p><code>weiyige-pavilion</code> 继续做开源能力建设，不应该塞入你的私人调度配置。</p>
+<p>推荐最终形态：</p>
+<pre><code>weiyige-pavilion          # 开源：角色、协议、安装包
+weiyige-ops               # 私有：多项目调度、OpenClaw、夜巡、晨报
+project-A/.weiyige        # 项目内执行协议
+project-B/.weiyige        # 项目内执行协议</code></pre>
+<p>一句话：</p>
+<blockquote>
+<p><code>weiyige-pavilion</code> 是公司制度，<code>weiyige-ops</code> 是 COO 办公室，OpenClaw 是夜班工程师。</p>
+</blockquote></main>
+    <div class="footer">生成于 2026-05-03 · 内容来源：设计方案/weiyige-global-ops-design.md</div>
+  </div>
+</body>
+</html>
