@@ -46,9 +46,13 @@
        └── 06-summary/
 
 3. 三路路由判断：
-   路径 A — state.json 有未完成阶段 → 断点续做（从 current_phase 继续）
+   路径 A — state.json 有未完成阶段 → 断点续做（从 current_phase + current_step 继续）
+            同时读取 runtime-knowledge/context-summary.json 恢复推理上下文
    路径 B — 用户说"重新开始" → 清空 state.json，从头执行
-   路径 C — 首次执行 → 新建 state.json
+   路径 C — state.json 不存在或首次 → 新建 state.json
+
+4. 快速恢复路径（用户说"继续"但未指定 task_id）：
+   读取 ai-workspace/last-interrupted.json → 获取 last_task_id → 走路径 A
 ```
 
 ---
@@ -155,12 +159,15 @@
 
 ## 六、状态持久化
 
+### 6.1 阶段级更新
+
 每个阶段完成后**立即更新** `state.json`：
 
 ```json
 {
   "task_id": "pet-sbti-v1",
   "current_phase": "03-design",
+  "current_step": "",
   "phases": {
     "02-requirement": {
       "status": "completed",
@@ -168,13 +175,67 @@
       "artifact_path": "ai-workspace/pet-sbti-v1/artifacts/02-requirement/PRD.md",
       "review_score": 85,
       "review_verdict": "pass",
-      "layer0_result": "PASS"
+      "layer0_result": "PASS",
+      "steps_completed": ["prd-draft", "prd-review", "prd-final"],
+      "steps_total": ["prd-draft", "prd-review", "prd-final"]
     }
   }
 }
 ```
 
-**断点续做**：启下次被 spawn 时读取 state.json，从 `current_phase` 继续。
+### 6.2 子步骤级更新（v1.1 新增）
+
+**Agent 每完成一个有意义的子步骤**，启必须更新：
+- `current_step` — 当前正在执行的子步骤标识（如 `"eng-review-draft"`）
+- `current_step_description` — 人可读描述（如 `"矩正在撰写架构审查报告"`）
+- 对应阶段的 `steps_completed[]` — 追加已完成子步骤
+
+**什么算"有意义的子步骤"**：
+- 一个产物文件被写入
+- 一次审核评分完成
+- 一个 Agent 的主要交付完成（在并行场景中）
+- 一次关键决策被做出
+
+### 6.3 中断恢复索引（v1.1 新增）
+
+当任务被中断（用户退出、session 断开、异常暂停）时，启必须更新 `ai-workspace/last-interrupted.json`：
+
+```json
+{
+  "last_task_id": "pet-sbti-v1",
+  "last_task_title": "宠物人格测试",
+  "last_phase": "03-design",
+  "last_step": "eng-review-draft",
+  "last_agent": "矩·架构",
+  "interrupted_at": "2026-05-04T00:50:00+08:00",
+  "state_json_path": "ai-workspace/pet-sbti-v1/state.json",
+  "context_summary_path": "ai-workspace/pet-sbti-v1/runtime-knowledge/context-summary.json",
+  "resume_hint": "矩正在撰写架构审查报告，PRD 已完成"
+}
+```
+
+**用途**：用户说"继续之前的任务"时，启直接读取此文件，无需扫描所有任务目录。
+
+### 6.4 运行时上下文摘要（v1.1 新增）
+
+**每次发生关键推理/决策/发现时**，启或 Agent 必须向 `runtime-knowledge/context-summary.json` 追加一条记录：
+
+```json
+{
+  "timestamp": "2026-05-04T00:45:00+08:00",
+  "phase": "03-design",
+  "step": "eng-review",
+  "agent": "矩·架构",
+  "type": "decision",
+  "summary": "选择 SQLite 作为持久化方案，放弃 JSON 文件",
+  "details": "JSON 在并发写入时有数据丢失风险，SQLite WAL 模式更安全",
+  "related_files": ["artifacts/03-design/eng-review.md"]
+}
+```
+
+**用途**：session 中断后新 Agent 读取此文件重建推理上下文，弥补对话历史丢失。
+
+**断点续做**：启下次被 spawn 时读取 state.json，从 `current_phase` + `current_step` 继续。同时读取 `context-summary.json` 恢复推理上下文。
 
 ---
 
