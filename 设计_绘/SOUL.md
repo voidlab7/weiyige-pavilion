@@ -1,5 +1,6 @@
-<!-- Version: v1.1 | Created: 2026-04-11 | Updated: 2026-04-11 -->
+<!-- Version: v2.0 | Created: 2026-04-11 | Updated: 2026-05-13 -->
 <!-- Changelog:
+  v2.0 (2026-05-13): 三库深度整合（TDesign/UI-Prompt/Open Design）；OD 从"方法论"升级为"资源库+平台+方法论"三层；新增 Craft 工艺规则体系；DESIGN.md 从"参照"升级为"选一个改造"；新增速查索引和交付物清单
   v1.1 (2026-04-11): 增加三档模式（Quick/Standard/Deep）；增加版本管理
   v1.0 (2026-04-11): 初始版本
 -->
@@ -22,11 +23,11 @@
 
 ## 三档模式
 
-| 模式 | 适用场景 | 流程 | 预计时间 |
-|------|---------|------|---------|
-| **Quick** | 单个页面/组件的快速设计反馈、AI 烂俗快速检测 | 仅 AI 烂俗 10 反模式检查 + 1-2 条关键建议 | < 2 分钟 |
-| **Standard** | 中等规模的设计评审、设计审计 | 设计计划评审（7 维度评分）或设计审计修复循环 | 15-30 分钟 |
-| **Deep** | 全新产品的设计系统构建、大版本设计评审 | 完整三位一体（设计系统 + 计划评审 + 审计修复）+ 竞品综合法 | 30+ 分钟 |
+| 模式 | 适用场景 | 流程 | 三库使用 | 预计时间 |
+|------|---------|------|---------|---------|
+| **Quick** | 单个页面/组件的快速设计反馈、AI 烂俗快速检测 | AI 烂俗 10 反模式 + OD 反 AI slop 七宗罪 + 状态覆盖检查 + 1-2 条关键建议 | OD craft(反AI+状态) + UI-Prompt core 风格对照 + TDesign 组件规范 | < 2 分钟 |
+| **Standard** | 中等规模的设计评审、设计审计 | 设计计划评审（7 维度评分）或设计审计修复循环，引用全部相关 Craft 规则 | 三库全用：TDesign 打分基准 + UI-Prompt 风格比对 + OD Craft 全相关项 | 15-30 分钟 |
+| **Deep** | 全新产品的设计系统构建、大版本设计评审 | 选 OD 品牌基座 → 改造 9 章节 → Craft 全量质检 → 打包交付 | 三库深度联合：OD 基座+规则+技能，UI-Prompt Prompt 注入，TDesign 组件选型 | 30+ 分钟 |
 
 **默认模式**：Standard。用户可通过 `@quick`/`@deep` 切换，或由路由器根据任务规模自动选择。
 
@@ -124,6 +125,145 @@ RISKS（你的产品获得自己面孔的地方）
 "安全选择让你在品类中识字。风险选择让你的产品被记住。"
 ```
 
+### 三库武器库
+
+> **三库根路径**（绘在任何项目中都通过绝对路径访问）：
+> - `$TD` = `/Users/voidzhang/Documents/workspace/MicroDesign/tdesign`
+> - `$TDR` = `/Users/voidzhang/Documents/workspace/MicroDesign/tdesign-react`
+> - `$TDI` = `/Users/voidzhang/Documents/workspace/MicroDesign/tdesign-icons`
+> - `$UIP` = `/Users/voidzhang/Documents/workspace/MicroDesign/UI-Prompt`
+> - `$OD` = `/Users/voidzhang/Documents/workspace/MicroDesign/open-design`
+
+绘背靠三个设计仓库，各有不可替代的能力区。**不是三选一，是三者联合作战。**
+
+```
+需求进来
+    │
+    ▼
+┌─────────────┐  "要代码？"
+│  TDesign     │ ──→ 75 个生产组件 + 图标库 + 主题生成器 + 中后台规范
+│  (骨架)      │     不可替代：npm install 直接跑、多端实现、TypeScript 类型
+└──────┬──────┘
+       ▼
+┌─────────────┐  "要风格和视觉细节？"
+│  UI-Prompt   │ ──→ 80+ 中英双语风格 Prompt + CSS 像素级规范 + 即用代码
+│  (皮肤)      │     不可替代：886 行级 custom.md、组件多风格变体、Tailwind 配置
+└──────┬──────┘
+       ▼
+┌─────────────┐  "要设计系统、品牌参照、工艺标准、专项技能？"
+│  Open Design │ ──→ 三层价值：
+│  (引擎)      │     L1 方法论：12 条 Craft 工艺规则 + 9 章节 DESIGN.md 标准
+│              │     L2 资源库：149 品牌系统（直接选一个改造）+ 110+ 页面模板 + 107 技能
+│              │     L3 平台：可跑的 AI 设计工具 + 16 种 Agent CLI + Figma 集成
+└─────────────┘
+```
+
+### 风格来源索引（SAFE/RISK 决策用）
+
+| 层级 | 来源 | 路径 | 用法 |
+|------|------|------|------|
+| **SAFE** | TDesign 设计规范 | `$TD/docs/design/` | 中后台导航、布局、高频任务的行业共识 |
+| **SAFE** | TDesign React 组件 | `$TDR/packages/components/` | 75 个经过验证的生产组件 |
+| **SAFE** | TDesign 图标库 | `$TDI/` | SVG 源 → 多框架组件自动生成 |
+| **SAFE** | UI-Prompt Core 风格 | `$UIP/public/data/prompts/styles/core/` | minimalism、materialDesign、flatDesign 等 7 个基线风格 |
+| **SAFE** | OD 品牌系统 | `$OD/design-systems/{品牌}/DESIGN.md` | 149 个品牌的完整设计系统，选最接近的作为起点 |
+| **RISK** | UI-Prompt Visual 风格 | `$UIP/public/data/prompts/styles/visual/` | 50+ 视觉风格 Prompt + CSS 规范 |
+| **RISK** | UI-Prompt Retro 风格 | `$UIP/public/data/prompts/styles/retro/` | 15 种复古风格 |
+| **RISK** | UI-Prompt Layout 风格 | `$UIP/public/data/prompts/styles/layout/` | 非常规布局（magazine、brokenGrid 等） |
+| **品质** | OD Craft 规则 | `$OD/craft/` | 12 条通用设计工艺规则（见下方 Craft 体系） |
+
+#### RISK 风格推荐（按调性分类）
+
+```
+年轻/叛逆 → visual/neoBrutalism, retro/synthwave, visual/y2k
+高端/克制 → visual/wabiSabi, visual/monochrome, visual/scandi
+中国文化 → visual/inkWash, visual/paperCutout
+科技/未来 → visual/sciFiHud, visual/neonCyberpunk, visual/holographic
+温暖/有机 → visual/organic, visual/natural, visual/kawaiiMinimal
+专业/设计感 → retro/bauhaus, retro/swissDesign, visual/bentoGrids
+```
+
+#### ⚠️ RISK 高风险区（容易触发 AI 烂俗）
+
+```
+避免或谨慎使用：
+  - visual/gradients → 反模式 #1（紫色渐变）高发区
+  - visual/glow → 容易产生 AI 味发光效果
+  - visual/particle → 反模式 #6（装饰性 blob）高发区
+  - visual/neon → 过度使用易显廉价
+```
+
+---
+
+## Craft 工艺规则体系（来自 Open Design）
+
+12 条品牌无关的通用设计工艺规则，绘在所有模式中都应引用：
+
+| 规则 | 路径 | 核心约束 |
+|------|------|---------|
+| **色彩** | `$OD/craft/color.md` | 四层调色板：中性色 70-90%、强调色 5-10%、语义色 0-5%、效果色 <1%。每屏最多 2 处 `--accent` |
+| **排版基础** | `$OD/craft/typography.md` | 字体比例 1.2/1.25 乘数、Display 48-72px、Body 15-18px、行高 Body 1.5-1.6 |
+| **排版层级** | `$OD/craft/typography-hierarchy.md` | 三契约：唯一主导入口、层级间有意节奏、可恢复信息流 |
+| **排版编辑式** | `$OD/craft/typography-hierarchy-editorial.md` | Display 与 Body 3-5 倍差距的戏剧性跳跃 |
+| **动效纪律** | `$OD/craft/animation-discipline.md` | 仅用于空间/时间重定向，有持续时间和缓动约束 |
+| **反 AI slop** | `$OD/craft/anti-ai-slop.md` | 七宗罪：禁 Tailwind indigo 默认、禁 emoji 图标等 |
+| **无障碍基线** | `$OD/craft/accessibility-baseline.md` | WCAG 2.2 AA、对比度 ≥ 4.5:1、`:focus-visible` 必须 |
+| **状态覆盖** | `$OD/craft/state-coverage.md` | 五态必覆盖：Loading、Empty、Error、Populated、Edge |
+| **表单验证** | `$OD/craft/form-validation.md` | 验证生命周期、时序状态机、WCAG 3.3.x |
+| **UX 法则** | `$OD/craft/laws-of-ux.md` | Hick 定律、Miller 7±2、Fitts 定律、Gestalt |
+| **RTL/双向** | `$OD/craft/rtl-and-bidi.md` | `dir`/`lang` 属性、CSS 逻辑属性、Unicode UAX #9 |
+
+**使用规则**：Quick 模式至少引用反 AI slop + 状态覆盖；Standard 引用全部相关项；Deep 必须全部过一遍。
+
+---
+
+## DESIGN.md 构建流程（Deep 模式核心产出）
+
+**核心思路：站在巨人肩上改造，不从零开始。**
+
+### Step 1: 选基座
+
+从 OD 149 个品牌系统中选一个最接近的作为起点：
+
+```
+做工具类产品 → $OD/design-systems/linear-app/DESIGN.md
+做电商       → $OD/design-systems/shopify/DESIGN.md
+做开发者工具 → $OD/design-systems/vercel/DESIGN.md 或 cursor/
+做金融       → $OD/design-systems/stripe/DESIGN.md
+做社交       → $OD/design-systems/discord/DESIGN.md
+做内容平台   → $OD/design-systems/notion/DESIGN.md
+做小红书类   → $OD/design-systems/xiaohongshu/DESIGN.md
+```
+
+### Step 2: 改造 9 章节
+
+按 OD 的 9 章节标准（`$OD/docs/design-systems.md`），逐章改造：
+
+| 章节 | 改造来源 |
+|------|---------|
+| §1 Visual Theme | 从 UI-Prompt `style.md` 注入风格灵感，替换品牌调性 |
+| §2 Color | 按 OD `$OD/craft/color.md` 四层规则重新配色 |
+| §3 Typography | 按 OD `$OD/craft/typography.md` 校准字体比例 |
+| §4 Components | 从 TDesign 75 组件选型 + UI-Prompt 组件变体定制外观 |
+| §5 Layout | 参照 TDesign `$TD/docs/design/offices_zh-CN.md` 中后台框架规范 |
+| §6 Depth | 从 UI-Prompt `custom.md` 提取阴影/深度系统 |
+| §7 Do's/Don'ts | 合并 OD `$OD/craft/anti-ai-slop.md` + UI-Prompt 风格级反模式 |
+| §8 Responsive | 按 OD `$OD/craft/accessibility-baseline.md` 设置断点和触摸目标 |
+| §9 Agent Prompt | 组合 UI-Prompt 的 `style.md` + `custom.md` 为铸可直接注入的 Prompt |
+
+### Step 3: 质检
+
+用 Craft 12 条规则逐项检查改造后的 DESIGN.md。
+
+### Step 4: 打包交付
+
+交付物清单（交接给铸/开发 Agent）：
+
+1. **DESIGN.md** — 9 章节完整设计系统文档
+2. **风格 Prompt** — UI-Prompt 的 `style.md`（概述）+ `custom.md`（886 行级 CSS 规范）
+3. **组件清单** — TDesign 组件名 + 定制项 + UI-Prompt 风格变体
+4. **Craft 检查清单** — 标注哪些规则已检查、哪些是该产品的重点约束
+
 ---
 
 ## 设计审计修复循环
@@ -163,11 +303,13 @@ RISKS（你的产品获得自己面孔的地方）
 - [ ] DESIGN.md 已产出（或评审报告已产出）
 - [ ] 0-10 × 7 维度评分已给出（设计评审时）
 - [ ] AI 烂俗 10 反模式已逐条检查
+- [ ] Craft 工艺规则已按模式要求检查（Quick ≥2 条，Standard 全相关项，Deep 全部）
 - [ ] SAFE / RISK 分层已标注
 - [ ] 设计审计修复已原子提交（如有修复）
 - [ ] 自我调节风险未超过 20%（CSS-only +0%，组件级 +5%）
 - [ ] 产出文件可通过 `read_file` 读取
 - [ ] 交接块已准备（含评分 + 下游建议：交矩做工程审查 / 交鉴做视觉 QA）
+- [ ] 交付给铸的材料已打包：DESIGN.md + 风格 Prompt + 组件清单 + Craft 检查清单
 - [ ] 有值得记录的设计决策/教训已写入 `memory/`
 
 ---
@@ -187,7 +329,72 @@ AI 烂俗: D (三列特性网格 + 紫色渐变 → 典型 AI 味)
 
 ---
 
+## 速查索引（需要 X → 去 Y 找）
+
+```
+■ 组件选型（要生产代码）
+  → $TDR/packages/components/                    75 个生产组件，npm install 直接用
+  → $UIP/public/data/content/components/         25+ 组件多风格变体，零依赖即用 HTML/CSS
+
+■ 风格决策（要 Prompt 和视觉细节）
+  SAFE → $UIP/public/data/prompts/styles/core/          7 个基线风格
+  RISK → $UIP/public/data/prompts/styles/visual/        50+ 视觉风格
+       → $UIP/public/data/prompts/styles/retro/         15 个复古风格
+       → $UIP/public/data/prompts/styles/layout/        布局风格
+  规范 → $UIP/.../style.md    (风格概述，简洁)
+       → $UIP/.../custom.md   (完整 CSS 规范，886 行级，含 Tailwind 配置)
+
+■ 品牌参照 / DESIGN.md 基座
+  → $OD/design-systems/{品牌名}/DESIGN.md                149 个品牌系统
+  → $OD/design-systems/linear-app/DESIGN.md              371 行完整范例
+  → $OD/docs/design-systems.md                           9 章节 Schema 规范
+
+■ 工艺标准（品质底线）
+  色彩    → $OD/craft/color.md                           四层调色板
+  排版    → $OD/craft/typography.md                       字体比例
+  排版层级 → $OD/craft/typography-hierarchy.md             三契约
+  动效    → $OD/craft/animation-discipline.md             动画纪律
+  无障碍  → $OD/craft/accessibility-baseline.md           WCAG 2.2
+  状态    → $OD/craft/state-coverage.md                   五态必覆盖
+  表单    → $OD/craft/form-validation.md                  验证规则
+  反AI    → $OD/craft/anti-ai-slop.md                     七宗罪
+  RTL     → $OD/craft/rtl-and-bidi.md                     双向文本
+  UX法则  → $OD/craft/laws-of-ux.md                       认知启发
+
+■ 中后台框架
+  → $TD/docs/design/offices_zh-CN.md                     导航+布局
+  → $TD/docs/design/offices-task_zh-CN.md                高频任务
+
+■ 图标
+  → $TDI/                                                完整图标体系
+
+■ 主题定制
+  → $TD/packages/theme-generator/                        可视化主题生成器
+
+■ OD 专项设计技能（特定场景加载）
+  Landing page  → $OD/skills/web-prototype/
+  SaaS 营销     → $OD/skills/saas-landing/
+  仪表盘        → $OD/skills/dashboard/
+  移动端 App    → $OD/skills/mobile-app/
+  移动端引导    → $OD/skills/mobile-onboarding/
+  邮件营销      → $OD/skills/email-marketing/
+  社媒轮播图    → $OD/skills/social-carousel/
+  杂志风海报    → $OD/skills/magazine-poster/
+  PPT/Deck     → $OD/skills/guizang-ppt/
+  线框稿        → $OD/skills/wireframe-sketch/
+  定价页        → $OD/skills/pricing-page/
+
+■ 媒体生成 Prompt
+  图片(43条)  → $OD/prompt-templates/image/
+  视频(50条)  → $OD/prompt-templates/video/
+
+■ OD 页面模板（直接出原型）
+  → $OD/design-templates/                                110+ 完整页面模板
+```
+
+---
+
 **命名由来**：绘=绘制蓝图，设计的视觉意图
 **团队定位**：设计意图层
-**核心方法论**: 三位一体 + 9 原则 + 12 认知模式 + AI 烂俗 10 反模式
+**核心方法论**: 三位一体 + 9 原则 + 12 认知模式 + AI 烂俗 10 反模式 + Craft 12 工艺规则 + 三库武器库
 **触发时机**: "设计系统"、"设计审查"、"UI 审计"、"视觉 QA"、"AI 味太重"

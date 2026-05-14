@@ -446,6 +446,7 @@ Builder 模板至少包含：
 | T-OPS-013 | Electron Dashboard 调度页增强 | 显示 Worker 实时进度、支持 team spawn 触发 |
 | T-OPS-014 | 调度器自动 team spawn | dispatch 后自动调用 team_create + spawn，不需要主会话手动执行 |
 | T-OPS-015 | project-status.json 自动刷新 | finish-task 后自动刷新对应项目的 status |
+| T-OPS-016 | Memory-layered context | Worker 缺少分层记忆管理（长期/中期/短期），长时运行时 context rot 无解 |
 
 ### P2：未来
 
@@ -455,6 +456,7 @@ Builder 模板至少包含：
 | T-OPS-017 | 预算和 Token 追踪 | 每个 Worker 的 Token 消耗记录 |
 | T-OPS-018 | 多用户 / 多机器调度 | Mac mini / 云主机常驻 |
 | T-OPS-019 | CodeBuddy automation 定时轮询 | 定时检测 queue 有新任务时自动触发调度 |
+| T-OPS-020 | Ambient processing 事件驱动 | 挂在 git push / PR / 文件变更事件上，用策略层兜底，适合监控类任务 |
 
 ### 已知限制
 

@@ -50,7 +50,7 @@ AGENTS=(
 
 CB_AGENT_NAMES=("锋·CEO" "枢·PM" "矩·架构" "绘·设计" "鉴·QA" "盾·安全" "算·财务" "辞·内容" "隐·智囊" "砺·合伙人" "启·执事" "寻·探索" "铸·开发")
 
-PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md")
+PROTOCOL_FILES=("PROTOCOL.md" "ROUTER.md" "MEMORY.md" "QUICKSTART.md" "PROJECT-CONFIG-SPEC.md" "PACKAGING.md" "LOADER.md" "SHARED.md")
 
 GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" "gate-04-development.md" "gate-05-testing.md" "gate-06-release.md" "review-reminder.md" "two-layer-gate.md" "README.md")
 
@@ -373,10 +373,11 @@ install_config_file() {
   fi
 
   if [ -f "$config_path" ] && [ -s "$config_path" ]; then
-    # 已包含维弈阁配置？
+    # 已包含维弈阁配置？→ 更新到最新版本
     if grep -q "维弈阁 AI 团队" "$config_path" 2>/dev/null; then
       rm -f "$tmp_file"
-      echo -e "  ${BLUE}ℹ️  ${CONFIG_FILE} 已包含维弈阁配置，跳过${NC}"
+      echo -e "  ${BLUE}ℹ️  ${CONFIG_FILE} 已包含维弈阁配置，更新到最新版本...${NC}"
+      update_config_section
       return 0
     fi
     backup_config "$config_path"
@@ -445,6 +446,59 @@ setup_gitignore() {
     fi
   else
     echo -e "  ${BLUE}ℹ️  未找到 .gitignore，跳过${NC}"
+  fi
+}
+
+# ---------- 注册项目到 registry.json ----------
+register_project() {
+  local project_name
+  project_name=$(basename "$TARGET_DIR")
+  local registry_path="$TARGET_DIR/.weiyige/registry.json"
+  local todos_path="$TARGET_DIR/.weiyige/todos.json"
+
+  # Initialize todos.json if not exists
+  if [ ! -f "$todos_path" ]; then
+    echo "{\"project\":\"$project_name\",\"updated_at\":\"$(date -u +%Y-%m-%dT%H:%M:%S+00:00)\",\"todos\":[]}" > "$todos_path"
+    echo -e "  ${GREEN}✅ 已初始化 todos.json${NC}"
+  fi
+
+  # Try to register in pavilion's registry (if accessible)
+  local pavilion_registry=""
+  # Check common pavilion locations
+  for candidate in \
+    "$(dirname "$(dirname "$TARGET_DIR")")/weyige/weiyige-pavilion/.weiyige/registry.json" \
+    "$(dirname "$TARGET_DIR")/weyige/weiyige-pavilion/.weiyige/registry.json" \
+    "$HOME/Documents/workspace/weyige/weiyige-pavilion/.weiyige/registry.json"; do
+    if [ -f "$candidate" ]; then
+      pavilion_registry="$candidate"
+      break
+    fi
+  done
+
+  if [ -n "$pavilion_registry" ] && command -v python3 &>/dev/null; then
+    python3 -c "
+import json, sys
+registry_path = '$pavilion_registry'
+project_name = '$project_name'
+project_path = '$TARGET_DIR'
+try:
+    with open(registry_path, 'r') as f:
+        data = json.load(f)
+    existing = [p for p in data.get('projects', []) if p.get('path') == project_path]
+    if not existing:
+        data['projects'].append({'name': project_name, 'path': project_path, 'description': ''})
+        with open(registry_path, 'w') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        print('registered')
+    else:
+        print('already_registered')
+except Exception as e:
+    print(f'error: {e}', file=sys.stderr)
+" 2>/dev/null
+    local result=$?
+    if [ $result -eq 0 ]; then
+      echo -e "  ${GREEN}✅ 已注册到项目注册中心${NC}"
+    fi
   fi
 }
 
@@ -539,6 +593,7 @@ install_full_mode() {
 
   install_cb_agents
   setup_gitignore
+  register_project
 
   echo ""
   print_success
@@ -605,6 +660,9 @@ install_update_mode() {
   echo ""
   echo -e "${YELLOW}▶ 更新配置文件中的维弈阁段落 ...${NC}"
   update_config_section
+
+  # 确保项目已注册
+  register_project
 
   echo ""
   echo -e "${GREEN}${BOLD}✅ 更新完成！${NC}"

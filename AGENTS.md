@@ -78,6 +78,18 @@
 
 ---
 
+## 通用 Skill（全角色共享）
+
+| Skill | 触发词 | 文件 |
+|-------|--------|------|
+| TODO 管理 | 「加个任务」「TODO」「待办」「标记完成」 | `.weiyige/skills/todo-management.md` |
+| 审核 | 「审核」「review」 | `.weiyige/skills/artifact-review/SKILL.md` |
+| 知识沉淀 | 「复盘」「沉淀」 | `.weiyige/skills/knowledge-distillation/SKILL.md` |
+
+> **TODO 管理**: 每个项目的 `.weiyige/todos.json` 存储任务列表，Dashboard 聚合展示。任何角色在工作中发现需要做的事情，都应主动添加 TODO。
+
+---
+
 ## 相关文档
 
 | 文档 | 说明 |

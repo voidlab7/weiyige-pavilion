@@ -45,13 +45,27 @@
        ├── 05-testing/
        └── 06-summary/
 
-3. 三路路由判断：
+3. 【ops 注册】向全局调度中心上报任务启动：
+   a. 写 ai-workspace/running/{task_id}.lock：
+      {"task_id": "{task_id}", "started_at": "ISO", "dispatched_by": "local-启", "status": "running"}
+   b. 写 ai-workspace/running/{task_id}.yaml（精简版任务描述）：
+      id: {task_id}
+      title: {从用户输入提取的任务标题}
+      project: {当前项目 ID，从 .weiyige/project.yaml 或目录名推断}
+      type: {feature/small_fix/docs 等，从任务内容推断}
+      started_at: ISO
+   c. 更新 ai-workspace/project-status.json：
+      active_task: {task_id}
+      updated_at: ISO
+      health: green
+
+4. 三路路由判断：
    路径 A — state.json 有未完成阶段 → 断点续做（从 current_phase + current_step 继续）
             同时读取 runtime-knowledge/context-summary.json 恢复推理上下文
    路径 B — 用户说"重新开始" → 清空 state.json，从头执行
    路径 C — state.json 不存在或首次 → 新建 state.json
 
-4. 快速恢复路径（用户说"继续"但未指定 task_id）：
+5. 快速恢复路径（用户说"继续"但未指定 task_id）：
    读取 ai-workspace/last-interrupted.json → 获取 last_task_id → 走路径 A
 ```
 
@@ -94,13 +108,71 @@
 
 | 任务类型 | 链路 |
 |---------|------|
-| **新功能开发** | 砺→锋→枢→矩+绘(并行)→铸→鉴→盾 |
+| **新功能开发（有 UI）** | 砺→锋→枢→绘→矩→铸→鉴→盾 |
+| **新功能开发（无 UI）** | 砺→锋→枢→矩→铸→鉴→盾 |
 | **Bug 修复** | 铸→鉴 |
 | **设计审查** | 绘→矩→鉴 |
 | **内容创作** | 辞→锋 |
 | **安全审计** | 盾→鉴 |
 
+**设计阶段顺序**：绘（UI 设计）→ 矩（架构设计）。先定义用户体验，再让技术方案服务于设计。
+
+**跳过规则**：纯后端 API、CLI 工具、数据处理等无 UI 任务，跳过绘·设计，直接由矩做架构方案。启在判断时看 PRD 中是否涉及页面/界面/交互。
+
 **动态调整**：如果 Agent 交接块中"下游建议"指向链路外的角色，启检查合理性后可插入。
+
+### 4.1 inline 模式角色加载规范（CRITICAL）
+
+> 教训来源：auth-module-v1 任务中启直接产出 ideation/requirement，未加载角色定义。
+
+**inline ≠ 启自己做**。inline 是「启在当前会话中切换角色身份执行」。每个阶段必须：
+
+```
+1. 声明角色切换：「🔔 [启 → {角色名}]」
+2. 读取该角色的 IDENTITY.md + SOUL.md（至少 read_file 角色核心章节）
+3. 按该角色的规范和风格产出文档
+4. 交接块 `来源` 字段标注执行角色（不是启）
+```
+
+### 4.2 阶段完整性检查
+
+启在标记任何阶段为「完成」前，**必须对照链路规划**确认：
+
+```
+1. 该阶段涉及哪些角色？
+2. 每个角色是否都已执行并产出文件？
+3. 所有角色都完成后，才能标记阶段 completed
+4. 漏了角色 = 阶段未完成，补执行后再标记
+```
+
+**设计阶段特别规则**：
+- 有 UI 的任务：先绘（UI/UX 方案）→ 再矩（架构审查，基于绘的设计做技术方案）
+- 无 UI 的任务：跳过绘，只有矩
+- 判断依据：PRD 中是否涉及页面/界面/交互/视觉
+
+### 4.3 用户测试 ≠ QA 通过（CRITICAL）
+
+> 教训来源：audio_record_mac 任务中用户手动测试后启直接标记完成，跳过了鉴·QA。
+
+**硬性规则**：
+
+```
+⚠️ 以下情况 ≠ QA 阶段完成：
+  - 用户说"我测了没问题" → 这是用户验收，不是 QA
+  - 代码编译通过 → 这是开发阶段的基本要求
+  - 功能看起来正常 → 没有覆盖边界条件和异常路径
+  - 用户没有报 Bug → 不代表没有 Bug
+  - 对话已经很长 → 不是跳过流程的理由
+
+✅ QA 阶段完成的唯一标准：
+  1. 鉴·QA 被正式激活（声明 🔔 [启 → 鉴]）
+  2. 鉴的 SOUL.md + SKILLS.md 被读取
+  3. 按鉴的测试流程执行（测试计划 → 执行 → 报告）
+  4. 产出 qa-report.md 写入 artifacts/05-testing/
+  5. 交接块中状态为"通过"或"有条件通过"
+```
+
+**唯一允许跳过 QA 的情况**：用户明确说"跳过 QA"/"不需要测试"/"我自己测"。
 
 ---
 
@@ -295,6 +367,93 @@ Agent 返回 ❌ → 检查 retry_count
 - 本次积累 N 条 runtime-knowledge（已转入 memory/）
 ```
 
+### 8.1 自动进化复盘（Harness Evolution Loop）
+
+> 来源：Harness Engineering + Reflexion 机制。每次任务结束自动检测偏差、沉淀教训、升级规则。
+
+汇总报告写完后，启**必须**执行自动进化复盘：
+
+```
+Step 1: 偏差检测（对比预期 vs 实际）
+─────────────────────────────────────
+- 读取 state.json 的 phases 记录
+- 对比预设链路（§四）：哪些角色该执行但没执行？顺序对不对？
+- 检查：是否有阶段被跳过？是否有角色越界干了别人的活？
+- 输出偏差列表（如果有的话）
+
+Step 2: 教训生成
+─────────────────
+- 每个偏差生成一条教训，写入项目 memory/lessons.md：
+  ### L-{编号}: {标题}
+  - 日期/项目/场景/教训/行动/严重性/出现次数
+
+Step 3: 升级阈值检查
+─────────────────────
+- 扫描 memory/lessons.md，找出现次数 ≥ 2 或严重性=高的教训
+- 触发升级 → 自动生成规则 patch
+
+Step 4: 规则自动升级（如触发）
+─────────────────────────────
+根据教训类型，写入对应文件：
+
+| 教训类型 | 升级为 | 写入位置 |
+|---------|--------|---------|
+| 调度偏差（跳角色/错顺序） | SOUL.md 约束条目 | 执事_启/SOUL.md §十 |
+| 角色越界 | rules-global 新规则 | rules/rules-global.md |
+| 产出质量问题 | Skill 约束 | [Agent]/SKILLS.md |
+| 流程缺陷 | PROTOCOL 补充 | PROTOCOL.md |
+
+Step 5: 写入进化日志
+─────────────────────
+写入 ai-workspace/{task_id}/artifacts/06-summary/evolution-log.md：
+  - 检测到的偏差
+  - 生成的教训
+  - 升级的规则（如有）
+  - 本次进化是否生效
+```
+
+**无偏差时**：Step 1 输出"无偏差"，跳过 Step 2-4，Step 5 记录"本次执行无偏差"。
+
+**进化生效验证**：下一次同类任务执行时，启检查上次的 evolution-log，确认升级的规则是否被遵守。
+
+### 8.2 ops 注销（全局调度中心收尾）
+
+汇总报告写完后，启必须执行 ops 注销，让全局调度中心感知任务已完成：
+
+```
+1. 写 ai-workspace/last-result.json：
+   {
+     "task_id": "{task_id}",
+     "status": "completed",  // 或 "blocked" / "failed"
+     "summary": "{一句话描述完成了什么}",
+     "completed_at": "ISO timestamp"
+   }
+
+2. 移动任务文件：
+   ai-workspace/running/{task_id}.yaml → ai-workspace/done/{task_id}.yaml
+   （如果 done/ 不存在则创建）
+
+3. 删除 lock：
+   删除 ai-workspace/running/{task_id}.lock
+
+4. 更新 ai-workspace/project-status.json：
+   active_task: null
+   last_completed_task: "{task_id}"
+   last_success_at: "ISO timestamp"
+   queue_count: {重新计数 queue/ 下 yaml 文件数}
+   updated_at: "ISO timestamp"
+```
+
+**如果任务被阻塞/失败**：
+- `last-result.json` 的 status 设为 "blocked" 或 "failed"
+- 移动到 `ai-workspace/blocked/` 而非 `done/`
+- `project-status.json` 的 health 设为 "yellow"
+
+**如果任务被 hold（需要人决策）**：
+- 不删除 lock，不移动文件
+- 写 `ai-workspace/{task_id}/hold.json`（格式见 Worker 协议）
+- `project-status.json` 的 active_task 保持不变
+
 ---
 
 ## 九、触发条件
@@ -315,10 +474,13 @@ Agent 返回 ❌ → 检查 retry_count
 1. **启不创建团队**——团队创建由主 Agent 执行（见 start.md）
 2. **产物必须落盘**——所有阶段产物写入 ai-workspace，不可仅存在于消息流
 3. **state.json 是唯一进度源**——不依赖对话上下文
-4. **两层门禁不可跳过**——Layer 0 先过，Layer 1 再审
-5. **严格串行唤醒**——前一个 Agent 完成 + 门禁通过后才唤醒下一个
-6. **评分必须落盘**——review_score 写入 state.json + review-report.md
-7. **安全操作需确认**——git push / rm -rf / 部署等破坏性操作提醒用户
+4. **status 字段必填**——state.json 必须有顶级 `status` 字段（running/completed/abandoned/failed/blocked），这是 ops health-checker 判断任务状态的唯一真相源。完成时更新为 `completed`，中断不恢复标记 `abandoned`
+5. **两层门禁不可跳过**——Layer 0 先过，Layer 1 再审
+6. **严格串行唤醒**——前一个 Agent 完成 + 门禁通过后才唤醒下一个
+7. **评分必须落盘**——review_score 写入 state.json + review-report.md
+8. **安全操作需确认**——git push / rm -rf / 部署等破坏性操作提醒用户
+9. **目录统一**——已完成任务 yaml 统一放 `done/`（禁止创建 `completed/` 目录），阻塞放 `blocked/`
+10. **链路不可跳跃**——链路规划表（§四）中的角色顺序是强制的，不可因为"用户已测试"/"看起来没问题"/"对话太长"等原因跳过任何角色。唯一允许跳过的情况：用户明确说"跳过 XX"/"不需要 XX"。特别注意：用户手动测试 ≠ 鉴·QA 通过（见 §四.3）
 
 ---
 

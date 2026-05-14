@@ -1,11 +1,14 @@
 {
-  "_schema_version": "1.1",
+  "_schema_version": "1.2",
   "_description": "维弈阁任务状态持久化文件。启（Leader）启动时读取此文件进行三路路由判断。",
   "_changelog": {
+    "1.2": "status 为必填字段，所有任务统一用 status 作为唯一真相源。终态: completed/abandoned/failed/blocked",
     "1.1": "新增 current_step（阶段内子步骤断点）、interrupted_at、interrupt_context（中断上下文摘要）"
   },
   "task_id": "",
   "task_title": "",
+  "project_id": "",
+  "status": "running",
   "run_mode": "auto",
   "current_phase": "",
   "current_step": "",
@@ -13,6 +16,7 @@
   "interrupted_at": "",
   "interrupt_context": "",
   "started_at": "",
+  "updated_at": "",
   "completed_at": "",
   "phases": {
     "01-ideation": {

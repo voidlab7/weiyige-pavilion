@@ -29,7 +29,38 @@
 
 ---
 
-## Step 1：创建团队 + 并行 spawn 成员
+## Step 1：创建 state.json（ops 可见性保证）
+
+**在 spawn 任何 team member 之前**，主 Agent 必须先执行：
+
+```bash
+node /Users/voidzhang/Documents/workspace/weyige/weiyige-ops/bin/cli/weiyige-cli.mjs init-task {task_id} --title "{任务描述}" --project-root {项目根目录}
+```
+
+这一条命令自动完成：
+- ✅ 创建 `ai-workspace/{task_id}/state.json`（status=running）
+- ✅ 创建 `ai-workspace/{task_id}/progress-board.md`
+- ✅ 创建 `artifacts/01~06` 目录结构
+
+**为什么**：weiyige-ops 全局调度中心通过扫描 state.json 感知任务运行状态。如果不先创建这个文件，调度中心看不到任务在跑，无法亮灯、无法检测僵尸。
+
+**规则**：无论是 team 模式还是角色扮演模式，只要是走完整工作流的任务，**第一步永远是执行 init-task**。
+
+### 阶段更新（每个阶段完成时执行）
+
+```bash
+node weiyige-cli.mjs update-phase {task_id} --phase 03-design --status completed --agent 矩 --project-root {项目根目录}
+```
+
+### 任务完成时
+
+```bash
+node weiyige-cli.mjs finish-task {task_id} --project-root {项目根目录}
+```
+
+---
+
+## Step 2：创建团队 + 并行 spawn 成员
 
 ```text
 team_create(team_name = "weiyige-{task_id}")
@@ -71,7 +102,7 @@ task(
 
 ---
 
-## Step 2：只 spawn 链路中需要的角色
+## Step 3：只 spawn 链路中需要的角色
 
 | 任务类型 | 建议成员 |
 |---------|----------|
@@ -85,16 +116,48 @@ task(
 
 ---
 
-## Step 3：启接管调度
+## Step 4：启接管调度
 
 启初始化后：
 
-1. 读取 / 创建 `ai-workspace/{task_id}/state.json`。
+1. 更新 `ai-workspace/{task_id}/state.json`（补充 phases 和详细信息）。
 2. 创建 `ai-workspace/{task_id}/progress-board.md`。
 3. 创建产物子目录：`01-ideation`、`02-requirement`、`03-design`、`04-development`、`05-testing`、`06-summary`。
 4. 按 `SOUL.md` 的编排逻辑串行唤醒成员。
 5. 每次唤醒前验证上游 `产物文件` 可读。
 6. 每个成员完成后解析交接块，更新 state 和 progress-board。
+
+### ⚠️ 阶段切换必须调 CLI（CRITICAL）
+
+**每次唤醒一个角色之前**，必须执行：
+
+```bash
+node /Users/voidzhang/Documents/workspace/weyige/weiyige-ops/bin/cli/weiyige-cli.mjs update-phase {task_id} --phase {阶段} --status in_progress --agent {角色名} --description "{角色}正在执行{工作}" --project-root {项目根目录}
+```
+
+**每个角色完成后**，必须执行：
+
+```bash
+node /Users/voidzhang/Documents/workspace/weyige/weiyige-ops/bin/cli/weiyige-cli.mjs update-phase {task_id} --phase {阶段} --status completed --agent {角色名} --project-root {项目根目录}
+```
+
+**为什么**：ops 调度中心靠 state.json 的 `current_phase` 和阶段状态展示进度条和当前角色。如果不调，看板上只能看到「initializing → completed」，中间过程完全不可见。
+
+示例（任务 my-feature，链路 矩→铸→鉴）：
+```bash
+# 矩开始
+node weiyige-cli.mjs update-phase my-feature --phase 03-design --status in_progress --agent 矩 --description "矩·架构正在评审技术方案" --project-root /path
+# 矩完成
+node weiyige-cli.mjs update-phase my-feature --phase 03-design --status completed --agent 矩 --project-root /path
+# 铸开始
+node weiyige-cli.mjs update-phase my-feature --phase 04-development --status in_progress --agent 铸 --description "铸·开发正在实现代码" --project-root /path
+# 铸完成
+node weiyige-cli.mjs update-phase my-feature --phase 04-development --status completed --agent 铸 --project-root /path
+# 鉴开始
+node weiyige-cli.mjs update-phase my-feature --phase 05-testing --status in_progress --agent 鉴 --description "鉴·QA正在执行测试" --project-root /path
+# 完成任务
+node weiyige-cli.mjs finish-task my-feature --project-root /path
+```
 
 ---
 
@@ -125,7 +188,7 @@ task(
 
 ---
 
-## Step 5：全链路完成
+## Step 6：全链路完成
 
 ```text
 Leader 汇总报告 → 写入 ai-workspace/{task_id}/artifacts/06-summary/

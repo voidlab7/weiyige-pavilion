@@ -168,68 +168,10 @@ lessons.md 中的教训
 
 ```
 project-root/memory/
-├── context.md          # 项目上下文（背景、目标、约束）
-├── decisions.md        # 决策记录汇总
+├── context.md          # 项目上下文（背景、目标、约束、技术栈）
+├── decisions.md        # 决策记录汇总（DR-编号格式）
 ├── changelog.md        # 需求/方向变更记录
 └── retrospective.md    # 项目复盘（项目结束时生成）
-```
-
-#### context.md 格式
-
-```markdown
-# [项目名称] — 项目上下文
-
-> 最后更新: YYYY-MM-DD
-
-## 项目背景
-
-[项目的来龙去脉，为什么要做这个项目]
-
-## 核心目标
-
-1. [目标 1]
-2. [目标 2]
-
-## 关键约束
-
-- 时间: [时间约束]
-- 资源: [资源约束]
-- 技术: [技术约束]
-
-## 目标用户
-
-[具体的用户画像]
-
-## 核心假设
-
-1. [假设 1] — 验证状态: ✅/❌/⬜
-2. [假设 2] — 验证状态: ✅/❌/⬜
-
-## 技术栈
-
-- 前端: [技术选择]
-- 后端: [技术选择]
-- 数据库: [技术选择]
-- 部署: [部署方式]
-```
-
-#### decisions.md 格式
-
-```markdown
-# [项目名称] — 决策记录
-
-> 最后更新: YYYY-MM-DD
-
-## 决策列表
-
-[从 STATUS.md 的决策日志中汇总，按时间倒序]
-
-### DR-[编号]: [标题]
-- **日期**: YYYY-MM-DD
-- **决策者**: [Agent]
-- **结论**: [选择了什么]
-- **理由**: [为什么]
-- **影响**: [影响了什么]
 ```
 
 ---
@@ -333,42 +275,7 @@ project-root/memory/
 
 ### 4.3 复盘沉淀（项目结束）
 
-项目结束时，锋主导生成复盘报告，所有参与 Agent 贡献各自领域的教训：
-
-```markdown
-# [项目名称] — 复盘报告
-
-## 项目概要
-- 目标: [是否达成]
-- 时间: [计划 vs 实际]
-- 质量: [Bug 数、安全问题数]
-
-## 各角色教训
-
-### 锋（战略）
-- [教训]
-
-### 枢（产品）
-- [教训]
-
-### 矩（架构）
-- [教训]
-
-### 绘（设计）
-- [教训]
-
-### 鉴（测试）
-- [教训]
-
-### 盾（安全）
-- [教训]
-
-## 可复用的模式
-1. [模式描述] → 沉淀到 [Agent]/memory/knowledge.md
-
-## 要避免的错误
-1. [错误描述] → 沉淀到 [Agent]/memory/lessons.md
-```
+项目结束时锋主导生成 `memory/retrospective.md`，包含：项目概要（目标达成/时间/质量）、各角色教训、可复用模式、要避免的错误。各参与 Agent 贡献各自领域教训，沉淀到对应 `memory/lessons.md`。
 
 ---
 
@@ -395,28 +302,16 @@ Agent 的质量指标必须能从产物或复盘中追溯，不只写目标。
 
 ---
 
-## 六、初始化指南
+## 六、初始化
 
-### 5.1 为现有 Agent 初始化 Memory
-
-每个 Agent 的 `memory/` 目录下创建三个空模板文件：
+Agent memory 和项目 memory 由 `install.sh` 自动创建空模板文件。手动初始化：
 
 ```bash
-# 为每个 Agent 创建 memory 文件
-for agent in CEO_锋 PM_枢 QA_鉴 安全_盾 财务_算 顾问_隐 合伙人_砺 架构_矩 内容_辞 设计_绘; do
-  touch "$agent/memory/preferences.md"
-  touch "$agent/memory/lessons.md"
-  touch "$agent/memory/knowledge.md"
-done
-```
+# Agent memory（每个角色目录下）
+mkdir -p [Agent]/memory && touch [Agent]/memory/{preferences,lessons,knowledge}.md
 
-### 5.2 为新项目初始化 Memory
-
-```bash
-mkdir -p memory
-touch memory/context.md
-touch memory/decisions.md
-touch memory/changelog.md
+# 项目 memory
+mkdir -p memory && touch memory/{context,decisions,changelog}.md
 ```
 
 ---

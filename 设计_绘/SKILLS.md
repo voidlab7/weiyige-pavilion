@@ -1,6 +1,6 @@
 # 设计（绘）— Skills 卡片
 
-> 版本: v1.1 | 创建: 2026-04-13 | 更新: 2026-05-03 | 基于 Harness Engineering 范式
+> 版本: v1.2 | 创建: 2026-04-13 | 更新: 2026-05-08 | 基于 Harness Engineering 范式
 
 ---
 
@@ -12,11 +12,18 @@
   - 参考风格/竞品（可选）
   - 深度: Quick / Standard / Deep（默认 Standard）
 - **输出**: DESIGN.md（色彩 + 排版 + 间距 + 组件 + 图标 + 动画规范）
-- **工具**: `web_search`（竞品设计调研）、`web_fetch`（获取设计灵感）
+- **工具**: `web_search`（竞品设计调研）、`web_fetch`（获取设计灵感）、`read_file`（读取 UI-Prompt 风格 Prompt + TDesign 规范）
+- **知识库**:
+  - UI-Prompt 风格 Prompt: `/workspace/UI-Prompt/public/data/prompts/styles/{category}/{family}/style.md`
+  - UI-Prompt 详细规范: `/workspace/UI-Prompt/public/data/prompts/styles/{category}/{family}/custom.md`
+  - TDesign 设计规范: `/workspace/tdesign/docs/design/`
+  - TDesign 组件清单: `/workspace/tdesign-react/packages/components/`
 - **约束**:
   - 必须通过 AI 烂俗 10 反模式检查
   - 必须执行三层竞品综合法（共识→趋势→第一性原理）
   - SAFE/RISK 分层——安全选择保证可用，风险选择创造辨识度
+  - SAFE 层优先参考 TDesign 设计规范（品类基线）
+  - RISK 层从 UI-Prompt 80+ 风格中选择差异化方向
   - 无障碍不是可选项——对比度、键盘导航、触摸目标
   - 默认做减法——如果一个元素没赢得它的像素，砍掉
 - **示例**:
@@ -117,9 +124,14 @@
   - 品类/竞品名称（必填）
   - 分析维度: 全维度 / 指定维度（默认全维度）
 - **输出**: 竞品设计综合报告（Layer1共识 + Layer2趋势 + Layer3第一性原理）
-- **工具**: `web_search`、`web_fetch`、`browser_take_screenshot`
+- **工具**: `web_search`、`web_fetch`、`browser_take_screenshot`、`read_file`（读取 UI-Prompt 风格模板）
+- **知识库**:
+  - UI-Prompt 风格注册表: `/workspace/UI-Prompt/src/data/styles/_registry.json`
+  - UI-Prompt 完整页面: `/workspace/UI-Prompt/public/data/content/styles/{category}/{family}/{templateId}/fullpage.html`
 - **约束**:
   - 必须三层分析——缺任何一层都不完整
+  - Layer1 共识层参考 TDesign 设计规范（行业验证的设计模式）
+  - Layer2 趋势层参考 UI-Prompt 80+ 风格分类（当前设计话语）
   - Layer3 如果发现真正洞察 → 标记 EUREKA
   - 不抄竞品——知道他们做什么是为了不重蹈覆辙
   - SAFE/RISK 标注每个设计决策
@@ -154,6 +166,111 @@
 
 ---
 
+## Skill-07: 风格素材检索
+
+- **触发条件**: 用户说「找个风格」「风格参考」「组件参考」「UI 模板」「换个风格」「有没有 XX 风格的」或需要从素材库中获取具体设计资源时
+- **输入**:
+  - 风格名称或描述（必填）
+  - 资源类型: 风格模板 / 组件 / Prompt / 图标（默认自动判断）
+  - 技术栈: React / Vue / HTML（默认 HTML）
+- **输出**: 匹配的设计资源（代码片段 / Prompt 文本 / 文件路径）+ 使用建议
+- **知识库路径**:
+  ```
+  UI-Prompt（80+ 风格 × 25+ 组件）:
+    风格 Prompt:    /workspace/UI-Prompt/public/data/prompts/styles/{category}/{family}/style.md
+    风格详细规范:   /workspace/UI-Prompt/public/data/prompts/styles/{category}/{family}/custom.md
+    风格完整页面:   /workspace/UI-Prompt/public/data/content/styles/{category}/{family}/{templateId}/fullpage.html
+    组件代码:       /workspace/UI-Prompt/public/data/content/components/{category}/{component}/{variant}/demo.html
+    组件 Prompt:    /workspace/UI-Prompt/public/data/prompts/components/{category}/{component}/{variant}/custom.md
+    风格注册表:     /workspace/UI-Prompt/src/data/styles/_registry.json
+    组件注册表:     /workspace/UI-Prompt/src/data/components/_registry.json
+
+  TDesign（中后台设计规范 + 60+ 组件 + 2350 图标）:
+    设计规范文档:   /workspace/tdesign/docs/design/
+    React 组件库:   /workspace/tdesign-react/packages/components/
+    Pro 组件:       /workspace/tdesign-react/packages/pro-components/
+    AIGC 组件:      /workspace/tdesign-react/packages/tdesign-react-aigc/
+    图标 SVG:       /workspace/tdesign-icons/svg/
+  ```
+- **工具**: `read_file`（读取素材文件）、`search_content`（搜索组件/风格名）
+- **约束**:
+  - 优先从 UI-Prompt 获取风格灵感和 Prompt
+  - 优先从 TDesign 获取中后台组件和规范
+  - 返回资源时必须附带使用建议（适配技术栈、避免冲突）
+  - 推荐风格时必须标注 SAFE/RISK 属性
+  - 推荐时排除 AI 烂俗高风险风格（gradients、glow、particle 需警告）
+- **风格速查**:
+  | 分类 | 可选风格 | SAFE/RISK |
+  |------|---------|----------|
+  | Core | flatDesign, fluent2, materialDesign, minimalism, typography | SAFE |
+  | Visual-推荐 | neoBrutalism, inkWash, wabiSabi, glassmorphism, bentoGrids, scandi | RISK-中 |
+  | Visual-慎用 | gradients, glow, particle, neon | RISK-高(AI味) |
+  | Retro | bauhaus, artDeco, swissDesign, midCenturyModern | RISK-中 |
+  | Layout | brokenGrid, magazine, masonry, splitScreen | SAFE |
+- **示例**:
+  ```
+  用户: "找一个适合宠物产品的温暖风格"
+  输出: 🎨 风格素材检索
+        推荐 1: visual/kawaiiMinimal [RISK-中]
+          → 可爱极简，圆润形状+暖色调，适合宠物品类
+          → Prompt: prompts/styles/visual/kawaiiMinimal/style.md
+          → 完整页面: content/styles/visual/kawaiiMinimal/...
+        推荐 2: visual/organic [RISK-中]
+          → 有机自然风，柔和曲线+大地色系
+        推荐 3: core/minimalism [SAFE]
+          → 极简主义作为安全基底
+        ⚠️ 排除: visual/gradients（AI烂俗反模式#1）
+  ```
+
+---
+
+## Skill-08: 组件风格适配
+
+- **触发条件**: 用户说「这个组件换个风格」「组件不好看」「组件太普通」「给组件加点设计感」或需要将现有组件适配到特定设计风格时
+- **输入**:
+  - 目标组件（必填）
+  - 目标风格（必填，可从 Skill-07 获取）
+  - 技术栈（可选，默认从项目推断）
+- **输出**: 适配后的组件代码 + 设计说明
+- **知识库路径**:
+  ```
+  组件多风格参考:
+    /workspace/UI-Prompt/public/data/content/components/{category}/{component}/{variant}/demo.html
+    /workspace/UI-Prompt/public/data/content/components/{category}/{component}/{variant}/demo.css
+  组件设计 Prompt:
+    /workspace/UI-Prompt/public/data/prompts/components/{category}/{component}/{variant}/custom.md
+  TDesign 组件基线:
+    /workspace/tdesign-react/packages/components/{component}/
+  ```
+- **工具**: `read_file`（读取参考代码和 Prompt）、`replace_in_file`（修改组件样式）
+- **约束**:
+  - 先确认 TDesign 是否有现成组件 → 有则基于 TDesign 做风格覆盖
+  - 无现成组件 → 从 UI-Prompt 获取对应风格变体的 demo 代码
+  - 适配时保持功能不变，只改视觉层
+  - 必须通过 AI 烂俗检查
+  - 输出代码必须可直接运行
+- **组件速查**:
+  | 分类 | 组件 | 可用风格变体 |
+  |------|------|-------------|
+  | 数据展示 | table-basic | bootstrap5, glassmorphism, minimalism, neo-brutalism, neumorphism |
+  | 数据展示 | statistics-card | ant-design, bootstrap5, glassmorphism, minimalist, neumorphism |
+  | 数据展示 | animated-counter | cyberpunk, material-design, minimalism, skeuomorphism, terminal-cli |
+  | 反馈 | modal-dialog | bootstrap, cyberpunk, glassmorphism, material, minimalism, neo-brutalism, neumorphism |
+  | 反馈 | toast-notifications | bootstrap, glassmorphism, material, minimalism, neumorphism |
+  | 反馈 | loading-animate | bounce, dots, progress, pulse, ring, skeleton, spinner, wave |
+  | 高级 | kanban-board | default, modern-detailed |
+  | 高级 | range-slider | bootstrap-price-filter, glassmorphism-dual, material-brightness, neumorphism-volume |
+- **示例**:
+  ```
+  用户: "把表格组件换成玻璃态风格"
+  输出: 🎨 组件风格适配 | table-basic → glassmorphism
+        参考: UI-Prompt/content/components/dataDisplay/table-basic/glassmorphism/
+        适配: 背景 rgba(255,255,255,0.1) + backdrop-filter: blur(10px)
+        代码: [适配后的完整组件代码]
+  ```
+
+---
+
 ## 跨 Skill 协作模式
 
 | 协作链 | 触发场景 | Skill 组合 | 输出 |
@@ -162,6 +279,9 @@
 | 评审 → 审计修复 | 「评审发现问题，帮我修」 | Skill-02 → Skill-03 | 评审 + 修复提交 |
 | AI味 → 审计修复 | 「太AI味了，修掉」 | Skill-04 → Skill-03 | 检测 + 修复 |
 | 竞品 → 系统构建 | 「参考竞品建设计系统」 | Skill-05 → Skill-01 | 竞品分析 + 设计系统 |
+| 风格检索 → 系统构建 | 「找个风格然后建设计系统」 | Skill-07 → Skill-01 | 风格选择 + 设计系统 |
+| 风格检索 → 组件适配 | 「找个风格然后改组件」 | Skill-07 → Skill-08 | 风格选择 + 组件代码 |
+| AI味 → 风格检索 | 「太AI味了，换个风格」 | Skill-04 → Skill-07 | 检测 + 替代风格推荐 |
 
 ---
 

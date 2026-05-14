@@ -24,3 +24,6 @@ ai-workspace/
 
 # 维弈阁 memory（各项目保留自己的）
 .weiyige/*/memory/
+
+# 健康检查快照
+ai-workspace/.snapshots/
