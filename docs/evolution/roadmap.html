@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>路线图 — 维弈阁知识库</title>
+<style>
+:root{
+  --bg:#fafbfc; --surface:#fff; --border:#e1e4e8; --border2:#d0d7de;
+  --text:#24292f; --text2:#57606a; --text3:#8b949e;
+  --accent:#0969da; --accent-bg:#ddf4ff; --accent2:#1a7f37; --accent2-bg:#dafbe1;
+  --warn:#9a6700; --warn-bg:#fff8c5; --err:#cf222e; --err-bg:#ffebe9;
+  --code-bg:#f6f8fa; --nav-w:260px; --radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+
+/* 侧边导航 */
+nav{width:var(--nav-w);background:var(--surface);border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:0 0 24px;z-index:10}
+nav .logo{padding:20px 20px 16px;font-size:17px;font-weight:700;color:var(--accent);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+nav .logo svg{width:20px;height:20px}
+nav a{display:block;padding:5px 16px 5px 24px;color:var(--text2);text-decoration:none;
+  font-size:13px;border-left:3px solid transparent;transition:all .12s}
+nav a:hover{color:var(--text);background:var(--accent-bg)}
+nav a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-bg);font-weight:600}
+.nav-group{padding:18px 16px 4px;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.6px;cursor:pointer;user-select:none}
+.nav-children{display:none}
+.nav-children.open,.nav-group.open+.nav-children{display:block}
+
+/* 主内容 */
+main{margin-left:var(--nav-w);flex:1;padding:36px 56px 60px;max-width:880px}
+h1{font-size:26px;font-weight:700;margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+h2{font-size:20px;font-weight:600;margin:32px 0 10px;color:var(--text)}
+h3{font-size:16px;font-weight:600;margin:24px 0 8px}
+h4{font-size:14px;font-weight:600;margin:20px 0 6px;color:var(--text2)}
+p{margin:6px 0 10px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid var(--border);margin:24px 0}
+blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:12px 0;
+  background:var(--accent-bg);color:var(--text2);border-radius:0 var(--radius) var(--radius) 0;font-size:14px}
+code{background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;
+  font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;color:var(--text)}
+pre{background:var(--code-bg);padding:16px;border-radius:var(--radius);margin:12px 0;
+  overflow-x:auto;border:1px solid var(--border);line-height:1.5}
+pre code{background:none;padding:0;font-size:13px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+th{background:var(--code-bg);text-align:left;padding:10px 12px;border:1px solid var(--border);
+  font-weight:600;color:var(--text2);font-size:13px}
+td{padding:8px 12px;border:1px solid var(--border);font-size:13px}
+tr:nth-child(even) td{background:var(--code-bg)}
+tr:hover td{background:var(--accent-bg)}
+ul,ol{padding-left:22px;margin:6px 0}
+li{margin:3px 0;font-size:14px}
+ul.check{list-style:none;padding-left:4px}
+ul.check li{padding:2px 0}
+ul.check input{margin-right:6px}
+strong{color:var(--text);font-weight:600}
+
+/* 面包屑 */
+.breadcrumb{font-size:12px;color:var(--text3);margin-bottom:16px}
+.breadcrumb a{color:var(--text2)}
+
+/* 响应式 */
+@media(max-width:768px){nav{display:none}main{margin-left:0;padding:20px 16px}}
+
+/* 导航折叠交互 */
+</style>
+</head>
+<body>
+<nav>
+<div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 维弈阁 Wiki</div>
+<a href="../index.html">🏠 首页</a>
+<div class="nav-group">概览</div>
+<div class="nav-children">
+<a href="../overview/what-is-weiyige.html">维弈阁是什么</a>
+<a href="../overview/architecture.html">整体架构</a>
+<a href="../overview/glossary.html">术语表</a>
+<a href="../overview/project-map.html">文件地图</a>
+</div>
+<div class="nav-group">角色手册</div>
+<div class="nav-children">
+<a href="../agents/agent-catalog.html">角色一览</a>
+<a href="../agents/agent-design-principles.html">设计原则</a>
+</div>
+<div class="nav-group">协议解读</div>
+<div class="nav-children">
+<a href="../protocols/loading-protocol.html">加载协议</a>
+<a href="../protocols/handoff-protocol.html">交接机制</a>
+<a href="../protocols/gate-system.html">门禁系统</a>
+<a href="../protocols/state-management.html">状态管理</a>
+</div>
+<div class="nav-group">CLI 工具</div>
+<div class="nav-children">
+<a href="../cli/cli-reference.html">命令手册</a>
+<a href="../cli/cli-architecture.html">CLI 架构</a>
+<a href="../cli/cli-changelog.html">变更日志</a>
+</div>
+<div class="nav-group">运维中心</div>
+<div class="nav-children">
+<a href="../ops/ops-overview.html">ops 概览</a>
+<a href="../ops/dashboard.html">Dashboard</a>
+<a href="../ops/scheduler.html">调度器</a>
+<a href="../ops/deployment.html">部署同步</a>
+</div>
+<div class="nav-group">架构决策</div>
+<div class="nav-children">
+<a href="../decisions/ADR-template.html">ADR 模板</a>
+<a href="../decisions/ADR-001-cli-over-markdown.html">ADR-001 CLI替代Markdown</a>
+<a href="../decisions/ADR-002-single-source.html">ADR-002 单一真相源</a>
+<a href="../decisions/ADR-003-two-layer-gate.html">ADR-003 两层门禁</a>
+<a href="../decisions/ADR-004-codebuddy-entry.html">ADR-004 CodeBuddy双入口</a>
+</div>
+<div class="nav-group">经验教训</div>
+<div class="nav-children">
+<a href="../lessons/LLM遗忘bug.html">LLM 遗忘 bug</a>
+<a href="../lessons/finish-task-blocking.html">finish-task 阻塞</a>
+<a href="../lessons/skipped-phase-display.html">skipped 显示 bug</a>
+<a href="../lessons/dogfooding-lesson.html">Dogfooding 教训</a>
+</div>
+<div class="nav-group">架构优化</div>
+<div class="nav-children">
+<a href="../architecture-optimization/index.html">优化总计划</a>
+<a href="../architecture-optimization/P0-1-cli-state-write-guard.html">P0-1 CLI state写操作</a>
+<a href="../architecture-optimization/P0-2-state-validation-hook.html">P0-2 状态校验hook</a>
+<a href="../architecture-optimization/P0-3-finish-task-enforce.html">P0-3 finish-task检查</a>
+<a href="../architecture-optimization/P1-1-identity-slim.html">P1-1 IDENTITY精简</a>
+<a href="../architecture-optimization/P1-2-lazy-load-protocol.html">P1-2 分级加载协议</a>
+<a href="../architecture-optimization/P1-3-shared-knowledge-extract.html">P1-3 共享知识外置</a>
+<a href="../architecture-optimization/P2-1-auto-git-commit.html">P2-1 自动git commit</a>
+<a href="../architecture-optimization/P2-2-state-change-history.html">P2-2 状态变更历史</a>
+<a href="../architecture-optimization/P2-3-health-snapshot.html">P2-3 快照与回退</a>
+<a href="../architecture-optimization/P3-1-cli-env-adaptive.html">P3-1 CLI环境自适应</a>
+<a href="../architecture-optimization/P3-2-hook-platform-branch.html">P3-2 hook平台分支</a>
+</div>
+<div class="nav-group open">演进历史</div>
+<div class="nav-children open">
+<a href="changelog.html">变更日志</a>
+<a href="roadmap.html" class="active">路线图</a>
+</div>
+</nav>
+<main>
+<div class="breadcrumb"><a href="../index.html">首页</a> / <span>evolution</span></div>
+<h1 id="路线图">路线图</h1>
+<blockquote>维弈阁的未来方向。</blockquote>
+<hr>
+<h2 id="近期进行中已排期">近期（进行中/已排期）</h2>
+<ul>
+<li><strong>架构优化 11 项</strong>：见 <a href="../architecture-optimization/index.html">优化总计划</a></li>
+<li>P0: CLI 全覆盖 state 写操作 + 状态校验 hook + finish-task 强制检查</li>
+<li>P1: IDENTITY 精简 + 分级加载 + 共享知识外置</li>
+<li>P2: 自动 git commit + 状态变更历史 + 快照回退</li>
+<li>P3: CLI 环境自适应 + hook 平台分支</li>
+</ul>
+<h2 id="中期">中期</h2>
+<ul>
+<li><strong>多项目并行调度</strong>：ops 调度器支持跨项目任务分发</li>
+<li><strong>记忆系统升级</strong>：教训自动升级为可执行规则的闭环</li>
+<li><strong>角色技能热加载</strong>：运行时动态注册新 Skill，不需重启</li>
+<li><strong>审查质量度量</strong>：Layer 1 评分数据聚合，发现审查偏差</li>
+</ul>
+<h2 id="远期">远期</h2>
+<ul>
+<li><strong>开源社区</strong>：支持用户自定义角色 + Skill 贡献</li>
+<li><strong>可视化编排</strong>：拖拽式任务链路编辑器</li>
+<li><strong>跨团队协作</strong>：多个维弈阁实例间的任务委托</li>
+</ul>
+</main>
+
+<script>
+document.querySelectorAll('.nav-group').forEach(g=>{
+  g.addEventListener('click',()=>{
+    g.classList.toggle('open');
+    const c=g.nextElementSibling;
+    if(c&&c.classList.contains('nav-children'))c.classList.toggle('open');
+  });
+});
+// 默认展开当前页所在分组
+document.querySelectorAll('.nav-children').forEach(c=>{
+  if(c.querySelector('a.active'))c.classList.add('open');
+  const g=c.previousElementSibling;
+  if(g&&c.classList.contains('open'))g.classList.add('open');
+});
+</script>
+
+</body>
+</html>

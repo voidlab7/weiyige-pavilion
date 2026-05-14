@@ -56,7 +56,7 @@ GATES_FILES=("gate-01-ideation.md" "gate-02-requirement.md" "gate-03-design.md" 
 
 RULES_FILES=("rules-global.md" "review-scoring.md" "README.md")
 
-SKILLS_DIRS=("artifact-review" "knowledge-distillation" "micropen")
+SKILLS_DIRS=("artifact-review" "knowledge-distillation" "micropen" "weekly-synthesis")
 
 # ---------- 工具 → 配置文件映射 ----------
 get_config_file() {
@@ -592,6 +592,38 @@ install_full_mode() {
   install_config_file
 
   install_cb_agents
+
+  # 安装 CODEBUDDY.md（CodeBuddy 路由入口）
+  echo ""
+  echo -e "${YELLOW}▶ 安装 CODEBUDDY.md ...${NC}"
+  if [ -f "$PAVILION_DIR/CODEBUDDY.md" ]; then
+    cp "$PAVILION_DIR/CODEBUDDY.md" "$TARGET_DIR/CODEBUDDY.md"
+  else
+    fetch_file "CODEBUDDY.md" "$TARGET_DIR/CODEBUDDY.md" 2>/dev/null || true
+  fi
+  if [ -f "$TARGET_DIR/CODEBUDDY.md" ]; then
+    echo -e "  ${GREEN}✅ CODEBUDDY.md${NC}"
+  else
+    echo -e "  ${YELLOW}⚠️  CODEBUDDY.md 安装失败${NC}"
+  fi
+
+  # 安装 .codebuddy/rules/（always-on 规则）
+  echo ""
+  echo -e "${YELLOW}▶ 安装 CodeBuddy Rules ...${NC}"
+  local rules_src="$PAVILION_DIR/.codebuddy/rules/weiyige-core/RULE.mdc"
+  local rules_dest="$TARGET_DIR/.codebuddy/rules/weiyige-core/RULE.mdc"
+  mkdir -p "$(dirname "$rules_dest")"
+  if [ -f "$rules_src" ]; then
+    cp "$rules_src" "$rules_dest"
+  else
+    fetch_file ".codebuddy/rules/weiyige-core/RULE.mdc" "$rules_dest" 2>/dev/null || true
+  fi
+  if [ -f "$rules_dest" ]; then
+    echo -e "  ${GREEN}✅ .codebuddy/rules/weiyige-core/RULE.mdc${NC}"
+  else
+    echo -e "  ${YELLOW}⚠️  Rules 安装失败${NC}"
+  fi
+
   setup_gitignore
   register_project
 
@@ -660,6 +692,37 @@ install_update_mode() {
   echo ""
   echo -e "${YELLOW}▶ 更新配置文件中的维弈阁段落 ...${NC}"
   update_config_section
+
+  # 更新 CODEBUDDY.md
+  echo ""
+  echo -e "${YELLOW}▶ 更新 CODEBUDDY.md ...${NC}"
+  if [ -f "$PAVILION_DIR/CODEBUDDY.md" ]; then
+    cp "$PAVILION_DIR/CODEBUDDY.md" "$TARGET_DIR/CODEBUDDY.md"
+    echo -e "  ${GREEN}✅ CODEBUDDY.md 已更新${NC}"
+  else
+    if fetch_file "CODEBUDDY.md" "$TARGET_DIR/CODEBUDDY.md" 2>/dev/null; then
+      echo -e "  ${GREEN}✅ CODEBUDDY.md 已更新${NC}"
+    else
+      echo -e "  ${YELLOW}⚠️  CODEBUDDY.md 更新失败${NC}"
+    fi
+  fi
+
+  # 更新 .codebuddy/rules/
+  echo ""
+  echo -e "${YELLOW}▶ 更新 CodeBuddy Rules ...${NC}"
+  local rules_src="$PAVILION_DIR/.codebuddy/rules/weiyige-core/RULE.mdc"
+  local rules_dest="$TARGET_DIR/.codebuddy/rules/weiyige-core/RULE.mdc"
+  mkdir -p "$(dirname "$rules_dest")"
+  if [ -f "$rules_src" ]; then
+    cp "$rules_src" "$rules_dest"
+    echo -e "  ${GREEN}✅ .codebuddy/rules/weiyige-core/RULE.mdc${NC}"
+  else
+    if fetch_file ".codebuddy/rules/weiyige-core/RULE.mdc" "$rules_dest" 2>/dev/null; then
+      echo -e "  ${GREEN}✅ Rules 已更新${NC}"
+    else
+      echo -e "  ${YELLOW}⚠️  Rules 更新失败${NC}"
+    fi
+  fi
 
   # 确保项目已注册
   register_project

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>文件地图 — 维弈阁知识库</title>
+<style>
+:root{
+  --bg:#fafbfc; --surface:#fff; --border:#e1e4e8; --border2:#d0d7de;
+  --text:#24292f; --text2:#57606a; --text3:#8b949e;
+  --accent:#0969da; --accent-bg:#ddf4ff; --accent2:#1a7f37; --accent2-bg:#dafbe1;
+  --warn:#9a6700; --warn-bg:#fff8c5; --err:#cf222e; --err-bg:#ffebe9;
+  --code-bg:#f6f8fa; --nav-w:260px; --radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+
+/* 侧边导航 */
+nav{width:var(--nav-w);background:var(--surface);border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:0 0 24px;z-index:10}
+nav .logo{padding:20px 20px 16px;font-size:17px;font-weight:700;color:var(--accent);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+nav .logo svg{width:20px;height:20px}
+nav a{display:block;padding:5px 16px 5px 24px;color:var(--text2);text-decoration:none;
+  font-size:13px;border-left:3px solid transparent;transition:all .12s}
+nav a:hover{color:var(--text);background:var(--accent-bg)}
+nav a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-bg);font-weight:600}
+.nav-group{padding:18px 16px 4px;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.6px;cursor:pointer;user-select:none}
+.nav-children{display:none}
+.nav-children.open,.nav-group.open+.nav-children{display:block}
+
+/* 主内容 */
+main{margin-left:var(--nav-w);flex:1;padding:36px 56px 60px;max-width:880px}
+h1{font-size:26px;font-weight:700;margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+h2{font-size:20px;font-weight:600;margin:32px 0 10px;color:var(--text)}
+h3{font-size:16px;font-weight:600;margin:24px 0 8px}
+h4{font-size:14px;font-weight:600;margin:20px 0 6px;color:var(--text2)}
+p{margin:6px 0 10px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid var(--border);margin:24px 0}
+blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:12px 0;
+  background:var(--accent-bg);color:var(--text2);border-radius:0 var(--radius) var(--radius) 0;font-size:14px}
+code{background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;
+  font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;color:var(--text)}
+pre{background:var(--code-bg);padding:16px;border-radius:var(--radius);margin:12px 0;
+  overflow-x:auto;border:1px solid var(--border);line-height:1.5}
+pre code{background:none;padding:0;font-size:13px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+th{background:var(--code-bg);text-align:left;padding:10px 12px;border:1px solid var(--border);
+  font-weight:600;color:var(--text2);font-size:13px}
+td{padding:8px 12px;border:1px solid var(--border);font-size:13px}
+tr:nth-child(even) td{background:var(--code-bg)}
+tr:hover td{background:var(--accent-bg)}
+ul,ol{padding-left:22px;margin:6px 0}
+li{margin:3px 0;font-size:14px}
+ul.check{list-style:none;padding-left:4px}
+ul.check li{padding:2px 0}
+ul.check input{margin-right:6px}
+strong{color:var(--text);font-weight:600}
+
+/* 面包屑 */
+.breadcrumb{font-size:12px;color:var(--text3);margin-bottom:16px}
+.breadcrumb a{color:var(--text2)}
+
+/* 响应式 */
+@media(max-width:768px){nav{display:none}main{margin-left:0;padding:20px 16px}}
+
+/* 导航折叠交互 */
+</style>
+</head>
+<body>
+<nav>
+<div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 维弈阁 Wiki</div>
+<a href="../index.html">🏠 首页</a>
+<div class="nav-group open">概览</div>
+<div class="nav-children open">
+<a href="what-is-weiyige.html">维弈阁是什么</a>
+<a href="architecture.html">整体架构</a>
+<a href="glossary.html">术语表</a>
+<a href="project-map.html" class="active">文件地图</a>
+</div>
+<div class="nav-group">角色手册</div>
+<div class="nav-children">
+<a href="../agents/agent-catalog.html">角色一览</a>
+<a href="../agents/agent-design-principles.html">设计原则</a>
+</div>
+<div class="nav-group">协议解读</div>
+<div class="nav-children">
+<a href="../protocols/loading-protocol.html">加载协议</a>
+<a href="../protocols/handoff-protocol.html">交接机制</a>
+<a href="../protocols/gate-system.html">门禁系统</a>
+<a href="../protocols/state-management.html">状态管理</a>
+</div>
+<div class="nav-group">CLI 工具</div>
+<div class="nav-children">
+<a href="../cli/cli-reference.html">命令手册</a>
+<a href="../cli/cli-architecture.html">CLI 架构</a>
+<a href="../cli/cli-changelog.html">变更日志</a>
+</div>
+<div class="nav-group">运维中心</div>
+<div class="nav-children">
+<a href="../ops/ops-overview.html">ops 概览</a>
+<a href="../ops/dashboard.html">Dashboard</a>
+<a href="../ops/scheduler.html">调度器</a>
+<a href="../ops/deployment.html">部署同步</a>
+</div>
+<div class="nav-group">架构决策</div>
+<div class="nav-children">
+<a href="../decisions/ADR-template.html">ADR 模板</a>
+<a href="../decisions/ADR-001-cli-over-markdown.html">ADR-001 CLI替代Markdown</a>
+<a href="../decisions/ADR-002-single-source.html">ADR-002 单一真相源</a>
+<a href="../decisions/ADR-003-two-layer-gate.html">ADR-003 两层门禁</a>
+<a href="../decisions/ADR-004-codebuddy-entry.html">ADR-004 CodeBuddy双入口</a>
+</div>
+<div class="nav-group">经验教训</div>
+<div class="nav-children">
+<a href="../lessons/LLM遗忘bug.html">LLM 遗忘 bug</a>
+<a href="../lessons/finish-task-blocking.html">finish-task 阻塞</a>
+<a href="../lessons/skipped-phase-display.html">skipped 显示 bug</a>
+<a href="../lessons/dogfooding-lesson.html">Dogfooding 教训</a>
+</div>
+<div class="nav-group">架构优化</div>
+<div class="nav-children">
+<a href="../architecture-optimization/index.html">优化总计划</a>
+<a href="../architecture-optimization/P0-1-cli-state-write-guard.html">P0-1 CLI state写操作</a>
+<a href="../architecture-optimization/P0-2-state-validation-hook.html">P0-2 状态校验hook</a>
+<a href="../architecture-optimization/P0-3-finish-task-enforce.html">P0-3 finish-task检查</a>
+<a href="../architecture-optimization/P1-1-identity-slim.html">P1-1 IDENTITY精简</a>
+<a href="../architecture-optimization/P1-2-lazy-load-protocol.html">P1-2 分级加载协议</a>
+<a href="../architecture-optimization/P1-3-shared-knowledge-extract.html">P1-3 共享知识外置</a>
+<a href="../architecture-optimization/P2-1-auto-git-commit.html">P2-1 自动git commit</a>
+<a href="../architecture-optimization/P2-2-state-change-history.html">P2-2 状态变更历史</a>
+<a href="../architecture-optimization/P2-3-health-snapshot.html">P2-3 快照与回退</a>
+<a href="../architecture-optimization/P3-1-cli-env-adaptive.html">P3-1 CLI环境自适应</a>
+<a href="../architecture-optimization/P3-2-hook-platform-branch.html">P3-2 hook平台分支</a>
+</div>
+<div class="nav-group">演进历史</div>
+<div class="nav-children">
+<a href="../evolution/changelog.html">变更日志</a>
+<a href="../evolution/roadmap.html">路线图</a>
+</div>
+</nav>
+<main>
+<div class="breadcrumb"><a href="../index.html">首页</a> / <span>overview</span></div>
+<h1 id="文件地图">文件地图</h1>
+<blockquote>每个文件/目录是干什么的，快速定位。</blockquote>
+<hr>
+<h2 id="入口文件根目录">入口文件（根目录）</h2>
+<table><tr><th>文件</th><th>用途</th><th>谁读</th></tr>
+<tr><td><code>CLAUDE.md</code></td><td>Claude Code 路由中枢（228 行）</td><td>Claude Code 自动加载</td></tr>
+<tr><td><code>CODEBUDDY.md</code></td><td>CodeBuddy 路由中枢（68 行铁律）</td><td>CodeBuddy 自动加载</td></tr>
+<tr><td><code>AGENTS.md</code></td><td>团队花名册（人看的索引）</td><td>人 / CodeBuddy fallback</td></tr>
+<tr><td><code>PROTOCOL.md</code></td><td>协作协议（21KB，完整版）</td><td>AI 按需读取</td></tr>
+<tr><td><code>README.md</code></td><td>GitHub 首页展示</td><td>人</td></tr>
+<tr><td><code>QUICKSTART.md</code></td><td>5 分钟快速入门</td><td>人 / AI</td></tr>
+<tr><td><code>MEMORY.md</code></td><td>记忆系统规范</td><td>AI</td></tr>
+<tr><td><code>TODO.md</code></td><td>全局待办事项</td><td>人 / AI</td></tr></table>
+<h2 id="weiyige核心配置唯一真相源">.weiyige/（核心配置，唯一真相源）</h2>
+<table><tr><th>文件</th><th>用途</th></tr>
+<tr><td><code>SHARED.md</code></td><td>跨角色共享知识（CLI 规范、Git 规范、自检清单）</td></tr>
+<tr><td><code>ROUTER.md</code></td><td>完整路由规则（意图分类、决策树、模式选择）</td></tr>
+<tr><td><code>LOADER.md</code></td><td>分级加载协议（L0/L1/L2）</td></tr>
+<tr><td><code>PROTOCOL.md</code></td><td>协作协议镜像</td></tr>
+<tr><td><code>MEMORY.md</code></td><td>记忆规范镜像</td></tr>
+<tr><td><code>registry.json</code></td><td>项目注册中心（14 个项目路径）</td></tr>
+<tr><td><code>todos.json</code></td><td>当前项目 TODO 数据</td></tr></table>
+<h2 id="weiyige-下的子目录">.weiyige/ 下的子目录</h2>
+<table><tr><th>目录</th><th>用途</th></tr>
+<tr><td><code>CEO_锋/</code> ~ <code>执事_启/</code></td><td>13 个角色配置（IDENTITY.md + SOUL.md + SKILLS.md + memory/）</td></tr>
+<tr><td><code>gates/</code></td><td>6 个阶段门禁（gate-01 ~ gate-06）+ 两层门禁说明</td></tr>
+<tr><td><code>rules/</code></td><td>全局规则（rules-global.md）+ 审查评分（review-scoring.md）</td></tr>
+<tr><td><code>skills/</code></td><td>4 个共享技能（artifact-review / knowledge-distillation / micropen / weekly-synthesis）</td></tr></table>
+<h2 id="角色目录根级13-个">角色目录（根级，13 个）</h2>
+<p>每个角色目录的标准结构：</p>
+<pre><code class="">
+{角色}/
+├── IDENTITY.md    ← 身份卡片（&lt; 500 token，L0 自动加载）
+├── SOUL.md        ← 方法论（L1 按需加载）
+├── SKILLS.md      ← 技能卡片清单
+├── memory/        ← 运行时记忆（各项目独立，不同步）
+├── skills/        ← 专属技能文件（部分角色）
+└── rules/         ← 可执行规则（部分角色）
+</code></pre>
+<p>特殊角色文件：</p>
+<table><tr><th>角色</th><th>额外文件</th></tr>
+<tr><td>执事_启</td><td><code>start.md</code>（启动协议）、<code>exception-matrix.md</code>（异常预案）、<code>state-template.json</code></td></tr>
+<tr><td>PM_枢</td><td><code>skills/prd-template.md</code></td></tr>
+<tr><td>内容_辞</td><td><code>skills/de-ai-ify.md</code>、<code>skills/humanizer.md</code>、<code>skills/copywriting.md</code></td></tr></table>
+<h2 id="codebuddycodebuddy-平台专用">.codebuddy/（CodeBuddy 平台专用）</h2>
+<table><tr><th>路径</th><th>用途</th></tr>
+<tr><td><code>agents/*.md</code></td><td>14 个 Agent 定义（触发时加载）</td></tr>
+<tr><td><code>rules/weiyige-core/RULE.mdc</code></td><td>铁律规则（<code>alwaysApply: true</code>，每次会话注入）</td></tr>
+<tr><td><code>skills/</code></td><td>4 个技能定义</td></tr></table>
+<h2 id="gates门禁系统">gates/（门禁系统）</h2>
+<table><tr><th>文件</th><th>阶段</th></tr>
+<tr><td><code>gate-01-ideation.md</code></td><td>构思阶段退出检查</td></tr>
+<tr><td><code>gate-02-requirement.md</code></td><td>需求阶段退出检查</td></tr>
+<tr><td><code>gate-03-design.md</code></td><td>设计阶段退出检查</td></tr>
+<tr><td><code>gate-04-development.md</code></td><td>开发阶段退出检查</td></tr>
+<tr><td><code>gate-05-testing.md</code></td><td>测试阶段退出检查</td></tr>
+<tr><td><code>gate-06-release.md</code></td><td>发布阶段退出检查</td></tr>
+<tr><td><code>two-layer-gate.md</code></td><td>两层门禁机制说明</td></tr>
+<tr><td><code>review-reminder.md</code></td><td>审核入口强制指令</td></tr></table>
+<h2 id="ai-workspace运行时任务空间">ai-workspace/（运行时任务空间）</h2>
+<pre><code class="">
+ai-workspace/
+├── project-status.json    ← 项目级状态（ops dashboard 读取）
+├── running/               ← 运行中任务 lock 文件
+├── queue/                 ← 待执行任务 yaml
+├── done/                  ← 已完成任务归档
+├── blocked/               ← 阻塞任务
+└── {task_id}/             ← 具体任务目录
+    ├── state.json         ← 任务状态
+    ├── progress-board.md  ← 进度看板
+    ├── handoff-log.jsonl  ← 交接日志
+    ├── history/           ← 状态变更历史
+    └── artifacts/01~06/   ← 各阶段产物
+</code></pre>
+<h2 id="其他目录">其他目录</h2>
+<table><tr><th>目录</th><th>用途</th></tr>
+<tr><td><code>docs/</code></td><td>知识库（你正在看的）</td></tr>
+<tr><td><code>设计方案/</code></td><td>历史设计文档（ops v1/v2 设计）</td></tr>
+<tr><td><code>成长日记/</code></td><td>从 0 到 1 的进化记录</td></tr>
+<tr><td><code>examples/</code></td><td>使用示例（新项目完整流程等）</td></tr>
+<tr><td><code>agents_for_codebuddy/</code></td><td>CodeBuddy Agent 源文件</td></tr>
+<tr><td><code>install.sh</code> / <code>install.ps1</code></td><td>一键安装脚本（macOS / Windows）</td></tr>
+<tr><td><code>_write_dashboard.py</code></td><td>GitHub Pages 仪表盘生成器</td></tr></table>
+</main>
+
+<script>
+document.querySelectorAll('.nav-group').forEach(g=>{
+  g.addEventListener('click',()=>{
+    g.classList.toggle('open');
+    const c=g.nextElementSibling;
+    if(c&&c.classList.contains('nav-children'))c.classList.toggle('open');
+  });
+});
+// 默认展开当前页所在分组
+document.querySelectorAll('.nav-children').forEach(c=>{
+  if(c.querySelector('a.active'))c.classList.add('open');
+  const g=c.previousElementSibling;
+  if(g&&c.classList.contains('open'))g.classList.add('open');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>交接机制解读 — 维弈阁知识库</title>
+<style>
+:root{
+  --bg:#fafbfc; --surface:#fff; --border:#e1e4e8; --border2:#d0d7de;
+  --text:#24292f; --text2:#57606a; --text3:#8b949e;
+  --accent:#0969da; --accent-bg:#ddf4ff; --accent2:#1a7f37; --accent2-bg:#dafbe1;
+  --warn:#9a6700; --warn-bg:#fff8c5; --err:#cf222e; --err-bg:#ffebe9;
+  --code-bg:#f6f8fa; --nav-w:260px; --radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+
+/* 侧边导航 */
+nav{width:var(--nav-w);background:var(--surface);border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:0 0 24px;z-index:10}
+nav .logo{padding:20px 20px 16px;font-size:17px;font-weight:700;color:var(--accent);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+nav .logo svg{width:20px;height:20px}
+nav a{display:block;padding:5px 16px 5px 24px;color:var(--text2);text-decoration:none;
+  font-size:13px;border-left:3px solid transparent;transition:all .12s}
+nav a:hover{color:var(--text);background:var(--accent-bg)}
+nav a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-bg);font-weight:600}
+.nav-group{padding:18px 16px 4px;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.6px;cursor:pointer;user-select:none}
+.nav-children{display:none}
+.nav-children.open,.nav-group.open+.nav-children{display:block}
+
+/* 主内容 */
+main{margin-left:var(--nav-w);flex:1;padding:36px 56px 60px;max-width:880px}
+h1{font-size:26px;font-weight:700;margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+h2{font-size:20px;font-weight:600;margin:32px 0 10px;color:var(--text)}
+h3{font-size:16px;font-weight:600;margin:24px 0 8px}
+h4{font-size:14px;font-weight:600;margin:20px 0 6px;color:var(--text2)}
+p{margin:6px 0 10px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid var(--border);margin:24px 0}
+blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:12px 0;
+  background:var(--accent-bg);color:var(--text2);border-radius:0 var(--radius) var(--radius) 0;font-size:14px}
+code{background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;
+  font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;color:var(--text)}
+pre{background:var(--code-bg);padding:16px;border-radius:var(--radius);margin:12px 0;
+  overflow-x:auto;border:1px solid var(--border);line-height:1.5}
+pre code{background:none;padding:0;font-size:13px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+th{background:var(--code-bg);text-align:left;padding:10px 12px;border:1px solid var(--border);
+  font-weight:600;color:var(--text2);font-size:13px}
+td{padding:8px 12px;border:1px solid var(--border);font-size:13px}
+tr:nth-child(even) td{background:var(--code-bg)}
+tr:hover td{background:var(--accent-bg)}
+ul,ol{padding-left:22px;margin:6px 0}
+li{margin:3px 0;font-size:14px}
+ul.check{list-style:none;padding-left:4px}
+ul.check li{padding:2px 0}
+ul.check input{margin-right:6px}
+strong{color:var(--text);font-weight:600}
+
+/* 面包屑 */
+.breadcrumb{font-size:12px;color:var(--text3);margin-bottom:16px}
+.breadcrumb a{color:var(--text2)}
+
+/* 响应式 */
+@media(max-width:768px){nav{display:none}main{margin-left:0;padding:20px 16px}}
+
+/* 导航折叠交互 */
+</style>
+</head>
+<body>
+<nav>
+<div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 维弈阁 Wiki</div>
+<a href="../index.html">🏠 首页</a>
+<div class="nav-group">概览</div>
+<div class="nav-children">
+<a href="../overview/what-is-weiyige.html">维弈阁是什么</a>
+<a href="../overview/architecture.html">整体架构</a>
+<a href="../overview/glossary.html">术语表</a>
+<a href="../overview/project-map.html">文件地图</a>
+</div>
+<div class="nav-group">角色手册</div>
+<div class="nav-children">
+<a href="../agents/agent-catalog.html">角色一览</a>
+<a href="../agents/agent-design-principles.html">设计原则</a>
+</div>
+<div class="nav-group open">协议解读</div>
+<div class="nav-children open">
+<a href="loading-protocol.html">加载协议</a>
+<a href="handoff-protocol.html" class="active">交接机制</a>
+<a href="gate-system.html">门禁系统</a>
+<a href="state-management.html">状态管理</a>
+</div>
+<div class="nav-group">CLI 工具</div>
+<div class="nav-children">
+<a href="../cli/cli-reference.html">命令手册</a>
+<a href="../cli/cli-architecture.html">CLI 架构</a>
+<a href="../cli/cli-changelog.html">变更日志</a>
+</div>
+<div class="nav-group">运维中心</div>
+<div class="nav-children">
+<a href="../ops/ops-overview.html">ops 概览</a>
+<a href="../ops/dashboard.html">Dashboard</a>
+<a href="../ops/scheduler.html">调度器</a>
+<a href="../ops/deployment.html">部署同步</a>
+</div>
+<div class="nav-group">架构决策</div>
+<div class="nav-children">
+<a href="../decisions/ADR-template.html">ADR 模板</a>
+<a href="../decisions/ADR-001-cli-over-markdown.html">ADR-001 CLI替代Markdown</a>
+<a href="../decisions/ADR-002-single-source.html">ADR-002 单一真相源</a>
+<a href="../decisions/ADR-003-two-layer-gate.html">ADR-003 两层门禁</a>
+<a href="../decisions/ADR-004-codebuddy-entry.html">ADR-004 CodeBuddy双入口</a>
+</div>
+<div class="nav-group">经验教训</div>
+<div class="nav-children">
+<a href="../lessons/LLM遗忘bug.html">LLM 遗忘 bug</a>
+<a href="../lessons/finish-task-blocking.html">finish-task 阻塞</a>
+<a href="../lessons/skipped-phase-display.html">skipped 显示 bug</a>
+<a href="../lessons/dogfooding-lesson.html">Dogfooding 教训</a>
+</div>
+<div class="nav-group">架构优化</div>
+<div class="nav-children">
+<a href="../architecture-optimization/index.html">优化总计划</a>
+<a href="../architecture-optimization/P0-1-cli-state-write-guard.html">P0-1 CLI state写操作</a>
+<a href="../architecture-optimization/P0-2-state-validation-hook.html">P0-2 状态校验hook</a>
+<a href="../architecture-optimization/P0-3-finish-task-enforce.html">P0-3 finish-task检查</a>
+<a href="../architecture-optimization/P1-1-identity-slim.html">P1-1 IDENTITY精简</a>
+<a href="../architecture-optimization/P1-2-lazy-load-protocol.html">P1-2 分级加载协议</a>
+<a href="../architecture-optimization/P1-3-shared-knowledge-extract.html">P1-3 共享知识外置</a>
+<a href="../architecture-optimization/P2-1-auto-git-commit.html">P2-1 自动git commit</a>
+<a href="../architecture-optimization/P2-2-state-change-history.html">P2-2 状态变更历史</a>
+<a href="../architecture-optimization/P2-3-health-snapshot.html">P2-3 快照与回退</a>
+<a href="../architecture-optimization/P3-1-cli-env-adaptive.html">P3-1 CLI环境自适应</a>
+<a href="../architecture-optimization/P3-2-hook-platform-branch.html">P3-2 hook平台分支</a>
+</div>
+<div class="nav-group">演进历史</div>
+<div class="nav-children">
+<a href="../evolution/changelog.html">变更日志</a>
+<a href="../evolution/roadmap.html">路线图</a>
+</div>
+</nav>
+<main>
+<div class="breadcrumb"><a href="../index.html">首页</a> / <span>protocols</span></div>
+<h1 id="交接机制解读">交接机制解读</h1>
+<blockquote>为什么交接要这么做？协议本身在 <code>PROTOCOL.md §二</code>，这里是设计意图。</blockquote>
+<hr>
+<h2 id="解决的问题">解决的问题</h2>
+<p>Agent 之间传递信息时&quot;丢上下文&quot;——上游做了什么决策、产出了什么文件、有什么未解决问题，下游完全不知道。</p>
+<h2 id="三层交接保障">三层交接保障</h2>
+<h3 id="1-交接块handoff-block">1. 交接块（Handoff Block）</h3>
+<p>每个 Agent 完成工作后输出结构化交接块：</p>
+<pre><code class="">
+来源 → 阶段 → 产出类型 → 产物文件路径 → 状态 → 关键决策 → 开放问题 → 下游建议
+</code></pre>
+<p><strong>为什么不是自由文本</strong>：结构化格式让下游 Agent 可以精确提取需要的信息，不用从长文本中猜。</p>
+<h3 id="2-cli-handoff-命令">2. CLI handoff 命令</h3>
+<pre><code class="bash">
+weiyige-cli handoff &lt;task_id&gt; --from 铸 --to 鉴 --phase 04-development --artifact &lt;path&gt;
+</code></pre>
+<p>CLI 做三件事：</p>
+<ul>
+<li><strong>验证产物文件存在且非空</strong>（不存在则拒绝交接）</li>
+<li><strong>写 JSONL 日志</strong>（<code>handoff-log.jsonl</code>，可追溯）</li>
+<li><strong>更新状态 + 同步 ops</strong></li>
+</ul>
+<p><strong>为什么不靠 AI 自觉</strong>：AI 经常&quot;忘记&quot;输出交接块。CLI 强制——不调 handoff 命令，阶段就不流转。</p>
+<h3 id="3-产物落盘验证">3. 产物落盘验证</h3>
+<p>启在 spawn 下一个 Agent 前 <code>read_file</code> 验证上游产物可读。不可读则暂停。</p>
+<p><strong>为什么不信任 AI 说&quot;我已经写了&quot;</strong>：规则 W12——禁止不执行就声称&quot;检查通过&quot;。</p>
+<h2 id="交接日志格式">交接日志格式</h2>
+<p><code>handoff-log.jsonl</code>（追加写入，每行一条记录）：</p>
+<pre><code class="json">
+{&quot;timestamp&quot;:&quot;2026-05-14T10:30:00Z&quot;,&quot;from&quot;:&quot;铸&quot;,&quot;to&quot;:&quot;鉴&quot;,&quot;phase&quot;:&quot;04-development&quot;,&quot;artifact&quot;:&quot;artifacts/04-development/shift-left-report.md&quot;,&quot;status&quot;:&quot;pass&quot;,&quot;summary&quot;:&quot;左移检查全通过&quot;}
+</code></pre>
+<h2 id="信息不丢失四原则">信息不丢失四原则</h2>
+<ul>
+<li>交接块<strong>必填</strong></li>
+<li>STATUS.md <strong>必更新</strong></li>
+<li>决策<strong>必记录</strong></li>
+<li>开放问题<strong>必追踪</strong>（不允许&quot;静默丢失&quot;）</li>
+</ul>
+</main>
+
+<script>
+document.querySelectorAll('.nav-group').forEach(g=>{
+  g.addEventListener('click',()=>{
+    g.classList.toggle('open');
+    const c=g.nextElementSibling;
+    if(c&&c.classList.contains('nav-children'))c.classList.toggle('open');
+  });
+});
+// 默认展开当前页所在分组
+document.querySelectorAll('.nav-children').forEach(c=>{
+  if(c.querySelector('a.active'))c.classList.add('open');
+  const g=c.previousElementSibling;
+  if(g&&c.classList.contains('open'))g.classList.add('open');
+});
+</script>
+
+</body>
+</html>

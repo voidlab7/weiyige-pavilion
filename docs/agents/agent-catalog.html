@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>角色一览 — 维弈阁知识库</title>
+<style>
+:root{
+  --bg:#fafbfc; --surface:#fff; --border:#e1e4e8; --border2:#d0d7de;
+  --text:#24292f; --text2:#57606a; --text3:#8b949e;
+  --accent:#0969da; --accent-bg:#ddf4ff; --accent2:#1a7f37; --accent2-bg:#dafbe1;
+  --warn:#9a6700; --warn-bg:#fff8c5; --err:#cf222e; --err-bg:#ffebe9;
+  --code-bg:#f6f8fa; --nav-w:260px; --radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+
+/* 侧边导航 */
+nav{width:var(--nav-w);background:var(--surface);border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:0 0 24px;z-index:10}
+nav .logo{padding:20px 20px 16px;font-size:17px;font-weight:700;color:var(--accent);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+nav .logo svg{width:20px;height:20px}
+nav a{display:block;padding:5px 16px 5px 24px;color:var(--text2);text-decoration:none;
+  font-size:13px;border-left:3px solid transparent;transition:all .12s}
+nav a:hover{color:var(--text);background:var(--accent-bg)}
+nav a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-bg);font-weight:600}
+.nav-group{padding:18px 16px 4px;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.6px;cursor:pointer;user-select:none}
+.nav-children{display:none}
+.nav-children.open,.nav-group.open+.nav-children{display:block}
+
+/* 主内容 */
+main{margin-left:var(--nav-w);flex:1;padding:36px 56px 60px;max-width:880px}
+h1{font-size:26px;font-weight:700;margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+h2{font-size:20px;font-weight:600;margin:32px 0 10px;color:var(--text)}
+h3{font-size:16px;font-weight:600;margin:24px 0 8px}
+h4{font-size:14px;font-weight:600;margin:20px 0 6px;color:var(--text2)}
+p{margin:6px 0 10px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid var(--border);margin:24px 0}
+blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:12px 0;
+  background:var(--accent-bg);color:var(--text2);border-radius:0 var(--radius) var(--radius) 0;font-size:14px}
+code{background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;
+  font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;color:var(--text)}
+pre{background:var(--code-bg);padding:16px;border-radius:var(--radius);margin:12px 0;
+  overflow-x:auto;border:1px solid var(--border);line-height:1.5}
+pre code{background:none;padding:0;font-size:13px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+th{background:var(--code-bg);text-align:left;padding:10px 12px;border:1px solid var(--border);
+  font-weight:600;color:var(--text2);font-size:13px}
+td{padding:8px 12px;border:1px solid var(--border);font-size:13px}
+tr:nth-child(even) td{background:var(--code-bg)}
+tr:hover td{background:var(--accent-bg)}
+ul,ol{padding-left:22px;margin:6px 0}
+li{margin:3px 0;font-size:14px}
+ul.check{list-style:none;padding-left:4px}
+ul.check li{padding:2px 0}
+ul.check input{margin-right:6px}
+strong{color:var(--text);font-weight:600}
+
+/* 面包屑 */
+.breadcrumb{font-size:12px;color:var(--text3);margin-bottom:16px}
+.breadcrumb a{color:var(--text2)}
+
+/* 响应式 */
+@media(max-width:768px){nav{display:none}main{margin-left:0;padding:20px 16px}}
+
+/* 导航折叠交互 */
+</style>
+</head>
+<body>
+<nav>
+<div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 维弈阁 Wiki</div>
+<a href="../index.html">🏠 首页</a>
+<div class="nav-group">概览</div>
+<div class="nav-children">
+<a href="../overview/what-is-weiyige.html">维弈阁是什么</a>
+<a href="../overview/architecture.html">整体架构</a>
+<a href="../overview/glossary.html">术语表</a>
+<a href="../overview/project-map.html">文件地图</a>
+</div>
+<div class="nav-group open">角色手册</div>
+<div class="nav-children open">
+<a href="agent-catalog.html" class="active">角色一览</a>
+<a href="agent-design-principles.html">设计原则</a>
+</div>
+<div class="nav-group">协议解读</div>
+<div class="nav-children">
+<a href="../protocols/loading-protocol.html">加载协议</a>
+<a href="../protocols/handoff-protocol.html">交接机制</a>
+<a href="../protocols/gate-system.html">门禁系统</a>
+<a href="../protocols/state-management.html">状态管理</a>
+</div>
+<div class="nav-group">CLI 工具</div>
+<div class="nav-children">
+<a href="../cli/cli-reference.html">命令手册</a>
+<a href="../cli/cli-architecture.html">CLI 架构</a>
+<a href="../cli/cli-changelog.html">变更日志</a>
+</div>
+<div class="nav-group">运维中心</div>
+<div class="nav-children">
+<a href="../ops/ops-overview.html">ops 概览</a>
+<a href="../ops/dashboard.html">Dashboard</a>
+<a href="../ops/scheduler.html">调度器</a>
+<a href="../ops/deployment.html">部署同步</a>
+</div>
+<div class="nav-group">架构决策</div>
+<div class="nav-children">
+<a href="../decisions/ADR-template.html">ADR 模板</a>
+<a href="../decisions/ADR-001-cli-over-markdown.html">ADR-001 CLI替代Markdown</a>
+<a href="../decisions/ADR-002-single-source.html">ADR-002 单一真相源</a>
+<a href="../decisions/ADR-003-two-layer-gate.html">ADR-003 两层门禁</a>
+<a href="../decisions/ADR-004-codebuddy-entry.html">ADR-004 CodeBuddy双入口</a>
+</div>
+<div class="nav-group">经验教训</div>
+<div class="nav-children">
+<a href="../lessons/LLM遗忘bug.html">LLM 遗忘 bug</a>
+<a href="../lessons/finish-task-blocking.html">finish-task 阻塞</a>
+<a href="../lessons/skipped-phase-display.html">skipped 显示 bug</a>
+<a href="../lessons/dogfooding-lesson.html">Dogfooding 教训</a>
+</div>
+<div class="nav-group">架构优化</div>
+<div class="nav-children">
+<a href="../architecture-optimization/index.html">优化总计划</a>
+<a href="../architecture-optimization/P0-1-cli-state-write-guard.html">P0-1 CLI state写操作</a>
+<a href="../architecture-optimization/P0-2-state-validation-hook.html">P0-2 状态校验hook</a>
+<a href="../architecture-optimization/P0-3-finish-task-enforce.html">P0-3 finish-task检查</a>
+<a href="../architecture-optimization/P1-1-identity-slim.html">P1-1 IDENTITY精简</a>
+<a href="../architecture-optimization/P1-2-lazy-load-protocol.html">P1-2 分级加载协议</a>
+<a href="../architecture-optimization/P1-3-shared-knowledge-extract.html">P1-3 共享知识外置</a>
+<a href="../architecture-optimization/P2-1-auto-git-commit.html">P2-1 自动git commit</a>
+<a href="../architecture-optimization/P2-2-state-change-history.html">P2-2 状态变更历史</a>
+<a href="../architecture-optimization/P2-3-health-snapshot.html">P2-3 快照与回退</a>
+<a href="../architecture-optimization/P3-1-cli-env-adaptive.html">P3-1 CLI环境自适应</a>
+<a href="../architecture-optimization/P3-2-hook-platform-branch.html">P3-2 hook平台分支</a>
+</div>
+<div class="nav-group">演进历史</div>
+<div class="nav-children">
+<a href="../evolution/changelog.html">变更日志</a>
+<a href="../evolution/roadmap.html">路线图</a>
+</div>
+</nav>
+<main>
+<div class="breadcrumb"><a href="../index.html">首页</a> / <span>agents</span></div>
+<h1 id="角色一览">角色一览</h1>
+<blockquote>13 角色速查卡。详细方法论见各角色 <code>SOUL.md</code>，技能清单见 <code>SKILLS.md</code>。</blockquote>
+<hr>
+<h2 id="战略层">战略层</h2>
+<h3 id="锋ceo">锋·CEO</h3>
+<ul>
+<li><strong>一句话</strong>：方向对不对？该不该做？他拍板</li>
+<li><strong>快捷指令</strong>：<code>@锋</code> <code>@ceo</code></li>
+<li><strong>Skills (5)</strong>：战略审查 · 范围决策 · 不可逆决策审批 · 长期轨迹评估 · 优先级裁决</li>
+<li><strong>主 Owned</strong>：方向确认、资源分配、最终审批</li>
+<li><strong>权限</strong>：可 override 砺的否决（须记录理由）</li>
+</ul>
+<h3 id="砺合伙人">砺·合伙人</h3>
+<ul>
+<li><strong>一句话</strong>：专门唱反调的 YC 合伙人</li>
+<li><strong>快捷指令</strong>：<code>@砺</code> <code>@devil</code></li>
+<li><strong>Skills (9)</strong>：YC Office Hours v2 · 魔鬼代言人 · 前提挑战 · 替代方案生成 · 历史设计发现 · 景观校准 · 独立二评 · 视觉草图交接 · Spec Review</li>
+<li><strong>主 Owned</strong>：需求质疑、方案挑战</li>
+<li><strong>权限</strong>：一票否决权（仅限数据不足/假设未验证/ROI 不合理）</li>
+</ul>
+<h3 id="隐顾问">隐·顾问</h3>
+<ul>
+<li><strong>一句话</strong>：芒格式多元思维，深度分析找盲点</li>
+<li><strong>快捷指令</strong>：<code>@隐</code> <code>@advisor</code></li>
+<li><strong>Skills (6)</strong>：芒格多元思维 · 逆向思考 · 能力圈评估 · 历史案例映射 · 复利分析 · 独立二评</li>
+<li><strong>主 Owned</strong>：多角度深度分析、独立二评</li>
+</ul>
+<hr>
+<h2 id="执行层">执行层</h2>
+<h3 id="枢pm">枢·PM</h3>
+<ul>
+<li><strong>一句话</strong>：任务怎么拆？什么时候交？他盯节奏</li>
+<li><strong>快捷指令</strong>：<code>@枢</code> <code>@pm</code></li>
+<li><strong>Skills (5)</strong>：需求消歧义 · PRD 撰写 · 优先级排序 · 进度管理 · 产品三角审查</li>
+<li><strong>主 Owned</strong>：需求定义、PRD、排期</li>
+<li><strong>专属文件</strong>：<code>skills/prd-template.md</code></li>
+</ul>
+<h3 id="辞内容">辞·内容</h3>
+<ul>
+<li><strong>一句话</strong>：文案怎么写？AI 味去了吗？她润色</li>
+<li><strong>快捷指令</strong>：<code>@辞</code> <code>@content</code></li>
+<li><strong>Skills (6)</strong>：内容创作 · De-AI-ify · Humanizer · 选题策划 · 爆款复盘 · 平台适配</li>
+<li><strong>主 Owned</strong>：内容创作、文案润色</li>
+<li><strong>专属文件</strong>：<code>skills/de-ai-ify.md</code> · <code>skills/humanizer.md</code> · <code>skills/copywriting.md</code></li>
+</ul>
+<h3 id="寻探索">寻·探索</h3>
+<ul>
+<li><strong>一句话</strong>：热点在哪？趋势怎样？他侦察</li>
+<li><strong>快捷指令</strong>：<code>@寻</code> <code>@scout</code></li>
+<li><strong>Skills (8)</strong>：热点雷达 · 趋势研判 · 竞品监控 · AI 前沿追踪 · 学术文献分析 · 选题弹药供给 · 信号交叉验证 · 关联信号发现</li>
+<li><strong>主 Owned</strong>：信息探索、趋势研判</li>
+</ul>
+<hr>
+<h2 id="质量层">质量层</h2>
+<h3 id="矩架构">矩·架构</h3>
+<ul>
+<li><strong>一句话</strong>：系统怎么设计？技术债多少？他审</li>
+<li><strong>快捷指令</strong>：<code>@矩</code> <code>@arch</code></li>
+<li><strong>Skills (5)</strong>：工程审查 · 架构决策 · 性能基线 · 技术债评估 · 驾驭性评估</li>
+<li><strong>主 Owned</strong>：技术方案、架构审查、工程审查</li>
+<li><strong>不做</strong>：不亲自写业务代码（那是铸的事）</li>
+</ul>
+<h3 id="铸开发">铸·开发</h3>
+<ul>
+<li><strong>一句话</strong>：把蓝图变成可运行代码</li>
+<li><strong>快捷指令</strong>：<code>@铸</code> <code>@dev</code> <code>@forge</code></li>
+<li><strong>Skills (5)</strong>：代码实现 · 左移检查 · Bug 修复 · 安全修复 · 现有代码复用</li>
+<li><strong>主 Owned</strong>：代码实现、左移检查（Lint/类型/快速测试）</li>
+<li><strong>不做</strong>：不做架构决策（那是矩的事）</li>
+</ul>
+<h3 id="绘设计">绘·设计</h3>
+<ul>
+<li><strong>一句话</strong>：体验行不行？设计规范了吗？她看</li>
+<li><strong>快捷指令</strong>：<code>@绘</code> <code>@design</code></li>
+<li><strong>Skills (6)</strong>：设计系统构建 · 设计计划评审 · 设计审计修复 · AI 烂俗检测 · 竞品设计综合 · 低保真视觉草图</li>
+<li><strong>主 Owned</strong>：UI/UX 设计、设计审查</li>
+</ul>
+<h3 id="鉴qa">鉴·QA</h3>
+<ul>
+<li><strong>一句话</strong>：哪里有 bug？用例覆盖了吗？他查</li>
+<li><strong>快捷指令</strong>：<code>@鉴</code> <code>@qa</code></li>
+<li><strong>Skills (5)</strong>：浏览器功能测试 · Bug 修复 · 金丝雀监控 · 回归测试 · 7 维度健康评分</li>
+<li><strong>主 Owned</strong>：功能测试、回归验证</li>
+</ul>
+<h3 id="盾安全">盾·安全</h3>
+<ul>
+<li><strong>一句话</strong>：有没有漏洞？威胁模型建了吗？他堵</li>
+<li><strong>快捷指令</strong>：<code>@盾</code> <code>@sec</code></li>
+<li><strong>Skills (5)</strong>：安全审计 · 威胁建模 · 秘密考古 · 依赖供应链审计 · AI 安全专项</li>
+<li><strong>主 Owned</strong>：安全审计、威胁建模</li>
+</ul>
+<hr>
+<h2 id="运营层">运营层</h2>
+<h3 id="算财务">算·财务</h3>
+<ul>
+<li><strong>一句话</strong>：划不划算？ROI 多少？她算</li>
+<li><strong>快捷指令</strong>：<code>@算</code> <code>@cfo</code></li>
+<li><strong>Skills (5)</strong>：成本估算 · ROI 分析 · 预算管理 · 模型选型优化 · 月度财务报告</li>
+<li><strong>主 Owned</strong>：成本分析、预算管理</li>
+</ul>
+<hr>
+<h2 id="基础设施">基础设施</h2>
+<h3 id="启执事">启·执事</h3>
+<ul>
+<li><strong>一句话</strong>：不干活，只调度——自动编排全链路</li>
+<li><strong>快捷指令</strong>：<code>@启</code> <code>@steward</code> <code>@auto</code> <code>@team</code></li>
+<li><strong>三种模式</strong>：auto（全自动）/ confirm（阶段暂停）/ step（每步暂停）</li>
+<li><strong>主 Owned</strong>：任务编排、状态管理、门禁检查、交接协调</li>
+<li><strong>预设链路</strong>：新功能 <code>砺→锋→枢→矩+绘→铸→鉴→盾</code></li>
+</ul>
+<hr>
+<h2 id="协作链路速查">协作链路速查</h2>
+<table><tr><th>任务类型</th><th>链路</th></tr>
+<tr><td>新功能开发</td><td>砺→锋→枢→矩+绘(并行)→铸→鉴→盾</td></tr>
+<tr><td>Bug 修复</td><td>铸→鉴</td></tr>
+<tr><td>设计审查</td><td>绘→矩→鉴</td></tr>
+<tr><td>内容创作</td><td>辞→锋</td></tr>
+<tr><td>安全审计</td><td>盾→鉴</td></tr>
+<tr><td>全链路</td><td>@启 自动编排</td></tr></table>
+</main>
+
+<script>
+document.querySelectorAll('.nav-group').forEach(g=>{
+  g.addEventListener('click',()=>{
+    g.classList.toggle('open');
+    const c=g.nextElementSibling;
+    if(c&&c.classList.contains('nav-children'))c.classList.toggle('open');
+  });
+});
+// 默认展开当前页所在分组
+document.querySelectorAll('.nav-children').forEach(c=>{
+  if(c.querySelector('a.active'))c.classList.add('open');
+  const g=c.previousElementSibling;
+  if(g&&c.classList.contains('open'))g.classList.add('open');
+});
+</script>
+
+</body>
+</html>

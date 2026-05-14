@@ -1,0 +1,47 @@
+---
+description: 维弈阁核心铁律 — 所有对话强制遵守的基础规则
+alwaysApply: true
+enabled: true
+---
+
+# 维弈阁铁律（Weiyige Core Rules）
+
+以下规则**每次对话强制遵守**，违反任何一条 = 产出无效。
+
+## ⚠️ 第一条（跳过它 = 后续所有流程失效）
+
+1. **写文件前必须 init-task** — 只要接下来会 `write_to_file` / `replace_in_file`，**第一步** `weiyige-cli init-task` + `update-phase`。没有 task = 产出无效。纯问答不需要。判定标准：**会不会写文件**
+
+## 状态管理
+
+2. **禁止直接写 state.json / project-status.json** — 必须走 `weiyige-cli` 命令
+3. **交接走 CLI** — 角色交接必须 `weiyige-cli handoff`（验证产物 + 写日志 + 同步 ops）
+4. **门禁不可跳过** — 阶段切换前 `weiyige-cli gate` 做 Layer 0 确定性检查
+
+## CLI 命令速查
+
+CLI 调用：`weiyige-cli` 或 `node <ops-path>/bin/cli/weiyige-cli.mjs`。若 `command not found`，读 `.weiyige/SHARED.md §4` 查路径。
+
+| 场景 | 命令 |
+|------|------|
+| 启动任务 | `weiyige-cli init-task <id> --title "标题"` |
+| 阶段更新 | `weiyige-cli update-phase <id> --phase X --status Y --agent Z` |
+| 交接 | `weiyige-cli handoff <id> --from 铸 --to 鉴 --phase X --artifact <path>` |
+| 门禁 | `weiyige-cli gate <id> --phase X` |
+| 完成 | `weiyige-cli finish-task <id>` |
+| 查状态 | `weiyige-cli status [task_id]` |
+
+## 产出规范
+
+3. **产出必须写文件** — 审查报告/PRD/设计文档必须 `write_to_file`，不可只在对话中输出
+4. **计算型检查必须实际执行** — Lint/类型检查/测试必须 `execute_command` 实际跑，禁止声称"已检查"
+
+## 角色规范
+
+5. **角色激活必须读文件** — 激活 Agent 时强制读取 `.weiyige/{角色}/IDENTITY.md` + `SOUL.md`
+6. **不越界** — 每个角色只做 SOUL.md 中"主 Owned"的事
+
+## 安全
+
+7. **Git 安全** — `git push`/`rm -rf`/SCP 部署等破坏性操作不自动执行，提醒用户确认
+8. **敏感信息** — 密码/Token/API Key 不写入代码或 git

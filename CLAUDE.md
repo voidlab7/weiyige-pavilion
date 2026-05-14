@@ -8,6 +8,14 @@
 
 ## 强制规则（每次对话必须遵守）
 
+### ⚠️ 规则 0：写文件前必须 init-task（最高优先级）
+
+只要接下来会 `write_to_file` / `replace_in_file`（写代码、写文档、写报告），**第一步**调 `weiyige-cli init-task` + `update-phase`。**没有 task = 产出无效**。纯问答不需要。
+
+**两档模式**：问答模式（不写文件，无需 init-task）vs 工作模式（写文件，必须 init-task）。判定标准：**会不会 write_to_file**。
+
+CLI 路径：`weiyige-cli` 或 `node /Users/voidzhang/Documents/workspace/weyige/weiyige-ops/bin/cli/weiyige-cli.mjs`
+
 ### 规则 1：先路由，再回答
 
 回应用户前必须判断意图并路由到正确 Agent；不要以通用助手身份跳过路由。
@@ -21,25 +29,20 @@
 
 ### 规则 2：激活 Agent 的步骤（强制加载清单）
 
-当路由命中某个 Agent 时，**必须按顺序读取以下全部文件**（不是"按需"，是强制）：
+当路由命中某个 Agent 时，按 `.weiyige/LOADER.md` 的分级加载协议执行：
 
-**通用角色加载序列**（适用于除启以外的所有角色）：
+- **L0（必读）**：`.weiyige/SHARED.md`（首次）+ `.weiyige/[Agent名]/IDENTITY.md`
+- **L1（Standard/Deep/Team 加载）**：`.weiyige/[Agent名]/SOUL.md`
+- **L2（按需）**：`memory/*.md`、`skills/`
 
-1. `.weiyige/[Agent名]/SOUL.md` — 思维框架（**必读，不可跳过**）
-2. `.weiyige/[Agent名]/IDENTITY.md` — 人格风格（**必读**）
-3. `.weiyige/[Agent名]/memory/`（如有 `.md` 文件则读取）
-4. 对应技能文件（见技能映射表，**有映射则必读**）
-5. `.weiyige/PROTOCOL.md`（涉及交接、门禁、team、产物时）
+**Quick 模式**（`@quick`）仅 L0，其余模式自动加载 L1。
 
-**`@启` 专用加载序列**（启是 Leader，文件比其他角色多且关键）：
+**`@启` 专用加载序列**（启是 Leader，额外必读）：
 
-1. `.weiyige/执事_启/SOUL.md` — 编排逻辑、链路规划、门禁规则（**必读**）
-2. `.weiyige/执事_启/IDENTITY.md` — 身份定义、三种编排模式（**必读**）
-3. `.weiyige/执事_启/start.md` — 启动协议、Step 0-6 执行流程（**必读，这是启的核心执行手册**）
-4. `.weiyige/PROTOCOL.md` — 协作协议（**必读**）
-5. `ai-workspace/` 下的 `project-status.json`、`state.json`（如存在）— 恢复任务状态
-
-**加载完整性校验**：声明"已加载完毕"前，必须确认上述清单中标注"必读"的文件**全部已读取**。缺一个都不算激活完成。
+1. `.weiyige/执事_启/SOUL.md` + `IDENTITY.md`（**必读**）
+2. `.weiyige/执事_启/start.md`（**必读，核心执行手册**）
+3. `.weiyige/PROTOCOL.md`（**必读**）
+4. `ai-workspace/` 下的状态文件（如存在）
 
 ### 规则 3：无快捷指令也必须路由
 
@@ -200,18 +203,14 @@
 | 文件 | 用途 |
 |------|------|
 | `.weiyige/ROUTER.md` | 完整路由规则 |
+| `.weiyige/LOADER.md` | 分级加载协议（L0/L1/L2） |
+| `.weiyige/SHARED.md` | CLI 规范、Git 规范、自检清单 |
 | `.weiyige/PROTOCOL.md` | 协作协议、交接、RACI、门禁、闭环 |
 | `.weiyige/MEMORY.md` | 记忆系统规范 |
-| `.weiyige/QUICKSTART.md` | 快速入门 |
-| `.weiyige/PROJECT-CONFIG-SPEC.md` | 项目配置规范 |
 | `.weiyige/[Agent]/SOUL.md` | Agent 思维框架 |
 | `.weiyige/[Agent]/IDENTITY.md` | Agent 人格风格 |
 | `.weiyige/[Agent]/SKILLS.md` | Agent 技能卡片 |
 | `.weiyige/skills/` | 共享 Skill |
-| `.weiyige/skills/todo-management.md` | TODO 管理 Skill（添加/更新/查看任务） |
-| `.weiyige/registry.json` | 项目注册中心（所有项目路径） |
-| `.weiyige/todos.json` | 当前项目的任务列表 |
-| `agents_for_codebuddy/` | CodeBuddy 多 Agent 模式源文件 |
 
 ---
 
