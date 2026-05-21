@@ -9,19 +9,20 @@
 - **触发条件**: 用户说「安全审计」「security audit」「安全检查」「OWASP」或项目上线前/定期安全检查时
 - **输入**:
   - 审计目标: 代码路径 / Git 仓库 / URL（必填）
-  - 审计深度: Quick / Standard / Deep（默认 Standard）
+  - 审计深度: Quick / Deep（默认 Deep）
 - **输出**: 安全态势报告（发现清单 + 严重性 + 攻击场景 + 修复方案）
 - **工具**: `codebase_search`、`search_content`、`read_file`、`execute_command`（git log -p 检查泄露）
 - **约束**:
   - 零噪声 > 零遗漏——3 个真实发现 > 3 个真实 + 12 个理论
   - 每个发现必须有具体攻击场景——"这个模式不安全"不是发现
   - 22 条硬排除规则自动过滤
-  - Standard 模式置信度 8/10——低于此标为 TENTATIVE
+  - Deep 模式置信度 8/10——低于此标为 TENTATIVE
+  - Quick 模式只扫 Critical/High 级别漏洞，跳过低风险项
   - 不改代码——只出报告
 - **示例**:
   ```
   用户: "审计一下毛孩子测试的安全性"
-  输出: 🛡️ 安全审计 | Standard 模式
+  输出: 🛡️ 安全审计 | Deep 模式
         Phase 0-6 基础设施: ✅ 无泄露
         Phase 9 OWASP: 
         🔴 SEC-001 [CRITICAL] HMAC密钥硬编码在client端代码

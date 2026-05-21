@@ -35,7 +35,7 @@
 - **触发条件**: 用户说「趋势」「未来会怎样」「这个方向能不能持续」「是不是伪趋势」「趋势分析」
 - **输入**: 
   - 趋势主题（必填）
-  - 分析深度: Quick / Standard / Deep（默认 Standard）
+  - 分析深度: Quick / Deep（默认 Deep）
 - **输出**: 趋势报告（信号汇总表 + 趋势三问 + 机会点 + 风险点）
 - **工具**: `web_search`、`autoglm-deepresearch`、`web_fetch`
 - **约束**: 

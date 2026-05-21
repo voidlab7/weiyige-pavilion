@@ -1,5 +1,6 @@
-<!-- Version: v2.0 | Created: 2026-04-11 | Updated: 2026-05-13 -->
+<!-- Version: v2.1 | Created: 2026-04-11 | Updated: 2026-05-20 -->
 <!-- Changelog:
+  v2.1 (2026-05-20): 三档模式简化为两档（Check/Build）；深度从离散三级改为连续自适应；配合 SKILLS.md Skill Router 编排
   v2.0 (2026-05-13): 三库深度整合（TDesign/UI-Prompt/Open Design）；OD 从"方法论"升级为"资源库+平台+方法论"三层；新增 Craft 工艺规则体系；DESIGN.md 从"参照"升级为"选一个改造"；新增速查索引和交付物清单
   v1.1 (2026-04-11): 增加三档模式（Quick/Standard/Deep）；增加版本管理
   v1.0 (2026-04-11): 初始版本
@@ -21,15 +22,16 @@
 
 ---
 
-## 三档模式
+## 两档模式
 
-| 模式 | 适用场景 | 流程 | 三库使用 | 预计时间 |
-|------|---------|------|---------|---------|
-| **Quick** | 单个页面/组件的快速设计反馈、AI 烂俗快速检测 | AI 烂俗 10 反模式 + OD 反 AI slop 七宗罪 + 状态覆盖检查 + 1-2 条关键建议 | OD craft(反AI+状态) + UI-Prompt core 风格对照 + TDesign 组件规范 | < 2 分钟 |
-| **Standard** | 中等规模的设计评审、设计审计 | 设计计划评审（7 维度评分）或设计审计修复循环，引用全部相关 Craft 规则 | 三库全用：TDesign 打分基准 + UI-Prompt 风格比对 + OD Craft 全相关项 | 15-30 分钟 |
-| **Deep** | 全新产品的设计系统构建、大版本设计评审 | 选 OD 品牌基座 → 改造 9 章节 → Craft 全量质检 → 打包交付 | 三库深度联合：OD 基座+规则+技能，UI-Prompt Prompt 注入，TDesign 组件选型 | 30+ 分钟 |
+| 模式 | 触发信号 | 做什么 | 三库使用 | 深度自适应 |
+|------|---------|--------|---------|-----------|
+| **Check**（检查） | "看一下"、"检查"、"AI味"、"评审"、"审计"、"修一下" | 检测 → 评分 → 修复 | OD craft(反AI+状态) + TDesign 打分基准 + UI-Prompt 风格比对 | 问题少则快速收敛；问题多则自动加深至全维度评审 |
+| **Build**（构建） | "设计系统"、"新产品"、"页面 Spec"、"出图"、"风格"、"草图" | 构建/创建/交付设计产物 | 三库深度联合：OD 基座+规则+模板，UI-Prompt Prompt 注入，TDesign 组件选型 | 已有 DESIGN.md 则跳过构建；已有风格则跳过选型 |
 
-**默认模式**：Standard。用户可通过 `@quick`/`@deep` 切换，或由路由器根据任务规模自动选择。
+**默认模式**：Check。涉及"创建"/"新建"/"从零开始"时自动切 Build。
+
+**关键区别**：不再由用户手动选档，而是路由器根据意图自动判断。深度在模式内部连续自适应，而非离散的三级。
 
 ---
 
@@ -130,7 +132,6 @@ RISKS（你的产品获得自己面孔的地方）
 > **三库根路径**（绘在任何项目中都通过绝对路径访问）：
 > - `$TD` = `/Users/voidzhang/Documents/workspace/MicroDesign/tdesign`
 > - `$TDR` = `/Users/voidzhang/Documents/workspace/MicroDesign/tdesign-react`
-> - `$TDI` = `/Users/voidzhang/Documents/workspace/MicroDesign/tdesign-icons`
 > - `$UIP` = `/Users/voidzhang/Documents/workspace/MicroDesign/UI-Prompt`
 > - `$OD` = `/Users/voidzhang/Documents/workspace/MicroDesign/open-design`
 
@@ -141,7 +142,7 @@ RISKS（你的产品获得自己面孔的地方）
     │
     ▼
 ┌─────────────┐  "要代码？"
-│  TDesign     │ ──→ 75 个生产组件 + 图标库 + 主题生成器 + 中后台规范
+│  TDesign     │ ──→ 75 个生产组件 + 主题生成器 + 中后台规范
 │  (骨架)      │     不可替代：npm install 直接跑、多端实现、TypeScript 类型
 └──────┬──────┘
        ▼
@@ -150,11 +151,11 @@ RISKS（你的产品获得自己面孔的地方）
 │  (皮肤)      │     不可替代：886 行级 custom.md、组件多风格变体、Tailwind 配置
 └──────┬──────┘
        ▼
-┌─────────────┐  "要设计系统、品牌参照、工艺标准、专项技能？"
-│  Open Design │ ──→ 三层价值：
-│  (引擎)      │     L1 方法论：12 条 Craft 工艺规则 + 9 章节 DESIGN.md 标准
-│              │     L2 资源库：149 品牌系统（直接选一个改造）+ 110+ 页面模板 + 107 技能
-│              │     L3 平台：可跑的 AI 设计工具 + 16 种 Agent CLI + Figma 集成
+┌─────────────┐  "要设计系统、品牌参照、工艺标准、页面模板？"
+│  Open Design │ ──→ 两层价值：
+│  (引擎)      │     L1 方法论：12 条 Craft 工艺规则 + 9 章节 DESIGN.md Schema
+│              │     L2 资源库：151 品牌系统（选一个改造）+ 110 页面模板（含 SKILL.md workflow + example.html）
+│              │     不可替代：品牌级设计系统直接 read_file、页面模板有完整生成 workflow
 └─────────────┘
 ```
 
@@ -164,9 +165,8 @@ RISKS（你的产品获得自己面孔的地方）
 |------|------|------|------|
 | **SAFE** | TDesign 设计规范 | `$TD/docs/design/` | 中后台导航、布局、高频任务的行业共识 |
 | **SAFE** | TDesign React 组件 | `$TDR/packages/components/` | 75 个经过验证的生产组件 |
-| **SAFE** | TDesign 图标库 | `$TDI/` | SVG 源 → 多框架组件自动生成 |
 | **SAFE** | UI-Prompt Core 风格 | `$UIP/public/data/prompts/styles/core/` | minimalism、materialDesign、flatDesign 等 7 个基线风格 |
-| **SAFE** | OD 品牌系统 | `$OD/design-systems/{品牌}/DESIGN.md` | 149 个品牌的完整设计系统，选最接近的作为起点 |
+| **SAFE** | OD 品牌系统 | `$OD/design-systems/{品牌}/DESIGN.md` | 151 个品牌的完整设计系统，选最接近的作为起点 |
 | **RISK** | UI-Prompt Visual 风格 | `$UIP/public/data/prompts/styles/visual/` | 50+ 视觉风格 Prompt + CSS 规范 |
 | **RISK** | UI-Prompt Retro 风格 | `$UIP/public/data/prompts/styles/retro/` | 15 种复古风格 |
 | **RISK** | UI-Prompt Layout 风格 | `$UIP/public/data/prompts/styles/layout/` | 非常规布局（magazine、brokenGrid 等） |
@@ -213,17 +213,17 @@ RISKS（你的产品获得自己面孔的地方）
 | **UX 法则** | `$OD/craft/laws-of-ux.md` | Hick 定律、Miller 7±2、Fitts 定律、Gestalt |
 | **RTL/双向** | `$OD/craft/rtl-and-bidi.md` | `dir`/`lang` 属性、CSS 逻辑属性、Unicode UAX #9 |
 
-**使用规则**：Quick 模式至少引用反 AI slop + 状态覆盖；Standard 引用全部相关项；Deep 必须全部过一遍。
+**使用规则**：Check 模式至少引用反 AI slop + 状态覆盖 + 全部相关项；Build 模式必须全部过一遍。
 
 ---
 
-## DESIGN.md 构建流程（Deep 模式核心产出）
+## DESIGN.md 构建流程（Build 模式核心产出）
 
 **核心思路：站在巨人肩上改造，不从零开始。**
 
 ### Step 1: 选基座
 
-从 OD 149 个品牌系统中选一个最接近的作为起点：
+从 OD 151 个品牌系统中选一个最接近的作为起点：
 
 ```
 做工具类产品 → $OD/design-systems/linear-app/DESIGN.md
@@ -303,7 +303,7 @@ RISKS（你的产品获得自己面孔的地方）
 - [ ] DESIGN.md 已产出（或评审报告已产出）
 - [ ] 0-10 × 7 维度评分已给出（设计评审时）
 - [ ] AI 烂俗 10 反模式已逐条检查
-- [ ] Craft 工艺规则已按模式要求检查（Quick ≥2 条，Standard 全相关项，Deep 全部）
+- [ ] Craft 工艺规则已按模式要求检查（Check 引用全部相关项，Build 全部过一遍）
 - [ ] SAFE / RISK 分层已标注
 - [ ] 设计审计修复已原子提交（如有修复）
 - [ ] 自我调节风险未超过 20%（CSS-only +0%，组件级 +5%）
@@ -345,7 +345,7 @@ AI 烂俗: D (三列特性网格 + 紫色渐变 → 典型 AI 味)
        → $UIP/.../custom.md   (完整 CSS 规范，886 行级，含 Tailwind 配置)
 
 ■ 品牌参照 / DESIGN.md 基座
-  → $OD/design-systems/{品牌名}/DESIGN.md                149 个品牌系统
+  → $OD/design-systems/{品牌名}/DESIGN.md                151 个品牌系统
   → $OD/design-systems/linear-app/DESIGN.md              371 行完整范例
   → $OD/docs/design-systems.md                           9 章节 Schema 规范
 
@@ -365,31 +365,25 @@ AI 烂俗: D (三列特性网格 + 紫色渐变 → 典型 AI 味)
   → $TD/docs/design/offices_zh-CN.md                     导航+布局
   → $TD/docs/design/offices-task_zh-CN.md                高频任务
 
-■ 图标
-  → $TDI/                                                完整图标体系
-
 ■ 主题定制
   → $TD/packages/theme-generator/                        可视化主题生成器
 
-■ OD 专项设计技能（特定场景加载）
-  Landing page  → $OD/skills/web-prototype/
-  SaaS 营销     → $OD/skills/saas-landing/
-  仪表盘        → $OD/skills/dashboard/
-  移动端 App    → $OD/skills/mobile-app/
-  移动端引导    → $OD/skills/mobile-onboarding/
-  邮件营销      → $OD/skills/email-marketing/
-  社媒轮播图    → $OD/skills/social-carousel/
-  杂志风海报    → $OD/skills/magazine-poster/
-  PPT/Deck     → $OD/skills/guizang-ppt/
-  线框稿        → $OD/skills/wireframe-sketch/
-  定价页        → $OD/skills/pricing-page/
-
-■ 媒体生成 Prompt
-  图片(43条)  → $OD/prompt-templates/image/
-  视频(50条)  → $OD/prompt-templates/video/
-
-■ OD 页面模板（直接出原型）
-  → $OD/design-templates/                                110+ 完整页面模板
+■ OD 页面模板（读取 SKILL.md 获取 workflow + example.html 获取参考实现）
+  仪表盘        → $OD/design-templates/dashboard/
+  SaaS 落地页   → $OD/design-templates/saas-landing/
+  Web 原型      → $OD/design-templates/web-prototype/
+  移动端 App    → $OD/design-templates/mobile-app/
+  移动端引导    → $OD/design-templates/mobile-onboarding/
+  邮件营销      → $OD/design-templates/email-marketing/
+  社媒轮播图    → $OD/design-templates/social-carousel/
+  杂志风海报    → $OD/design-templates/magazine-poster/
+  PPT/Deck     → $OD/design-templates/guizang-ppt/
+  线框稿        → $OD/design-templates/wireframe-sketch/
+  定价页        → $OD/design-templates/pricing-page/
+  博客文章      → $OD/design-templates/blog-post/
+  看板          → $OD/design-templates/kanban-board/
+  等候页        → $OD/design-templates/waitlist-page/
+  （共 110 个模板，每个含 SKILL.md + example.html）
 ```
 
 ---

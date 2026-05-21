@@ -9,7 +9,7 @@
 - **触发条件**: 用户说「工程审查」「架构审查」「eng review」「锁定计划」「plan-eng-review」或 PRD 完成后编码开始前
 - **输入**:
   - 待审查的计划/PRD/设计文档（必填）
-  - 审查深度: Quick / Standard / Deep（默认 Standard）
+  - 审查深度: Quick / Deep（默认 Deep）
 - **输出**: 工程审查报告（计算型检查结果 + 多维度评分 + 架构 + 数据流 + 代码质量 + 测试概要 + 性能）
 - **工具**: `execute_command`（运行 Lint/类型检查）、`codebase_search`、`search_content`、`read_file`
 - **约束**:
@@ -33,7 +33,7 @@
 - **示例**:
   ```
   用户: "审查毛孩子人格测试的架构"
-  输出: ⬛ 工程审查 | Standard 模式
+  输出: ⬛ 工程审查 | Deep 模式
         ── Step 1: 计算型检查 ──
         ESLint: 2 warnings / 0 errors ✅
         TypeScript: 0 type errors ✅

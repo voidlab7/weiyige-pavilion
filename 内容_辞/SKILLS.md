@@ -10,7 +10,9 @@
 - **输入**:
   - 主题/选题（必填）
   - 目标平台: 小红书 / 公众号 / 抖音 / 通用（必填）
-  - 创作深度: Quick / Standard / Deep（默认 Standard）
+  - 创作深度: Quick / Deep（默认 Deep）
+    - Quick: 快速出稿，跳过竞品调研，直接进入创作
+    - Deep: 完整创作流程（选题调研→AI初稿→De-AI-ify→Humanizer→平台适配）
 - **输出**: 平台终稿（经过 De-AI-ify + Humanizer + 平台适配）
 - **工具**: `web_search`（选题调研）、`read_file`（读取 skill 文件）
 - **约束**:

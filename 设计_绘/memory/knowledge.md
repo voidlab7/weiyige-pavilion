@@ -133,46 +133,62 @@ AIGC 组件: tdesign-react-aigc
 
 ---
 
-## 4. TDesign Icons 图标库
+## 4. Open Design 资源库
 
-**本地路径**: `/Users/voidzhang/Documents/workspace/tdesign-icons`
+**本地路径**: `/Users/voidzhang/Documents/workspace/MicroDesign/open-design`
 
 ### 定位
-2350+ SVG 图标，多框架适配。
+提供设计系统基座（151 个品牌 DESIGN.md）、工艺规则（12 条 craft）、页面模板 workflow（110 个 design-templates）。
 
-### 目录结构
+### 真正可用的资源（AI 运行时可直接 read_file）
 
 ```
-tdesign-icons/
-├── svg/                        # 2350+ SVG 源文件
-└── packages/                   # 多框架适配包
+open-design/
+├── craft/                      # 12 条通用工艺规则（每个 84-134 行）
+│   ├── color.md                # 四层调色板规则
+│   ├── typography.md           # 字体比例规则
+│   ├── anti-ai-slop.md         # 反 AI 烂俗七宗罪
+│   ├── state-coverage.md       # 五态必覆盖
+│   ├── accessibility-baseline.md # WCAG 2.2 AA
+│   └── ...                     # 共 12 个 .md 文件
+├── design-systems/             # 151 个品牌设计系统
+│   └── {brand}/DESIGN.md       # 每个 300-400 行，含精确色值/字体/间距
+├── design-templates/           # 110 个页面模板
+│   └── {type}/                 # 每个含 SKILL.md（workflow）+ example.html（参考实现）
+└── docs/design-systems.md      # 9 章节 DESIGN.md Schema 规范（328 行）
 ```
 
 ### 使用场景
-- 优先查找现有图标，避免自造轮子
-- 遵循 SOUL.md "Material Symbols 优先" 原则，TDesign 图标作为补充
-- 图标风格一致性检查
+- **构建 DESIGN.md**：从 design-systems/ 选一个品牌作为基座，按 docs/design-systems.md 的 9 章节 schema 改造
+- **设计质检**：用 craft/ 12 条规则逐项检查设计产出
+- **生成特定页面**：读取 design-templates/{type}/SKILL.md 获取 workflow，参考 example.html 生成
+
+### ⚠️ 不可用的资源（不要引用）
+- `skills/` 目录：107 个中 94 个只有空壳 SKILL.md（指向外部仓库，本地无实际内容）
+- `prompt-templates/`：图片/视频生成 prompt，和 UI 设计无关
+- `apps/`、`packages/`、`tools/`：OD 平台自身代码，非设计资源
 
 ---
 
-## 5. 资源协作关系
+## 6. 资源协作关系
 
 ```
 设计决策流:
   「绘」方法论（SOUL.md 9原则 + 10反模式）
       ↓ 判断标准
+  Open Design（craft 工艺规则 → 品质底线；design-systems → 基座选型）
+      ↓ 规则 + 基座
   UI-Prompt（80+ 风格 → 选择视觉方向）
       ↓ 风格 Prompt
   TDesign（组件规范 → 工程约束）
       ↓ 组件实现
   最终产出
 
-一句话: 「绘」是设计判断力，UI-Prompt 是视觉词汇量，TDesign 是工程约束。
+一句话: 「绘」是设计判断力，OD 是品质底线和基座，UI-Prompt 是视觉词汇量，TDesign 是工程约束。
 ```
-
 ---
 
-## 6. 常用操作速查
+## 7. 常用操作速查
 
 | 我想要... | 操作 |
 |-----------|------|
@@ -181,6 +197,10 @@ tdesign-icons/
 | 让 AI 按风格生成代码 | 读取 `UI-Prompt/public/data/prompts/styles/{category}/{family}/custom.md` 作为上下文 |
 | 确定中后台布局框架 | 读取 `tdesign/docs/design/offices_zh-CN.md` |
 | 找现成 React 组件 | 查看 `tdesign-react/packages/components/{component}/` |
-| 找图标 | 查看 `tdesign-icons/svg/{name}.svg` |
+| 找图标 | 模型直接生成 SVG（简单图标）或使用 Lucide React 等轻量图标库 |
 | 看组件的多风格实现 | 读取 `UI-Prompt/public/data/content/components/{category}/{component}/{variant}/` |
 | 批量了解可用资源 | 读取 `UI-Prompt/src/data/styles/_registry.json` 或 `components/_registry.json` |
+| 选品牌基座构建 DESIGN.md | 读取 `open-design/design-systems/{brand}/DESIGN.md` |
+| 了解 DESIGN.md 9 章节规范 | 读取 `open-design/docs/design-systems.md` |
+| 检查设计工艺品质 | 读取 `open-design/craft/{rule}.md`（如 color.md、anti-ai-slop.md） |
+| 生成特定类型页面 | 读取 `open-design/design-templates/{type}/SKILL.md` 获取 workflow |

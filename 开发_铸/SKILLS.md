@@ -10,7 +10,7 @@
 - **输入**:
   - 架构蓝图/审查报告（来自矩，必填）
   - PRD/需求文档（来自枢，必填）
-  - 实现模式: Quick / Standard / Deep（默认 Standard）
+  - 实现模式: Quick / Deep（默认 Deep）
 - **输出**: 可运行代码 + 左移检查报告
 - **工具**: `read_file`、`write_to_file`、`replace_in_file`、`execute_command`、`codebase_search`、`search_content`
 - **约束**:
@@ -29,7 +29,7 @@
 - **示例**:
   ```
   用户: "实现毛孩子人格测试的分享功能"
-  输出: ⚒️ 代码实现 | Standard 模式
+  输出: ⚒️ 代码实现 | Deep 模式
         Step 1: 读取蓝图 → 矩推荐用 ShareModal 组件 + 微信分享 API
         Step 2: 读取需求 → 枢要求支持微信好友+朋友圈
         Step 3: 搜索现有 → ShareButton 组件已存在，可复用

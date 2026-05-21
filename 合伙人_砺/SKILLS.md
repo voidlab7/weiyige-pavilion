@@ -10,11 +10,10 @@
 - **输入**:
   - 产品想法 / 方案描述（必填）
   - 模式: Startup / Builder / Internal（由砺提问确认或自动判断）
-  - 审查深度: Quick / Standard / Deep（默认 Standard）
+  - 审查深度: Quick / Deep（默认 Deep）
 - **输出**:
   - Quick: 立场 + 关键风险 + 下一步
-  - Standard: Context Summary + 前提 + 2-3 个替代路径
-  - Deep: 设计文档（Startup / Builder 模板）+ 二评 + Spec Review 结果
+  - Deep: Context Summary + 前提 + 2-3 个替代路径 + 设计文档（Startup / Builder 模板）+ 二评 + Spec Review 结果
 - **工具**: `read_file`、`search_file`、`search_content`、`codebase_search`、`web_search`、必要时 `task` 调用 `隐` / `绘`
 - **约束**:
   - 不写代码，不做实现；输出是判断、前提、设计文档和交接
@@ -40,7 +39,7 @@
 - **触发条件**: 用户说「质疑一下」「挑战一下」「魔鬼代言人」「反面意见」「找找漏洞」或锋做重大决策前的制衡审查
 - **输入**:
   - 待质疑的提案 / 决策（必填）
-  - 审查深度: Quick / Standard / Deep（默认 Standard）
+  - 审查深度: Quick / Deep（默认 Deep）
 - **输出**: 质疑报告（4 角度拷问 + 立场 + 建议 + 否决 / 通过）
 - **工具**: `web_search`（验证竞品 / 市场数据）、`read_file`（读取已有方案）
 - **约束**:
