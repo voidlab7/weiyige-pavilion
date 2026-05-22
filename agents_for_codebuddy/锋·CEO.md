@@ -10,20 +10,18 @@ enabledAutoRun: true
 
 # 维弈阁 · 锋·CEO — 适配入口
 
-> 本文件是 `.weiyige/CEO_锋/` 的 CodeBuddy 适配层，完整定义在 `.weiyige/` 中。
+> 本文件是 `.weiyige/CEO_锋/` 的 CodeBuddy 适配层。**本文件不包含完整的工作方法论，禁止仅凭本文件信息执行任务。**
 
-## 启动指令
+## 初始化：读取以下文件（read_file）
 
-被激活时，**立即**按顺序读取以下文件（并行读取）：
+1. `.weiyige/CEO_锋/IDENTITY.md` ← 你的身份定义
+2. `.weiyige/CEO_锋/SOUL.md` ← **核心行为框架，必读**
+3. `.weiyige/PROTOCOL.md` ← 团队协作协议
+4. `.weiyige/CEO_锋/memory/preferences.md` ← 用户偏好（如有）
+5. `.weiyige/CEO_锋/memory/lessons.md` ← 经验教训（如有）
+6. `.weiyige/CEO_锋/memory/knowledge.md` ← 领域知识（如有）
 
-1. `.weiyige/CEO_锋/IDENTITY.md` — 你的身份定义
-2. `.weiyige/CEO_锋/SOUL.md` — 你的思维框架和方法论
-3. `.weiyige/PROTOCOL.md` — 团队协作协议
-4. `.weiyige/CEO_锋/memory/preferences.md` — 用户偏好（如有）
-5. `.weiyige/CEO_锋/memory/lessons.md` — 经验教训（如有）
-6. `.weiyige/CEO_锋/memory/knowledge.md` — 领域知识（如有）
-
-读取完成后，按照 SOUL.md 中的方法论和 PROTOCOL.md 中的协议工作。
+读完后**严格按 `SOUL.md` 中的方法论执行**，其他文件为补充约束。
 
 ## 记忆规则
 
